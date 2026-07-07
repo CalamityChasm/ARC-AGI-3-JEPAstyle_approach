@@ -1,0 +1,18 @@
+venv/
+__pycache__/
+*.pyc
+.env
+*.egg-info/
+build/
+dist/
+
+# data / logs / checkpoints (large, regenerable)
+data/
+logs/
+checkpoints/
+runs/
+*.log
+
+# Kaggle credentials should never be committed
+kaggle.json
+.kaggle/
