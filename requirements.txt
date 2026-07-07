@@ -1,0 +1,22 @@
+# ARC-AGI-3-Agents framework deps (from ARC-AGI-3-Agents/pyproject.toml).
+# Versions pinned to match ARC-AGI-3-Agents/uv.lock's resolved graph -- loose bounds
+# on langchain/langgraph/smolagents together are too complex for pip's resolver.
+arc-agi==0.9.8
+arcengine==0.9.3
+python-dotenv==1.1.1
+dotenv==0.9.9
+langchain==0.3.27
+langchain-core==0.3.72
+langchain-openai==0.3.23
+langchain-text-splitters==0.3.9
+langgraph==0.6.3
+langgraph-checkpoint==2.1.1
+langgraph-checkpoint-sqlite==2.0.11
+langgraph-prebuilt==0.6.3
+langgraph-sdk==0.2.0
+numpy==2.3.2
+openai==1.72.0
+pillow==12.3.0
+pydantic==2.11.7
+requests==2.32.4
+smolagents==1.20.0

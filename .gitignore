@@ -12,7 +12,16 @@ logs/
 checkpoints/
 runs/
 *.log
+recordings/
+
+# Linux-only competition wheels: kept locally for offline provenance, but
+# arc-agi / arcengine are also on PyPI (pinned in requirements.txt) so these
+# don't need to live in git.
+arc_agi_3_wheels/
 
 # Kaggle credentials should never be committed
 kaggle.json
 .kaggle/
+
+# Claude Code local state
+.claude/
