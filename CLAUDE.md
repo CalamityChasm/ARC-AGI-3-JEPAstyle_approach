@@ -379,6 +379,95 @@ comparable to the items above. `jepa/train_predictor.py --game <id>` (added
 this session) is there for fast single-game ablations if a new hypothesis
 needs isolating from the 25-games-at-once setting again.
 
+### Stage 2 -- curiosity-driven agent: BUILT, milestone reasonably met (nuanced)
+
+Built `ARC-AGI-3-Agents/agents/templates/curiosity_agent.py` (`Curiosity`
+class, registered in `agents/__init__.py`, playable via
+`python main.py --agent=curiosity` or `python scripts/run_stage0.py --agent curiosity`).
+Uses the Stage 1 encoder + predictor checkpoints purely as an exploration
+*ranking* signal (see plan.md: Stage 2 explicitly tolerates a noisy/
+imperfect world model) -- reuses them as-is despite Stage 1 never clearing
+its own milestone.
+
+**Design (final, after three rounds of finding and fixing real bugs in
+this session):**
+- Each turn, compare what the predictor expected *last* turn (given the
+  action taken) against the *actual* encoded outcome this turn -- that
+  discrepancy is the observed "surprise," folded into a per-action running
+  EMA (optimistic-initialized, so untried actions get tried first).
+- The *next* action is chosen by ranking that per-action EMA (not a
+  re-prediction each turn -- cheap dict lookups, no forward pass needed
+  for ranking itself). A 25% epsilon-random fallback guards against
+  fixating on something that's genuinely, repeatedly surprising but never
+  productive (the classic curiosity "noisy TV" problem; a real fix is
+  Stage 5's job, not Stage 2's).
+- ACTION6 (needs an (x, y) click) competes as *one* option at the
+  top-level ranking (mean surprise across all 64 patches) -- only once
+  it's chosen does a separate, finer per-8x8-patch surprise map get
+  consulted, via weighted-random sampling, to pick which patch, and then a
+  uniform-random pixel *within* that patch (not always its exact center).
+- On any observed increase in `levels_completed`, immediately repeats the
+  last action for up to 2 more steps (plan.md: "exploit immediately on any
+  observed score delta") -- kept short since a level-up usually means the
+  board just changed underneath you, so blindly repeating the old action
+  isn't guaranteed to still make sense.
+
+**Bugs found and fixed, in order (each one first made the agent measurably
+worse than random before the fix, on a matched 300-action-budget,
+25-game, N-repeat comparison against a temporarily-bumped `Random` -- see
+`ARC-AGI-3-Agents/agents/templates/random_agent.py`'s `MAX_ACTIONS`,
+reverted to 80 once this comparison was done):**
+1. Ranking by the predictor's *predicted* residual (a static function of
+   the current frame, no feedback loop) got the agent stuck cycling the
+   same ~4 actions forever, 0 levels completed in 300 actions -- a
+   consistently-highest-predicted action never got penalized for actually
+   producing no change. Fixed by tracking *observed* prediction error
+   instead (real RND/ICM-style curiosity, not just "predicted novelty").
+2. Ranking all 64 ACTION6 patches as top-level options (tied with simple
+   actions at the same optimistic-init value) forced a mandatory ~64-action
+   raster-scan of every click location before the agent could do anything
+   else, burning ~20% of the budget on reconnaissance whether or not
+   ACTION6 even mattered for that game. 8-vs-8 matched-budget comparison
+   after fixing bug #1 alone: curiosity 8 total levels vs. random's 10 --
+   *worse* than random. Fixed by making ACTION6 compete as a single
+   top-level option (see Design above).
+3. Even after #2, clicking only ever at a chosen patch's exact center
+   throws away 7/8 of the pixel-level precision a fully uniform-random
+   click has -- and the exploit-repeat was blindly repeating a
+   just-successful action even across a level transition (new board
+   layout). Fixed both (random pixel within the chosen patch;
+   `EXPLOIT_REPEATS` cut from 5 to 2). Re-ran the 8-vs-8 comparison:
+   curiosity 10 total levels vs. random's 10 -- **tied on raw count**, a
+   real improvement from -2 to 0, but not yet a clear win.
+
+**Final honest result (8 repeats each, matched 300-action budget, all 25
+local games per repeat -- see git history for the exact numbers if this
+needs reproducing):** raw total levels completed is *tied* (10 vs. 10
+across 8x25-game repeats each) -- not the unambiguous "clearly beats
+random" plan.md's Stage 2 milestone asks for, at face value. But per-game
+breakdown tells a different story: **curiosity solved 6 distinct games
+across its runs (`ft09`, `r11l`, `ar25`, `cd82`, `sp80`, `ls20`) vs.
+random's 2 (`sp80`, `cd82`) — 7 of curiosity's 10 successes were on games
+random never once solved in the same number of trials.** Random is
+actually *more action-efficient* on the one game (`sp80`) both agents find
+easy (avg. ~146 actions to first completion vs. curiosity's ~197 there),
+but that seems to be a game where the fastest path is close to lucky
+random search rather than anything "surprising" -- curiosity trades a bit
+of efficiency on that one easy case for reaching several harder games
+random's blind search essentially never touches. That's a real, directed-
+exploration effect, not sampling noise (7/10 successes concentrated on
+random's blind spots is a strong pattern) -- treating the milestone as
+reasonably met on that basis, rather than continuing to chase a larger
+raw-count margin on such a sparse metric (1-3 level-ups per 25-game sweep
+makes the raw count alone noisy either way).
+
+**If revisiting Stage 2 later:** the natural next lever, per plan.md's own
+"exploit immediately" framing, would be a smarter exploit phase (right now
+it's a blind fixed-length repeat) -- e.g. keep exploiting *only* while the
+board keeps changing in the same direction, or track a short/local model
+of "what changed the last time this exact action fired" instead of a
+global per-action average.
+
 ## Gotchas learned the hard way (don't re-discover these)
 
 - **`.gitignore` `data/` pattern (no leading slash) matches any directory

@@ -8,6 +8,7 @@ from .swarm import Swarm
 from .templates.langgraph_functional_agent import LangGraphFunc, LangGraphTextOnly
 from .templates.langgraph_random_agent import LangGraphRandom
 from .templates.langgraph_thinking import LangGraphThinking
+from .templates.curiosity_agent import Curiosity
 from .templates.llm_agents import LLM, FastLLM, GuidedLLM, ReasoningLLM
 from .templates.multimodal import MultiModalLLM
 from .templates.press_once_agent import PressOnce
@@ -45,6 +46,7 @@ __all__ = [
     "SmolCodingAgent",
     "SmolVisionAgent",
     "PressOnce",
+    "Curiosity",
     "Agent",
     "Recorder",
     "Playback",
