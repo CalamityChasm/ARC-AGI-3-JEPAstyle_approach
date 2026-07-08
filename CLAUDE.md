@@ -37,9 +37,15 @@ means here (not leaderboard-topping).
    - The `torch` pin at the bottom of the file was installed as a **CPU**
      wheel (`--index-url https://download.pytorch.org/whl/cpu`) on the dev
      box this was built on, which had no CUDA GPU. On a machine with an
-     RTX 2070 (or any CUDA GPU), install the CUDA build instead --
-     `pip install torch --index-url https://download.pytorch.org/whl/cu121`
-     (check the current CUDA wheel URL at pytorch.org) -- then verify with
+     RTX 2070 (or any CUDA GPU), install the CUDA build instead. **The
+     `cu121` index has no wheel for `torch==2.12.1`** (that index only
+     serves older torch versions) -- use `cu126` instead:
+     `pip install torch==2.12.1 --index-url https://download.pytorch.org/whl/cu126 --force-reinstall`
+     (check `https://download.pytorch.org/whl/torch/` for which `cuXXX` tags
+     exist for the pinned version/your Python version before assuming
+     `cu121` -- and note plain `pip install torch --index-url ...` without
+     `--force-reinstall` is a no-op if any torch build is already installed,
+     since the unpinned requirement is already "satisfied"). Verify with
      `python -c "import torch; print(torch.cuda.is_available())"`. Training
      code in `jepa/` doesn't currently call `.cuda()`/`.to(device)`
      anywhere -- that's the first thing to add before GPU training will
@@ -52,9 +58,21 @@ means here (not leaderboard-topping).
 3. Kaggle API credentials are **not** in git (`.kaggle/` is gitignored).
    Set up `~/.kaggle/credentials.json` (or `kaggle.json`) again on the new
    machine if you need to re-pull competition files -- see `rules.md` for
-   the competition ref (`arc-prize-2026-arc-agi-3`). You likely don't need
-   to re-download anything: `ARC-AGI-3-Agents/` (framework + 25 public
-   games) is already committed to git.
+   the competition ref (`arc-prize-2026-arc-agi-3`).
+   - **Correction to an earlier version of this doc:** only the
+     `ARC-AGI-3-Agents/` framework code itself is committed to git --
+     `ARC-AGI-3-Agents/environment_files/` (the 25 public games' actual
+     `metadata.json`/`<game>.py` files, required for the harness to find
+     any game at all -- without them `main.py` fails with "Game X not
+     found in scanned environments, Available games: []") and
+     `arc_agi_3_wheels/` are **not** in git and were never committed; both
+     ship only inside the Kaggle competition dataset zip. Re-pull with
+     `kaggle competitions download -c arc-prize-2026-arc-agi-3 -p <tmp
+     dir>`, then extract just the `environment_files/` and
+     `arc_agi_3_wheels/` top-level entries from the zip (it also contains a
+     full mirror of `ARC-AGI-3-Agents/` including its `.git/`, which you
+     don't need -- our own clone already has that). ~44MB total, downloads
+     in seconds.
 4. `ARC-AGI-3-Agents/.env` is also gitignored (has an API key in it) --
    copy `.env.example` to `.env` again. It should have
    `OPERATION_MODE=offline` (fully local play, no network needed) and
@@ -62,10 +80,30 @@ means here (not leaderboard-topping).
    `jepa`/harness code or just call
    `requests.get("https://three.arcprize.org/api/games/anonkey")` for a
    fresh one).
-5. `checkpoints/` (trained model weights) is gitignored -- regenerable via
-   `python -m jepa.train_encoder` then `python -m jepa.train_predictor`,
-   not transferred. Retrain on the new machine (should be much faster on
-   the RTX 2070 than the CPU-only dev box this was built on).
+5. `ARC-AGI-3-Agents/recordings/` (the trajectory corpus Stage 1 trains on)
+   is also gitignored and not transferred -- regenerate before training the
+   predictor: `python scripts/run_stage0.py --agent random`, run ~6 times
+   from repo root (25 games x 6 passes = 150 files, matching the corpus
+   size this doc's Status section describes). Each pass currently exits
+   with a non-zero code / `CalledProcessError` from `main.py` in offline
+   mode even though every game completes and every recording file is
+   written correctly (harmless -- looks like an offline-mode scorecard
+   reporting quirk, not a data problem; verify file count/content with
+   `python scripts/summarize_recordings.py` rather than trusting the exit
+   code).
+6. `checkpoints/` (trained model weights) is gitignored -- regenerable via
+   `python -m jepa.train_encoder` then `python -m jepa.train_predictor
+   --epochs 30` (30 epochs to match the milestone numbers quoted in
+   Status below -- the script's own default is 10), not transferred.
+   Retrain on the new machine (should be much faster on the RTX 2070 than
+   the CPU-only dev box this was built on, once `.to(device)` calls are
+   added -- see Next steps -- since neither script uses the GPU yet even
+   when it's available). Re-running `python -m jepa.eval_stage1` against
+   a freshly regenerated (different-random-seed) recordings corpus won't
+   reproduce the exact `-8.7%` figure -- that's expected, the corpus is
+   randomly generated each time -- but should reproduce the same
+   qualitative result (predictor still fails to beat identity on
+   changed patches).
 
 ## Status
 
