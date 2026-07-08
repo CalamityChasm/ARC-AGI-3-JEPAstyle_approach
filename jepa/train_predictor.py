@@ -43,6 +43,7 @@ def train(
     batch_size: int = 32,
     lr: float = 3e-4,
     external_per_game: int | None = None,
+    game_filter: str | None = None,
 ) -> None:
     device = get_device()
     print(f"training on {device}")
@@ -65,6 +66,14 @@ def train(
                 "--external-per-game set but data/arc3_logs.zip is missing -- "
                 "training on local transitions only (see CLAUDE.md to pull it)"
             )
+
+    if game_filter:
+        transitions = [t for t in transitions if t[6] == game_filter]
+        print(
+            f"--game {game_filter}: filtered to {len(transitions)} transitions "
+            "(single-game ablation -- removes the 25-games-at-once confound "
+            "entirely, not just conditioning on game id)"
+        )
 
     game_vocab = build_game_vocab(transitions)
     print(f"{len(game_vocab)} distinct games")
@@ -148,6 +157,7 @@ def train(
                 "n_local_transitions": n_local,
                 "n_external_transitions": n_external,
                 "external_per_game": external_per_game,
+                "game_filter": game_filter,
                 "n_games": len(game_vocab),
             },
             indent=2,
@@ -220,5 +230,22 @@ if __name__ == "__main__":
             "local recordings. Omit to train on local recordings only."
         ),
     )
+    parser.add_argument(
+        "--game",
+        type=str,
+        default=None,
+        help=(
+            "Filter to a single game_id (e.g. bp35-0a0ad940) -- a single-game "
+            "ablation that removes the 25-games-at-once confound entirely, "
+            "for debugging whether the predictor can beat identity at all in "
+            "an easier, lower-variance setting."
+        ),
+    )
     args = parser.parse_args()
-    train(args.epochs, args.encoder, args.out, external_per_game=args.external_per_game)
+    train(
+        args.epochs,
+        args.encoder,
+        args.out,
+        external_per_game=args.external_per_game,
+        game_filter=args.game,
+    )

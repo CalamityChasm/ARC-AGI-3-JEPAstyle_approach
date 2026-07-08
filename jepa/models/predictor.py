@@ -44,6 +44,16 @@ class ActionConditionedPredictor(nn.Module):
             nn.GELU(),
             nn.Conv2d(feature_channels, feature_channels, kernel_size=1),
         )
+        # Zero-init the last layer so the predictor starts as an *exact*
+        # identity (residual=0) rather than adding untrained noise on top of
+        # feat from step 0 -- with a random last layer, early training has to
+        # first learn its way back to "predict no change" before it can
+        # start committing to real signal, which empirically made a
+        # single-game ablation (bp35, 100% changed-rate, no cross-game
+        # confound) train *worse* than identity for all 60 epochs.
+        last = self.net[-1]
+        nn.init.zeros_(last.weight)
+        nn.init.zeros_(last.bias)
 
     def forward(
         self,

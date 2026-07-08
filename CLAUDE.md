@@ -119,7 +119,10 @@ framework's `Recorder` to `ARC-AGI-3-Agents/recordings/*.jsonl`
 of `random` for more data -- that's what generated the 150-file, ~10.2k
 transition corpus Stage 1 currently trains on).
 
-### Stage 1 -- JEPA core: IN PROGRESS, milestone not yet met
+### Stage 1 -- JEPA core: MILESTONE NOT MET, recommend pivoting to Stage 2
+
+(See "Stage 1 recommendation: pivot to Stage 2" below for the reasoning --
+three independent negative experiments, not just one plateau.)
 
 Built (`jepa/` package):
 - `jepa/grid.py` -- shared 64x64, 17-channel (16 ARC colors + 1 pad) grid
@@ -246,53 +249,135 @@ across experiments (data mix, epoch count, GPU vs CPU) is the point of
      verified further (e.g. by directly inspecting per-patch feature
      deltas vs. pixel deltas) -- flagging as the most promising next
      thing to check, ahead of "more data" approaches.
+8. (2026-07-08) Directly verified item 7's encoder-sensitivity hypothesis
+   -- and it was **wrong**. Measured per-patch feature-space delta
+   (`(f(frame_t) - f(frame_t1))**2`) at changed vs. unchanged patches on
+   held-out data: changed patches show **12x larger** feature deltas than
+   unchanged ones (mean 2.8e-4 vs 2.3e-5). The encoder *does* register
+   local pixel changes fine. So the bottleneck isn't the encoder throwing
+   away the signal.
+   - Followed up by measuring the *predictor's own residual output*
+     (`self.net(x)` before the `feat +` skip-add) against the true target
+     delta (`f(frame_t1) - f(frame_t)`) on the same held-out batch: mean
+     residual^2 = 2.0e-6 vs. mean true-delta^2 = 3.3e-5 -- the trained
+     predictor's residual is **~16x smaller than the actual average
+     change**. It has effectively learned to output near-zero and coast
+     on the `feat +` skip connection, i.e. it learned to approximate
+     identity rather than learning real dynamics, despite `feat` and the
+     true target clearly differing at changed patches (item 8's first
+     finding). This is the real bottleneck: not data, not the encoder, but
+     the one-step predictor's inability (or the training setup's
+     inability to make it) commit to a non-trivial residual.
+9. (2026-07-08) Ran two targeted experiments to isolate *why* the
+   predictor won't commit to real residuals, both **negative results**:
+   - **Single-game ablation** (`jepa/train_predictor.py --game`, new flag):
+     retrained on `bp35-0a0ad940` alone (2480 transitions, **100%**
+     frame-level changed rate, the highest of any of the 25 games) --
+     this removes the 25-games-at-once confound *entirely* (not just
+     per-game conditioning, which iteration #4 already showed doesn't
+     help). If cross-game interference were the cause, an isolated,
+     abundant, always-changing single game should be the easiest possible
+     case. Result: predictor was **worse than identity at every single
+     epoch, all 60 of them** (epoch 60: pred=0.00691 vs identity=0.00623,
+     ~11% worse) -- never once caught up, let alone surpassed.
+   - **Zero-init residual branch** (`jepa/models/predictor.py`: the last
+     `Conv2d` in `ActionConditionedPredictor.net` is now zero-initialized,
+     so the model starts as an *exact* identity function and can only earn
+     its way to a non-zero residual through training, rather than starting
+     with random noise it has to first learn to suppress). Re-ran the same
+     single-game ablation: **no meaningful change** (epoch 60:
+     pred=0.00591 vs identity=0.00589, still ~0.3% worse, same shape of
+     curve throughout). Kept the zero-init anyway as a harmless best
+     practice for residual predictors, but it is not the fix.
+   - **Conclusion:** this isn't a data-scarcity, cross-game-confound, or
+     bad-initialization problem -- three independent interventions (9x
+     more data with a much higher changed-rate; complete removal of the
+     multi-game setting; zero-init of the residual branch) all failed to
+     move the needle, each landing at essentially the same "slightly
+     worse than identity" result. The most likely remaining explanation is
+     that for single-step, per-frame MSE-optimal prediction, the
+     conditional distribution of "what changes given this state+action" is
+     genuinely close to i.i.d. noise from this model's point of view (a
+     small 2-3-conv-layer network with only action/xy/game conditioning
+     has no way to know e.g. exactly where a moving sprite currently sits
+     with sub-patch precision, or resolve state that a random-policy
+     rollout simply doesn't disambiguate) -- so "predict no change" really
+     is close to the MSE optimum available to this architecture on this
+     data, not a training failure to escape a local optimum. Closing this
+     gap would likely need either (a) a fundamentally more expressive
+     dynamics model (Stage 3's Mamba-based sequence model, which has
+     *history*, not just one frame, to disambiguate state) or (b) training
+     data from a policy that actually progresses through games
+     purposefully rather than acting randomly (so state transitions are
+     less arbitrary/noisy) -- not more of the same kind of random-policy
+     data, regardless of volume.
 
 **Gap-closing trend plateaued on loss-shaping alone (items 1-4: -24% to
--8.7%, then flat), and item 7's ~9x-larger, much-higher-changed-rate
-combined corpus *also* didn't close it (-0.3% -> -1.4%).** That's a
-meaningful negative result: it weakens "just needs more data" as the
-explanation and strengthens "the encoder's own feature map may not be
-sensitive enough to local pixel changes" as the leading hypothesis (see
-item 7's detail above) -- worth verifying directly before sinking more
-effort into new data sources (MiniGrid, more Kaggle logs, etc.), since if
-the encoder is the bottleneck, more/better trajectory data alone won't
-fix it either.
+-8.7%, then flat). Three further independent interventions (item 7's 9x
+more/higher-changed-rate data; item 9's complete removal of the
+25-games-at-once setting; item 9's zero-init residual branch) all also
+failed to close it**, each landing at essentially the same "a few percent
+worse than identity" result regardless of the intervention. That
+consistency is itself the signal: it's not a data-volume problem
+(item 7), not a cross-game-confound problem (item 9's single-game
+ablation), not a bad-initialization problem (item 9's zero-init), and not
+an encoder-sensitivity problem (item 8 directly measured the encoder
+registering local changes fine -- 12x larger feature deltas at changed
+vs. unchanged patches). What's left is the predictor's actual job: item 8
+showed it has learned to output a near-zero residual (~16x smaller than
+the true average change) and coast on the `feat +` skip connection. The
+working conclusion is that **"predict no change" is close to the true
+MSE-optimal prediction available to this specific architecture (single
+frame in, action/xy/game conditioning, 2-3 conv layers, no history) on
+this specific data (random-policy rollouts) -- not a fixable training
+bug.**
 
-## Next steps (pick up here)
+## Stage 1 recommendation: pivot to Stage 2
 
-In priority order, given item 7's finding above:
+Given the above, sinking further effort into this exact setup (more data,
+more epochs, more loss-shaping) is unlikely to clear the milestone --
+three different categories of fix were tried and none worked, which is
+stronger evidence than a single negative result would be. Two things
+would plausibly still move it, in order of expected leverage:
 
-1. **Verify the encoder-sensitivity hypothesis directly.** Before trying
-   another data source, check whether `CNNEncoder`'s 8x8 output actually
-   moves when a patch's pixels change: take matched (frame_t, frame_t1)
-   pairs with a known-changed patch, encode both with the trained
-   `encoder_finetuned.pt`, and compare the per-patch feature-space delta
-   at changed vs. unchanged patches. If changed-patch feature deltas
-   aren't meaningfully larger than unchanged-patch deltas, that confirms
-   the encoder itself (not the predictor, not the data) is the
-   bottleneck -- e.g. `GroupNorm` + stride-2 downsampling may be smoothing
-   out small local changes before the predictor ever sees them. Candidate
-   fixes if confirmed: reduce/remove normalization strength, add a loss
-   term that explicitly rewards feature-space sensitivity to pixel
-   changes, or reduce the encoder's downsampling stride.
-2. **If the encoder checks out fine:** MiniGrid/Sokoban trajectories are
-   still on the table per plan.md's original data recipe (consistent
-   action semantics across episodes, unlike ARC-3's per-game-meaning
-   action ids) -- install `minigrid`, generate random-policy trajectories,
-   translate to the shared 17-channel grid format via `jepa/grid.py`.
-3. **Or:** accept the current state as a documented limitation and move to
-   Stage 2 (curiosity-driven agent) per plan.md -- it explicitly doesn't
-   require a perfect world model, just prediction-error-based exploration,
-   which is somewhat robust to a noisy/imperfect predictor. This is a
-   legitimate scope decision, not a cop-out; plan.md's guiding principle
-   #4 is "add components only when a measured bottleneck demands it."
+1. **A model with history, not just one frame** (Stage 3's Mamba-based
+   sequence predictor) -- a single-frame predictor structurally cannot
+   disambiguate state that depends on anything before the current frame
+   (e.g. an object's velocity/direction, a level-specific rule learned
+   from earlier in the episode). This is exactly what Stage 3 was already
+   scoped for; the negative result here is evidence *for* needing it, not
+   a sign Stage 3 will have the same problem.
+2. **Trajectory data from a policy that actually progresses** (per this
+   session's discussion) -- random-policy rollouts make many transitions
+   close to genuinely unpredictable from the model's point of view (an
+   action's effect depends on game state a random policy never
+   deliberately sets up). A policy that plays *purposefully* (even a
+   simple heuristic/curiosity-driven one) would produce transitions where
+   action -> effect is more consistent and learnable, which is a data-
+   *quality* argument distinct from item 7's data-*volume* experiment
+   (volume alone, even at a high changed-rate, didn't help -- so this
+   isn't "try the same kind of data again," it's "try structurally
+   different data").
 
-Whichever direction: keep using the honest `changed-patches` metric (now
-via `jepa/benchmark.py eval`, which also gives the per-game breakdown --
-not the naive whole-grid MSE, which is misleadingly easy to "beat" by
-mostly predicting no change) as the real bar, and append new experiments
-to `logs/benchmarks/history.jsonl` via the benchmark tool so they stay
-comparable to items 5 and 7 above.
+Both point toward **Stage 2** (per plan.md: a curiosity-driven agent using
+prediction error for exploration, which is explicitly tolerant of an
+imperfect world model) as the right next move -- and Stage 2 play
+naturally generates exactly the kind of "runs that actually progress"
+trajectory data that could make a future revisit of Stage 1 dynamics
+fitting more productive. This is a legitimate scope decision per plan.md's
+guiding principle #4 ("add components only when a measured bottleneck
+demands it") backed by three converging negative experiments, not a
+cop-out.
+
+If a future session does revisit single-frame Stage 1 prediction before
+Stage 3: keep using the honest `changed-patches` metric (via
+`jepa/benchmark.py eval`, which also gives the per-game breakdown -- not
+the naive whole-grid MSE, which is misleadingly easy to "beat" by mostly
+predicting no change) as the real bar, and append new experiments to
+`logs/benchmarks/history.jsonl` via the benchmark tool so they stay
+comparable to the items above. `jepa/train_predictor.py --game <id>` (added
+this session) is there for fast single-game ablations if a new hypothesis
+needs isolating from the 25-games-at-once setting again.
 
 ## Gotchas learned the hard way (don't re-discover these)
 
