@@ -1,11 +1,22 @@
 """Stage 4 dynamics pretraining: mixture-of-gated-experts predictor.
 
-Same data/training setup as Stage 1's train_predictor.py (local recordings
-+ optional external arc-3-logs, i.i.d.-shuffled transitions -- MoE routing
-doesn't need temporal order the way Stage 3's recurrent core did), swapping
-in `MoEPredictor` and adding the load-balancing auxiliary loss.
+Supports plan.md's originally-specified transfer curriculum: pretrain on
+MiniGrid (consistent action semantics across every layout, cheap to
+generate in unlimited quantity -- see jepa/data/minigrid_data.py) via
+`--pretrain-epochs N`, then fine-tune on the ARC-3 corpus (local
+recordings + optional external arc-3-logs) for `--epochs`. Both phases
+share one encoder/predictor/optimizer and one game vocabulary (the 25 ARC
+games + a single shared "minigrid" entry, built up front so the game
+embedding table is the same size in both phases) -- `--pretrain-epochs 0`
+(the default) skips MiniGrid entirely and reproduces the original
+ARC-3-only training.
 
-Usage: python -m jepa.train_moe_predictor [--epochs N] [--num-experts K] [--encoder PATH] [--out PATH]
+MoE routing doesn't need Stage 3's temporal ordering the way the
+recurrent core did -- both phases use i.i.d.-shuffled single transitions.
+
+Usage:
+    python -m jepa.train_moe_predictor --epochs 30 --num-experts 8
+    python -m jepa.train_moe_predictor --pretrain-epochs 10 --epochs 30 --num-experts 8
 """
 
 import argparse
@@ -16,7 +27,8 @@ import torch
 from torch.utils.data import DataLoader, WeightedRandomSampler, random_split
 
 from .data.external_logs import load_external_transitions
-from .data.trajectories import TransitionDataset, build_game_vocab, load_all_transitions
+from .data.minigrid_data import DEFAULT_ENV_NAMES, GAME_ID as MINIGRID_GAME_ID, generate_transitions
+from .data.trajectories import TransitionDataset, load_all_transitions
 from .device import get_device
 from .losses import per_region_error, prediction_loss, variance_regularizer, weighted_prediction_loss
 from .models import CNNEncoder, MoEPredictor, load_balance_loss, make_ema_target, update_ema_target
@@ -46,41 +58,8 @@ def build_models(
     return online, target, predictor
 
 
-def train(
-    epochs: int,
-    encoder_path: Path,
-    out_dir: Path,
-    num_experts: int = 8,
-    batch_size: int = 32,
-    lr: float = 3e-4,
-    external_per_game: int | None = None,
-) -> None:
-    device = get_device()
-    print(f"training on {device}, {num_experts} experts")
-    transitions = load_all_transitions(REPO_ROOT)
-    n_local = len(transitions)
-    print(f"loaded {n_local} local ARC-3 transitions")
-
-    n_external = 0
-    if external_per_game:
-        external = load_external_transitions(REPO_ROOT, max_per_game=external_per_game)
-        n_external = len(external)
-        if external:
-            print(
-                f"loaded {n_external} external ARC-3 transitions "
-                f"(arc-3-logs, capped at {external_per_game}/game)"
-            )
-            transitions += external
-        else:
-            print(
-                "--external-per-game set but data/arc3_logs.zip is missing -- "
-                "training on local transitions only (see CLAUDE.md to pull it)"
-            )
-
-    game_vocab = build_game_vocab(transitions)
-    print(f"{len(game_vocab)} distinct games")
+def _make_loaders(transitions: list, game_vocab: dict, batch_size: int, device: torch.device) -> tuple:
     dataset = TransitionDataset(transitions, game_vocab)
-
     n_val = max(1, int(len(dataset) * VAL_FRACTION))
     n_train = len(dataset) - n_val
     train_ds, val_ds = random_split(
@@ -91,19 +70,30 @@ def train(
     train_weights = [all_weights[i] for i in train_ds.indices]
     sampler = WeightedRandomSampler(train_weights, num_samples=len(train_weights), replacement=True)
     num_workers = 4 if device.type == "cuda" else 0
+    # NOT persistent_workers here (unlike train_predictor.py): this script
+    # builds a *second* set of DataLoaders for the ARC fine-tuning phase
+    # after the MiniGrid pretrain phase's loaders go out of scope, and the
+    # first attempt at that (persistent_workers=True on both) hung
+    # indefinitely -- the old phase's persistent worker processes weren't
+    # torn down before the new phase's workers started, some kind of
+    # resource contention (CUDA context / pinned memory) rather than a
+    # clean handoff. Not worth debugging further given the fix is free:
+    # this script only ever has (at most) one phase transition, so the
+    # per-epoch worker respawn cost persistent_workers avoids barely
+    # matters here.
     loader_kwargs = dict(
         num_workers=num_workers,
         pin_memory=(device.type == "cuda"),
-        persistent_workers=num_workers > 0,
+        persistent_workers=False,
     )
     train_loader = DataLoader(train_ds, batch_size=batch_size, sampler=sampler, **loader_kwargs)
     val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, **loader_kwargs)
+    return train_loader, val_loader
 
-    online, target, predictor = build_models(
-        encoder_path, num_games=len(game_vocab), num_experts=num_experts, device=device
-    )
-    opt = torch.optim.AdamW(list(online.parameters()) + list(predictor.parameters()), lr=lr)
 
+def _run_epochs(
+    online, target, predictor, opt, train_loader, val_loader, device, epochs: int, phase: str
+) -> None:
     for epoch in range(epochs):
         online.train()
         predictor.train()
@@ -136,11 +126,82 @@ def train(
 
         stats = evaluate(online, predictor, val_loader, device=device)
         print(
-            f"epoch {epoch + 1}/{epochs}  train_loss={total_loss / n_batches:.4f}  "
+            f"[{phase}] epoch {epoch + 1}/{epochs}  train_loss={total_loss / n_batches:.4f}  "
             f"lb_loss={total_lb_loss / n_batches:.3f}  "
             f"val_pred_mse={stats['pred']:.5f}  val_identity_mse={stats['identity']:.5f}  |  "
             f"changed-patches: pred={stats['pred_changed']:.5f} identity={stats['identity_changed']:.5f}"
         )
+
+
+def train(
+    epochs: int,
+    encoder_path: Path,
+    out_dir: Path,
+    num_experts: int = 8,
+    batch_size: int = 32,
+    lr: float = 3e-4,
+    external_per_game: int | None = None,
+    pretrain_epochs: int = 0,
+    minigrid_episodes_per_env: int = 40,
+    minigrid_steps_per_episode: int = 80,
+) -> None:
+    device = get_device()
+    print(f"training on {device}, {num_experts} experts")
+
+    arc_transitions = load_all_transitions(REPO_ROOT)
+    n_local = len(arc_transitions)
+    print(f"loaded {n_local} local ARC-3 transitions")
+
+    n_external = 0
+    if external_per_game:
+        external = load_external_transitions(REPO_ROOT, max_per_game=external_per_game)
+        n_external = len(external)
+        if external:
+            print(
+                f"loaded {n_external} external ARC-3 transitions "
+                f"(arc-3-logs, capped at {external_per_game}/game)"
+            )
+            arc_transitions += external
+        else:
+            print(
+                "--external-per-game set but data/arc3_logs.zip is missing -- "
+                "training on local ARC-3 transitions only (see CLAUDE.md to pull it)"
+            )
+
+    minigrid_transitions = []
+    if pretrain_epochs > 0:
+        minigrid_transitions = generate_transitions(
+            env_names=DEFAULT_ENV_NAMES,
+            episodes_per_env=minigrid_episodes_per_env,
+            steps_per_episode=minigrid_steps_per_episode,
+        )
+        print(
+            f"generated {len(minigrid_transitions)} MiniGrid transitions "
+            f"across {len(DEFAULT_ENV_NAMES)} environments"
+        )
+
+    # One shared vocabulary across both phases -- built from the union of
+    # ARC game_ids and (if pretraining) the single "minigrid" game_id, so
+    # the game-embedding table is the same size/meaning in both phases and
+    # weights carry over cleanly.
+    game_ids = sorted({t[6] for t in arc_transitions} | ({MINIGRID_GAME_ID} if pretrain_epochs > 0 else set()))
+    game_vocab = {g: i for i, g in enumerate(game_ids)}
+    print(f"{len(game_vocab)} distinct games in the shared vocab")
+
+    online, target, predictor = build_models(
+        encoder_path, num_games=len(game_vocab), num_experts=num_experts, device=device
+    )
+    opt = torch.optim.AdamW(list(online.parameters()) + list(predictor.parameters()), lr=lr)
+
+    if pretrain_epochs > 0:
+        mg_train_loader, mg_val_loader = _make_loaders(minigrid_transitions, game_vocab, batch_size, device)
+        _run_epochs(
+            online, target, predictor, opt, mg_train_loader, mg_val_loader, device, pretrain_epochs, "minigrid-pretrain"
+        )
+        del mg_train_loader, mg_val_loader  # fully drop before building the next phase's loaders
+
+    arc_train_loader, arc_val_loader = _make_loaders(arc_transitions, game_vocab, batch_size, device)
+    _run_epochs(online, target, predictor, opt, arc_train_loader, arc_val_loader, device, epochs, "arc-finetune")
 
     out_dir.mkdir(parents=True, exist_ok=True)
     torch.save({k: v.cpu() for k, v in online.state_dict().items()}, out_dir / "encoder_moe.pt")
@@ -150,6 +211,8 @@ def train(
         json.dumps(
             {
                 "epochs": epochs,
+                "pretrain_epochs": pretrain_epochs,
+                "n_minigrid_transitions": len(minigrid_transitions),
                 "num_experts": num_experts,
                 "batch_size": batch_size,
                 "lr": lr,
@@ -205,7 +268,13 @@ def evaluate(online, predictor, loader, device: torch.device | None = None) -> d
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--epochs", type=int, default=30)
+    parser.add_argument("--epochs", type=int, default=30, help="ARC-3 fine-tuning epochs.")
+    parser.add_argument(
+        "--pretrain-epochs",
+        type=int,
+        default=0,
+        help="MiniGrid pretraining epochs (0 = skip, ARC-3-only training).",
+    )
     parser.add_argument("--num-experts", type=int, default=8)
     parser.add_argument(
         "--encoder", type=Path, default=REPO_ROOT / "checkpoints" / "encoder.pt"
@@ -224,4 +293,5 @@ if __name__ == "__main__":
         args.out,
         num_experts=args.num_experts,
         external_per_game=args.external_per_game,
+        pretrain_epochs=args.pretrain_epochs,
     )

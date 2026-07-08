@@ -25,3 +25,7 @@ smolagents==1.20.0
 # `pip install torch --index-url https://download.pytorch.org/whl/cpu` if this
 # plain entry pulls a CUDA build on your platform.
 torch==2.12.1
+
+# jepa/ (Stage 4: MoE predictor's MiniGrid pretraining data source, see
+# jepa/data/minigrid_data.py). Pulls in gymnasium as a dependency.
+minigrid==3.1.0

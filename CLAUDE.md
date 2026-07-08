@@ -600,17 +600,17 @@ this session, not something introduced here -- don't rely on it for
 debugging; use real `logging` calls instead (see `memory_agent.py`'s one
 example).
 
-### Stage 4 -- mixture-of-gated-experts predictor: BUILT, milestone NOT met (honest negative result)
+### Stage 4 -- mixture-of-gated-experts predictor: BUILT, milestone mostly met after adding the MiniGrid data plan.md originally specified
 
-**Scope deviation, decided upfront:** plan.md's Stage 4 assumes pretraining
-on diverse generated grid envs (MiniGrid/Sokoban/Crafter/procgen) on a
-96GB box, with K=16-24 experts. Neither exists for this project (the
-MiniGrid data source was deferred back in Stage 1's "Next steps" and never
-built; this box has an RTX 2070, not a 96GB card). Trained on the same
-~55k-transition combined ARC-3 corpus (local + external `arc-3-logs`) as
-Stages 1/3 instead, with a smaller `--num-experts 8` default -- a
-pragmatic scope decision per plan.md's own guiding principle #4, not an
-oversight.
+**Scope deviation, decided upfront (first attempt only):** plan.md's Stage
+4 assumes pretraining on diverse generated grid envs (MiniGrid/Sokoban/
+Crafter/procgen) on a 96GB box, with K=16-24 experts. The first attempt
+(items 1-5 below) skipped that -- neither the data source nor the compute
+existed yet for this project -- and trained on the ~55k-transition
+combined ARC-3 corpus alone, with a smaller `--num-experts 8`. That
+attempt's own conclusion ("closing this gap would most likely need
+plan.md's originally-intended diverse multi-environment data") turned out
+to be right, and is exactly what item 6 below did about it.
 
 **Built:**
 - `jepa/models/moe_predictor.py: MoEPredictor` -- K small pointwise-conv
@@ -620,15 +620,39 @@ oversight.
   f_i * P_i`, minimized at uniform usage, maximized at total collapse to
   one expert). Combiner network explicitly deferred, per plan.md's Stage 4
   scope.
-- `jepa/train_moe_predictor.py` -- same data/training setup as Stage 1's
+- `jepa/train_moe_predictor.py` -- data/training setup matching Stage 1's
   `train_predictor.py` (i.i.d.-shuffled single transitions; MoE routing
   doesn't need Stage 3's temporal ordering), plus the load-balance loss
-  term.
+  term and (added for item 6) a two-phase `--pretrain-epochs N --epochs M`
+  curriculum: pretrain on MiniGrid, then fine-tune on the ARC-3 corpus,
+  sharing one encoder/predictor/optimizer and one game vocabulary (the 25
+  ARC games + a single shared `"minigrid"` entry, built from the union of
+  both sources up front so the game-embedding table is the same size/
+  meaning in both phases).
+- `jepa/data/minigrid_data.py` -- translates MiniGrid's native `(object,
+  color, state)` grid encoding (`env.unwrapped.grid.encode()`, which
+  notably does *not* include the agent -- overlaid separately from
+  `agent_pos`/`agent_dir`) into the same flat 0-15 color-code grid
+  `jepa/grid.py` already uses for ARC, so the identical encoder and
+  training code work on both data sources unchanged. Generates unlimited
+  random-policy trajectories across 21 environments spanning plan.md's
+  target expert vocabulary (empty-room navigation, `DoorKey`'s key/door
+  interaction, `SimpleCrossing`/`LavaCrossing`'s obstacle avoidance,
+  `Dynamic-Obstacles`, `Fetch`'s pickup/carry, `Unlock`/`UnlockPickup`/
+  `KeyCorridor`'s multi-step puzzles, `RedBlueDoors`, `GoToDoor`) --
+  extremely cheap (~2,000 transitions/sec; 67,200 transitions across all
+  21 environments in ~31 seconds). All MiniGrid transitions share one
+  `game_id="minigrid"` (deliberately *not* one game_id per environment --
+  the whole point of this data source is action semantics that are
+  consistent across layouts, and a per-env embedding would let the model
+  route around learning that instead of through it).
 
 **Milestone is "gate activations show experts specializing; better
-generalization than the Stage-3 monolith." Neither half was achieved,
-despite five different configurations tried (a real, reproducible
-negative result, not a single failed attempt):**
+generalization than the Stage-3 monolith."** First attempt (items 1-5,
+ARC-3 data only) achieved neither. Adding MiniGrid pretraining (item 6)
+achieved the generalization half clearly and the specialization half
+partially -- see item 6 for the full numbers. Items 1-5 are kept as the
+record of *why* more data was the right next lever, not a wasted detour:
 
 1. First run (`--num-experts 8`, `LOAD_BALANCE_WEIGHT=0.01` -- the same
    relative weight commonly used in LLM-scale MoE recipes): gate collapsed
@@ -692,10 +716,72 @@ more tuning of the loss weight on the current ARC-3-only corpus** -- this
 is the same "data, not architecture" lesson Stage 1 eventually landed on
 too, just for a different symptom.
 
-If revisiting: try noisy top-k gating (forces hard, sparse per-example
-routing rather than a soft weighted blend) before more loss-weight
-sweeps -- soft blending may be the specific mechanism letting the
-optimizer avoid commitment here.
+6. **(2026-07-08) Built the MiniGrid data pipeline (see "Built" above) and
+   retrained with `--pretrain-epochs 20 --epochs 60 --num-experts 8`**
+   (20 epochs on 67,200 MiniGrid transitions, then 60 on the ~55k ARC-3
+   combined corpus, same held-out ARC-3 val split as every prior number in
+   this section). Two real bugs found and fixed on the way (both general
+   fixes, not MiniGrid-specific hacks):
+   - `TransitionDataset.__getitem__` expects `frame_t[0]` to be the actual
+     grid (the "list of one layer" convention `arc3_frame_to_tensor`/
+     `patch_change_mask` already use for ARC-3 frames and
+     `external_logs.py`) -- `minigrid_data.py`'s `_translate_frame` now
+     returns `[grid]`, not a bare grid.
+   - `jepa/grid.py: patch_change_mask` assumed its input was already
+     exactly `(CANVAS, CANVAS)` (always true for ARC-3 frames, never
+     checked because no other source existed yet) -- MiniGrid grids are
+     smaller and vary in size (5x5 to 25x25). Fixed generally: place the
+     diff top-left on a `(CANVAS, CANVAS)` "nothing changed" canvas before
+     reshaping, mirroring `grid_to_tensor`'s own top-left placement
+     convention, rather than special-casing MiniGrid.
+   - Separately, the *first* two-phase training attempt hung indefinitely
+     (confirmed via flat process CPU time over 70+ minutes, not a slow
+     run) -- both training phases used `persistent_workers=True`
+     DataLoaders, and the MiniGrid phase's worker processes weren't fully
+     torn down before the ARC phase's new DataLoaders spawned their own,
+     some kind of resource contention rather than a clean handoff. Fixed
+     by not using `persistent_workers` in this script (it only ever has
+     one phase transition, so the per-epoch respawn cost that flag avoids
+     barely matters here) plus an explicit `del` of the first phase's
+     loaders before building the second phase's.
+   - **Result: changed-patches improvement +44.1%** (pred=0.01731 vs.
+     identity=0.03094 at the final epoch) -- clearing the "better
+     generalization than the Stage-3 monolith" half of the milestone
+     decisively (beats Stage 1's fixed monolith at +29.2% *and* Stage 3's
+     recurrent monolith at +21.3%, both on the same held-out ARC-3 data).
+   - **Gate specialization: real, but a minority behavior, not the norm.**
+     `load_balance_loss` still sits at ~1.006 (barely above the K=8
+     theoretical-uniform minimum of 1.0) and mean gate entropy across the
+     validation set is 2.05 nats vs. 2.08 nats for exactly-uniform (98.6%
+     of max) -- so *most* inputs still get a near-uniform blend. But
+     unlike every ARC-3-only attempt (items 1-5), where gate weights were
+     measured at ~0 variance across an entire batch (literally constant),
+     this run shows genuine per-input structure: **~4.4% of validation
+     examples have entropy meaningfully below uniform, and ~3.9% have one
+     expert clearly dominant (weight > 0.3)** -- with some individual
+     examples routing almost entirely to a single expert (max observed
+     weight 0.998). This is a qualitatively different, much less
+     degenerate result than items 1-5's exactly-flat gate, even though it
+     falls short of "most inputs show clear specialization."
+   - **Interpretation:** MiniGrid's consistent action semantics and much
+     higher changed-frame rate gave the shared encoder/predictor enough
+     real signal to learn genuinely better dynamics overall (the
+     prediction-quality half of the milestone), and gave the gate enough
+     signal to learn *some* real routing rather than none -- but not
+     enough to make specialization the dominant behavior across most
+     inputs. Plausibly the *rest* of the milestone gap needs either more/
+     longer MiniGrid pretraining (only 20 epochs were used here), a larger
+     `--pretrain-epochs`-to-`--epochs` ratio, or noisy top-k gating
+     (forces hard, sparse per-example routing rather than a soft blend --
+     untried this session) rather than more data alone.
+
+**Overall verdict:** the "better generalization than the monolith" half of
+Stage 4's milestone is clearly met. The "gate activations show experts
+specializing" half is genuinely, measurably better than the pre-MiniGrid
+attempts (real per-input variation exists now, up to near-hard routing on
+some examples) but isn't the dominant pattern across the validation set --
+call this **mostly met**, with noisy top-k gating as the most promising
+next lever if a future session wants to close the remainder.
 
 ## Gotchas learned the hard way (don't re-discover these)
 

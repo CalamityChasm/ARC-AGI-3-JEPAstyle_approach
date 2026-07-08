@@ -54,10 +54,21 @@ def patch_change_mask(frame_t: list, frame_t1: list) -> np.ndarray:
     object against an otherwise static 64x64 grid, so most patches are
     unchanged even then -- this is used to upweight the handful of patches
     that actually carry dynamics signal in the prediction loss.
+
+    ARC-3 frames are always exactly (CANVAS, CANVAS); other sources (e.g.
+    MiniGrid, jepa/data/minigrid_data.py) can be smaller -- placed top-left
+    on a (CANVAS, CANVAS) "nothing changed" canvas first, matching
+    grid_to_tensor's own top-left placement convention, so the reshape
+    below always sees a full canvas regardless of the source grid's size.
     """
     a = np.asarray(frame_t[0], dtype=np.int64)
     b = np.asarray(frame_t1[0], dtype=np.int64)
-    diff = a != b  # (64, 64)
+    h, w = a.shape
+    if h > CANVAS or w > CANVAS:
+        raise ValueError(f"grid {h}x{w} exceeds canvas {CANVAS}x{CANVAS}")
+
+    diff = np.zeros((CANVAS, CANVAS), dtype=bool)
+    diff[:h, :w] = a != b
     n = CANVAS // PATCH
     diff = diff.reshape(n, PATCH, n, PATCH)
     return diff.any(axis=(1, 3))  # (8, 8)
