@@ -119,10 +119,17 @@ framework's `Recorder` to `ARC-AGI-3-Agents/recordings/*.jsonl`
 of `random` for more data -- that's what generated the 150-file, ~10.2k
 transition corpus Stage 1 currently trains on).
 
-### Stage 1 -- JEPA core: MILESTONE NOT MET, recommend pivoting to Stage 2
+### Stage 1 -- JEPA core: MILESTONE PASSED (as of 2026-07-08's bugfix; see item 10)
 
-(See "Stage 1 recommendation: pivot to Stage 2" below for the reasoning --
-three independent negative experiments, not just one plateau.)
+(Items 1-9 below document a long, genuine debugging journey that
+concluded the milestone was *not* clearable with this architecture on
+this data. That conclusion turned out to be built on a corrupted local
+data pipeline -- see item 10 and the "CRITICAL" gotcha at the bottom of
+this file. Left the full history in place rather than deleting it: the
+individual fixes in items 1-3 were real and still matter, and the
+debugging process in items 7-9 is exactly what you'd want to see before
+concluding "not fixable" -- it just happened to be chasing a symptom of a
+bug elsewhere, not a true architectural ceiling.)
 
 Built (`jepa/` package):
 - `jepa/grid.py` -- shared 64x64, 17-channel (16 ARC colors + 1 pad) grid
@@ -311,73 +318,87 @@ across experiments (data mix, epoch count, GPU vs CPU) is the point of
      purposefully rather than acting randomly (so state transitions are
      less arbitrary/noisy) -- not more of the same kind of random-policy
      data, regardless of volume.
+10. **(2026-07-08) Root cause found: it was never the architecture --
+    `ARC-AGI-3-Agents/agents/agent.py`'s `_convert_raw_frame_data` never
+    copied `raw.action_input` into the `FrameData` it builds, so every
+    recorded local transition had `action_id=0` (RESET, the field's
+    default) regardless of what action was actually taken.** Local
+    recordings are what `jepa/data/trajectories.py` reads for
+    `action_id`, so every local-only signal in items 1-9 above was
+    trained/evaluated with a **constant, wrong action label** -- the
+    model never had a real chance to learn action-conditioned dynamics
+    from the local corpus (external `arc-3-logs` data was unaffected --
+    it has its own correctly-populated `action` field, unrelated to this
+    framework's recording path). Found while building Stage 3 (a
+    "recalling a known winning action" log line never fired despite 9
+    resets in one run -- chased that down to *why*, and it led here).
+    Fixed with a one-line change (`action_input=raw.action_input` added
+    to the `FrameData(...)` call), regenerated the local recordings
+    corpus, and reran the exact same combined-data (local + external
+    `--external-per-game 2000`, 60 epochs) training as item 7:
+    **changed-patches improvement flipped from -1.4% to +29.2% -- a clean
+    PASS.** (`action-input-bugfix-60ep` in `logs/benchmarks/history.jsonl`.)
+    Per-game breakdown shows real, uneven learning rather than a uniform
+    shift: `r11l` +38%, `bp35` +37%, `vc33` +33%, `sp80` +12% (notably,
+    exactly the games Stage 2/3's agents were already finding "easy" --
+    a good consistency check), while several others (`s5i5`, `tn36`) are
+    still negative. Items 1-9's debugging process wasn't wasted -- the
+    loss-shaping fixes in items 1-3 are still real improvements baked
+    into the current setup, and the single-game/zero-init ablations
+    (item 9) were a reasonable, well-executed way to rule out
+    architecture before suspecting the data pipeline -- but the final
+    "not a fixable training bug" conclusion in the old summary paragraph
+    below was wrong. Left for the historical record; superseded by this
+    entry.
 
-**Gap-closing trend plateaued on loss-shaping alone (items 1-4: -24% to
--8.7%, then flat). Three further independent interventions (item 7's 9x
-more/higher-changed-rate data; item 9's complete removal of the
-25-games-at-once setting; item 9's zero-init residual branch) all also
-failed to close it**, each landing at essentially the same "a few percent
-worse than identity" result regardless of the intervention. That
-consistency is itself the signal: it's not a data-volume problem
-(item 7), not a cross-game-confound problem (item 9's single-game
-ablation), not a bad-initialization problem (item 9's zero-init), and not
-an encoder-sensitivity problem (item 8 directly measured the encoder
-registering local changes fine -- 12x larger feature deltas at changed
-vs. unchanged patches). What's left is the predictor's actual job: item 8
-showed it has learned to output a near-zero residual (~16x smaller than
-the true average change) and coast on the `feat +` skip connection. The
-working conclusion is that **"predict no change" is close to the true
-MSE-optimal prediction available to this specific architecture (single
-frame in, action/xy/game conditioning, 2-3 conv layers, no history) on
-this specific data (random-policy rollouts) -- not a fixable training
-bug.**
+**Resolution: the milestone is PASSED.** What looked like a fundamental
+single-step-predictor ceiling (items 7-9: three independent interventions
+-- more data, removing the multi-game setting, zero-init -- all
+converging on the same "a few percent worse than identity" result) turned
+out to be fully explained by a data-recording bug that made the local
+corpus's action-conditioning signal constant/wrong (item 10). With that
+fixed, the same architecture that items 7-9 concluded couldn't learn real
+action-conditioned dynamics does exactly that: **+29.2% on changed
+patches.** The lesson for future debugging sessions: when several
+different fixes all converge on the exact same negative result, that
+consistency is *more* consistent with a shared upstream data bug than
+with "we've exhausted the fixable hypotheses" -- worth auditing the data
+pipeline itself (e.g. checking label distributions for suspicious
+constants) before concluding a architecture/approach is capped.
 
-## Stage 1 recommendation: pivot to Stage 2
+## Stage 1 history note: the "pivot to Stage 2" recommendation was superseded
 
-Given the above, sinking further effort into this exact setup (more data,
-more epochs, more loss-shaping) is unlikely to clear the milestone --
-three different categories of fix were tried and none worked, which is
-stronger evidence than a single negative result would be. Two things
-would plausibly still move it, in order of expected leverage:
+An earlier version of this doc recommended pivoting straight to Stage 2
+without further Stage 1 effort, reasoning that three independent fixes
+(more data, removing the multi-game setting, zero-init) all converging on
+the same "predictor can't beat identity" result meant the single-frame
+architecture had hit a genuine ceiling. Item 10 above found the real
+cause instead: a data-recording bug, not an architecture limit. Once
+fixed, the milestone passed outright.
 
-1. **A model with history, not just one frame** (Stage 3's Mamba-based
-   sequence predictor) -- a single-frame predictor structurally cannot
-   disambiguate state that depends on anything before the current frame
-   (e.g. an object's velocity/direction, a level-specific rule learned
-   from earlier in the episode). This is exactly what Stage 3 was already
-   scoped for; the negative result here is evidence *for* needing it, not
-   a sign Stage 3 will have the same problem.
-2. **Trajectory data from a policy that actually progresses** (per this
-   session's discussion) -- random-policy rollouts make many transitions
-   close to genuinely unpredictable from the model's point of view (an
-   action's effect depends on game state a random policy never
-   deliberately sets up). A policy that plays *purposefully* (even a
-   simple heuristic/curiosity-driven one) would produce transitions where
-   action -> effect is more consistent and learnable, which is a data-
-   *quality* argument distinct from item 7's data-*volume* experiment
-   (volume alone, even at a high changed-rate, didn't help -- so this
-   isn't "try the same kind of data again," it's "try structurally
-   different data").
+That said, Stage 2 and Stage 3 got built anyway during this same session
+(plan.md's guiding principle #4 -- "add components only when a measured
+bottleneck demands it" -- was reasonably satisfied at the time, even
+though the specific bottleneck turned out to be misdiagnosed), and both
+are still worth keeping: Stage 2's curiosity agent and Stage 3's memory
+agent both work *better*, not worse, now that the underlying Stage 1/3
+world models are properly trained -- see their Status sections below for
+the corrected numbers. Nothing about Stage 2/3's own designs depended on
+Stage 1 having failed; they just inherited a broken world model
+temporarily, and now don't.
 
-Both point toward **Stage 2** (per plan.md: a curiosity-driven agent using
-prediction error for exploration, which is explicitly tolerant of an
-imperfect world model) as the right next move -- and Stage 2 play
-naturally generates exactly the kind of "runs that actually progress"
-trajectory data that could make a future revisit of Stage 1 dynamics
-fitting more productive. This is a legitimate scope decision per plan.md's
-guiding principle #4 ("add components only when a measured bottleneck
-demands it") backed by three converging negative experiments, not a
-cop-out.
-
-If a future session does revisit single-frame Stage 1 prediction before
-Stage 3: keep using the honest `changed-patches` metric (via
-`jepa/benchmark.py eval`, which also gives the per-game breakdown -- not
-the naive whole-grid MSE, which is misleadingly easy to "beat" by mostly
-predicting no change) as the real bar, and append new experiments to
-`logs/benchmarks/history.jsonl` via the benchmark tool so they stay
-comparable to the items above. `jepa/train_predictor.py --game <id>` (added
-this session) is there for fast single-game ablations if a new hypothesis
-needs isolating from the 25-games-at-once setting again.
+Keep using the honest `changed-patches` metric (via `jepa/benchmark.py
+eval`, which also gives the per-game breakdown -- not the naive
+whole-grid MSE, which is misleadingly easy to "beat" by mostly predicting
+no change) as the real bar for any future Stage 1 work, and append new
+experiments to `logs/benchmarks/history.jsonl` via the benchmark tool so
+they stay comparable to the items above. `jepa/train_predictor.py --game
+<id>` (added this session) is there for fast single-game ablations if a
+new hypothesis needs isolating from the 25-games-at-once setting again.
+And if a "several different fixes all land on the same negative result"
+pattern ever shows up again: audit the data pipeline for a shared
+upstream bug before concluding the architecture is capped -- see the
+"CRITICAL" gotcha at the bottom of this file for exactly that lesson.
 
 ### Stage 2 -- curiosity-driven agent: BUILT, milestone reasonably met (nuanced)
 
@@ -468,7 +489,162 @@ board keeps changing in the same direction, or track a short/local model
 of "what changed the last time this exact action fired" instead of a
 global per-action average.
 
+**Update (2026-07-08, after the action-input bugfix -- see Stage 1 item
+10 and the "CRITICAL" gotcha below):** re-ran the same 8-repeat matched-
+budget comparison with Curiosity now loading the *correctly-trained*
+Stage 1 checkpoints (it always loaded `checkpoints/encoder_finetuned.pt`
++ `predictor.pt` -- those files just got much better out from under it).
+Result: 9 total levels across 8 repeats (vs. random's 10) -- essentially
+unchanged from the pre-fix 10, not the dramatic jump you might expect
+given the world model went from failing to passing its own milestone.
+Distinct games reached did tick up (4: `ft09`, `m0r0`, `r11l`, `sp80`,
+vs. the pre-fix run's overlapping-but-not-identical set) and `m0r0` is
+new (a game random never solves) -- so the *directed-exploration* effect
+looks a little more robust, even though the raw count didn't move. Best
+read: Curiosity's exploration signal was already "good enough to be
+useful" even riding on the old, milestone-failing predictor (item 8/9's
+finding that residuals were near-zero doesn't mean *zero* signal, just
+*weak* signal) -- so fixing the underlying model helped the model's own
+metrics far more than it helped this particular agent's raw win count at
+this sample size. Not a contradiction, just a reminder that "the world
+model got better" and "the agent built on it wins more, at n=8 trials on
+a sparse metric" are different claims.
+
+### Stage 3 -- memory (recurrent core + exact transition graph): BUILT, both components pass their own checks
+
+**Mamba substitution, decided upfront:** plan.md calls for "the Mamba
+core" here. `mamba-ssm` has no prebuilt wheel for this Windows box, and
+building from source needs a local CUDA toolkit exactly matching torch's
+build -- this box has CUDA 13.0 via `nvcc` vs. torch's `cu126` build (a
+real version mismatch, confirmed via a failed `pip install mamba-ssm
+--no-build-isolation` attempt, not just a missing wheel). Used a
+`GRUCell`-based recurrent core instead (`jepa/models/recurrent_predictor.py:
+RecurrentActionConditionedPredictor`) -- satisfies plan.md's actual stated
+requirement ("carries compressed history across the episode") without
+that fragile dependency. Revisit real Mamba if this box's CUDA toolkit and
+torch's build version ever get aligned.
+
+**Built:**
+- `jepa/data/sequences.py` -- loads local recordings as ordered
+  *per-episode* sequences (not i.i.d.-shuffled single transitions like
+  `trajectories.py`), chunked into fixed-length (16-step) windows for
+  truncated BPTT. Local recordings only, not the external `arc-3-logs`
+  dataset (that dataset has no clean per-episode boundaries in its
+  schema -- see the module docstring).
+- `jepa/models/recurrent_predictor.py` -- keeps Stage 1's spatial
+  per-patch residual design, adds a `GRUCell` fed a pooled feature
+  summary + action/xy/game conditioning each step; its hidden state is
+  broadcast back in as one more conditioning channel. Hidden state resets
+  at episode start (`init_hidden`), persists across steps within an
+  episode/chunk.
+- `jepa/train_recurrent_predictor.py` -- trains via truncated BPTT across
+  each 16-step chunk (gradients flow across the whole chunk, hidden state
+  does *not* persist across chunks of the same episode -- a
+  simplification; still enough to learn from recent history).
+- `jepa/memory.py: TransitionGraph` -- the "exact visited-transition
+  graph" plan.md calls for. A plain dict keyed on hashed exact frame
+  content (`blake2b`, 16-byte digest) -> `(action, xy) -> next_state`,
+  built up during play, persisted for an agent's *whole lifetime*
+  (every RESET within one game, not just one level attempt -- ARC-3
+  RESETs return to the same starting frame, so a prior attempt's
+  discoveries are exactly recallable). Unit-tested standalone (deterministic
+  hashing, correct best-known-action tracking) before integration.
+- `ARC-AGI-3-Agents/agents/templates/memory_agent.py: Memory` -- combines
+  both: before falling back to curiosity-driven exploration (inherited
+  design from Stage 2's `Curiosity`, same bug-fix history applies), checks
+  whether the *exact current frame* has a known winning action already
+  recorded -- if so, takes it immediately, no re-exploration. Also uses
+  the graph to avoid re-trying (action, xy) pairs already tried from this
+  exact state while untried ones remain (guaranteed local coverage,
+  independent of the global surprise ranking).
+
+**First recurrent-predictor training run hit the same action-input bug as
+Stage 1** (see item 10 above and the "CRITICAL" gotcha below) -- since
+`jepa/data/sequences.py` reads *only* local recordings (no external-data
+fallback available for sequence data), it was 100% exposed to the bug,
+more so than Stage 1's combined-data runs. First result: changed-patches
+~identity-parity (~-0.5%), which in hindsight was never a real test of
+whether memory helps -- the model was trained with every action
+mislabeled as RESET. After the fix (regenerate local recordings, retrain):
+**changed-patches improvement +21.3%** (pred=0.01727 vs identity=0.02193
+at epoch 30) -- a clean, substantial win, consistent with Stage 1's own
+post-fix result.
+
+**Memory agent vs. Curiosity vs. random (8 repeats each, matched
+300-action budget, all 25 local games per repeat, post-bugfix
+checkpoints):** Memory: 10 total levels across 8 repeats, **5 distinct
+games** (`ar25`, `cd82`, `m0r0`, `r11l`, `sp80`). Curiosity: 9 total,
+4 distinct games. Random: 10 total (from the Stage 2 comparison,
+model-independent so still valid), 2 distinct games. Memory reaches the
+most distinct games of the three, including `cd82` and `ar25` that
+Curiosity's own 8-repeat sample didn't reach in this round -- weak
+evidence (still a sparse metric at this sample size) that the added
+exact-memory and recurrent-history components help *reach*, more than
+raw *count*, matching the pattern already seen going from random to
+Curiosity. Did not specifically verify the exact-recall mechanism firing
+in a live multi-reset run this session (added a real `logger.info(...)`
+call for it in `memory_agent.py`, since `GameAction.reasoning` turned out
+to be inert -- see the gotcha below -- but didn't have a confirmed
+"recalling a known winning action" hit in the logs checked) -- worth
+confirming directly in a future session, e.g. by forcing a
+known-winning-state repeat and checking for that specific log line.
+
+**Note on `GameAction.reasoning`:** setting `action.reasoning = "..."`
+(done throughout this codebase, including `PressOnce`/`Random` from
+before this session, and both `Curiosity` and `Memory`) does **nothing**
+-- `GameAction` has no `reasoning` property, and `SimpleAction`/
+`ComplexAction` (what `action.action_data.model_dump()` actually
+serializes in `do_action_request`) have no `reasoning` field either. It's
+a harmless but inert convention already present in the codebase before
+this session, not something introduced here -- don't rely on it for
+debugging; use real `logging` calls instead (see `memory_agent.py`'s one
+example).
+
 ## Gotchas learned the hard way (don't re-discover these)
+
+- **CRITICAL (2026-07-08): `ARC-AGI-3-Agents/agents/agent.py`'s
+  `_convert_raw_frame_data` never copied `raw.action_input` into the
+  `FrameData` it constructs** -- every frame recorded via `append_frame`
+  (i.e. every line of every `*.recording.jsonl` file) therefore had
+  `action_input.id == 0` (`ActionInput()`'s default, which happens to be
+  `GameAction.RESET`) *regardless of what action was actually taken*.
+  `FrameDataRaw` (the object returned by `arc_env.step()`) has the correct
+  `action_input` all along -- it was just dropped in the conversion.
+  Confirmed by regenerating a recording before vs. after the fix: action
+  id distribution went from 100% `0`s to a real, roughly-even spread
+  across all 8 action ids. One-line fix: add `action_input=raw.action_input`
+  to the `FrameData(...)` call in `_convert_raw_frame_data`.
+  - **This silently corrupted every local-recording-derived training
+    signal that depends on `action_input`** -- `jepa/data/trajectories.py`
+    (Stage 1's local transitions) and `jepa/data/sequences.py` (Stage 3's
+    episode sequences, which use *only* local recordings, no external
+    data) both read `action_input.id` to get the action taken. Before this
+    fix, every such transition looked like "action=RESET" to the training
+    code, no matter what was actually pressed -- a predictor trained on
+    that data structurally cannot learn real action-conditioned dynamics
+    from the local corpus, because the action signal was constant noise.
+  - **This directly explains Stage 1's original "can't beat identity"
+    result and this session's first Stage 3 recurrent-predictor attempt.**
+    After the fix (regenerate local recordings, retrain both), Stage 1's
+    milestone check went from FAIL to a clean **PASS (+29.2% on changed
+    patches)**, and the recurrent predictor went from ~identity-parity to
+    **+21.3%**. See the Status sections below for the corrected numbers --
+    this fix is the single highest-impact change made in this session,
+    and it means the original Stage 1 "plateaued at -8.7%, likely an
+    architecture/data-scarcity limit" framing (this doc's own prior
+    iteration history, and the "pivot to Stage 2" recommendation built on
+    it) was **built on partially/wholly corrupted local data, not a
+    genuine ceiling.** The external-data experiments (item 7 in the old
+    history) were *not* affected by this bug (the Kaggle `arc-3-logs`
+    dataset has its own correct `action` field, unrelated to this
+    framework's recording path) -- only the local-recordings-derived
+    portions of training/eval were.
+  - If you ever add a new local-data-dependent pipeline, sanity-check the
+    action distribution first (`Counter(t[1] for t in transitions)` from
+    `trajectories.py`, or equivalent) -- an all-one-value distribution is
+    exactly this bug (or a reintroduction of it) and will silently produce
+    a garbage-in-garbage-out training run that still runs to completion
+    without erroring.
 
 - **`.gitignore` `data/` pattern (no leading slash) matches any directory
   named `data` anywhere in the tree**, including `jepa/data/` (real source

@@ -7,6 +7,7 @@ Usage (run from repo root, inside the venv):
     python scripts/run_stage0.py --agent random
     python scripts/run_stage0.py --agent pressonce --game ls20
     python scripts/run_stage0.py --agent curiosity
+    python scripts/run_stage0.py --agent memory
 """
 
 import argparse
@@ -23,7 +24,7 @@ def main() -> None:
     parser.add_argument(
         "--agent",
         required=True,
-        choices=["random", "pressonce", "curiosity"],
+        choices=["random", "pressonce", "curiosity", "memory"],
         help="Agent to run.",
     )
     parser.add_argument(

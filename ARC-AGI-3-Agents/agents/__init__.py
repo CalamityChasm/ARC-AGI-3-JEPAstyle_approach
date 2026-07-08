@@ -10,6 +10,7 @@ from .templates.langgraph_random_agent import LangGraphRandom
 from .templates.langgraph_thinking import LangGraphThinking
 from .templates.curiosity_agent import Curiosity
 from .templates.llm_agents import LLM, FastLLM, GuidedLLM, ReasoningLLM
+from .templates.memory_agent import Memory
 from .templates.multimodal import MultiModalLLM
 from .templates.press_once_agent import PressOnce
 from .templates.random_agent import Random
@@ -47,6 +48,7 @@ __all__ = [
     "SmolVisionAgent",
     "PressOnce",
     "Curiosity",
+    "Memory",
     "Agent",
     "Recorder",
     "Playback",
