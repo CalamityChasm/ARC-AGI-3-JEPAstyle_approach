@@ -3,6 +3,13 @@
 A roadmap that starts from a JEPA world model and works up to the full hypothesis-driven
 architecture. Each stage ends with an agent that runs end-to-end against real ARC-AGI-3
 games and is independently demoable.
+
+> **Current progress lives in [CLAUDE.md](CLAUDE.md), not here.** This file is the
+> original design plan; CLAUDE.md is kept up to date with what's actually built, what's
+> working, what's not, and what to do next. Read it first. Short version as of this
+> writing: Stage 0 is done (branch `master`); Stage 1 is in progress on branch
+> `stage1-jepa` and has not yet cleared its milestone bar (see CLAUDE.md for the honest
+> numbers and next-step recommendation).
  
 ---
  
