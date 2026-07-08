@@ -141,12 +141,30 @@ Built (`jepa/` package):
 - `jepa/train_encoder.py`, `jepa/train_predictor.py` -- training scripts.
 - `jepa/eval_stage1.py` -- the milestone check: does the predictor beat a
   "nothing changes" identity baseline on held-out transitions?
+- `jepa/device.py` -- shared `get_device()` (CUDA if available, else CPU).
+  All three scripts above now do real `.to(device)` transfers (this used
+  to not exist at all -- see iteration history below).
+- `jepa/data/external_logs.py` -- optional supplementary data loader for
+  the Kaggle dataset `calamitychasm/arc-3-logs` (a much larger, lower-
+  quality/diversity bulk random-policy scrape across the same 25 games,
+  ~105k transitions vs the local corpus's ~12k). Streams directly out of
+  `data/arc3_logs.zip` (gitignored, ~2.6GB uncompressed, not extracted to
+  disk) with per-game reservoir sampling so it supplements rather than
+  drowns out the local corpus. Wired into `train_predictor.py` via
+  `--external-per-game N` (opt-in; omitted by default). Notably, this
+  corpus's frame-level changed rate is **~64%**, vs. the local corpus's
+  much lower rate (see iteration #2 below) -- directly targets the
+  changed-transition scarcity that's been the persistent bottleneck.
+- `jepa/benchmark.py` -- benchmarking suite: `eval` (per-game breakdown of
+  predictor-vs-identity on the held-out local corpus, appended to
+  `logs/benchmarks/history.jsonl` so runs are comparable across
+  experiments), `throughput` (CPU-vs-GPU training step timing), `history`
+  (print past `eval` runs). See Status below for what it's already found.
 
-**Current result (`python -m jepa.eval_stage1` after 30 epochs on the
-current checkpoints):** predictor is **~8.7% worse than identity**, even
-isolated to spatial patches that actually changed pixel-wise. Does not yet
-clear Stage 1's milestone ("predicts next latents meaningfully better than
-an identity baseline").
+**Current result:** see the dated entries below -- this section is kept
+as a running log rather than a single "current" number, since comparing
+across experiments (data mix, epoch count, GPU vs CPU) is the point of
+`jepa/benchmark.py`.
 
 **Iteration history (each fixed a real bug/gap, in order):**
 1. First training run looked like a pass (predictor beating identity every
@@ -172,33 +190,96 @@ an identity baseline").
    improvement** (-8.7% -> -8.7%). This hypothesis was wrong, or at least
    not the dominant factor -- worth knowing so a new agent doesn't
    re-attempt the same fix.
+5. (2026-07-08, `local-only-30ep-baseline` in `logs/benchmarks/history.jsonl`)
+   Fresh-machine transfer regenerated the local recordings corpus from
+   scratch (new random seed, ~12k transitions instead of the original
+   ~10.2k) and retrained 30 epochs -- reproduced the same qualitative
+   result (**-0.3%** changed-patches, still FAIL) on different data,
+   confirming #1-4 above weren't an artifact of one specific corpus draw.
+   `jepa/benchmark.py eval`'s new per-game breakdown also showed *why* the
+   pooled percentage is a noisy metric on its own: several games
+   (`ft09`, `vc33`, `s5i5`) show triple-digit-percent "worse than
+   identity" purely because their identity-baseline MSE is tiny
+   (~0.00001-0.00003) -- a small absolute error swing there is a huge
+   relative swing. Prefer eyeballing absolute MSE alongside the percentage
+   for those games, not the percentage alone.
+6. (2026-07-08) Added GPU support (`jepa/device.py`) and confirmed via
+   `jepa/benchmark.py throughput` that the GPU is genuinely faster for the
+   model compute itself (**16x** on this RTX 2070 vs CPU, dummy-data
+   forward+backward). But a first real `--external-per-game 2000` run (see
+   next entry) ran far slower wall-clock than that 16x would suggest --
+   `TransitionDataset.__getitem__` does CPU-side one-hot conversion
+   per-sample with `num_workers=0`, so a ~56k-transition corpus (12k local
+   + ~44k external) makes single-process data loading the bottleneck, not
+   GPU compute. Fixed going forward with `num_workers=4,
+   persistent_workers=True, pin_memory=True` on both loaders in
+   `train_predictor.py` (only kicks in when `device.type == "cuda"`) --
+   but the *first* combined-data run in this history predates that fix,
+   so its wall-clock time isn't representative of what a rerun would cost.
+7. (2026-07-08, `combined-data-60ep-gpu` in `logs/benchmarks/history.jsonl`)
+   Retrained with the `num_workers` fix applied: local (12k) + external
+   arc-3-logs capped at 2000/game (42.8k) = ~54.8k transitions, 60 epochs,
+   GPU. **Did not clear the milestone, and the changed-patches gap is
+   nominally worse (-1.4%) than the -0.3% local-only-30ep baseline** --
+   despite the external corpus's ~64% changed-frame rate (vs. the local
+   corpus's much lower rate). More data + more epochs did not close the
+   gap this time.
+   - Checked for the obvious confound first: representation collapse (both
+     predictor and identity errors shrinking together toward zero over the
+     60 epochs, which the epoch-by-epoch log shows happening -- e.g.
+     `val_identity_mse` goes from 0.00220 at epoch 1 to 0.00005 at epoch
+     60). Directly measured encoder feature std on a held-out batch after
+     training: **~1.1-1.4 per channel, comfortably above the
+     `VARIANCE_FLOOR=1.0` in `losses.py`** -- so this is *not* classic
+     collapse (features aren't going constant).
+   - Best current hypothesis instead: **the encoder's 8x8-patch features
+     apparently don't move much in feature space even when the
+     corresponding pixels change locally.** If `current_frame` and
+     `next_frame` are already close to each other in feature space at the
+     patches that changed -- even though the raw pixels there visibly
+     differ -- then the identity baseline is "cheating" at the
+     representation level regardless of how much training data you throw
+     at the predictor. This would explain why more (higher-changed-rate)
+     data didn't help: the bottleneck may not be data volume at all, but
+     whether the *encoder architecture* preserves enough of a local-change
+     signal in its 8x8 feature map for there to be a gap to close. Not yet
+     verified further (e.g. by directly inspecting per-patch feature
+     deltas vs. pixel deltas) -- flagging as the most promising next
+     thing to check, ahead of "more data" approaches.
 
-**Gap-closing trend has plateaued.** Three real fixes took it from -24% to
--8.7%; the fourth did nothing. Diminishing returns on loss-shaping alone.
+**Gap-closing trend plateaued on loss-shaping alone (items 1-4: -24% to
+-8.7%, then flat), and item 7's ~9x-larger, much-higher-changed-rate
+combined corpus *also* didn't close it (-0.3% -> -1.4%).** That's a
+meaningful negative result: it weakens "just needs more data" as the
+explanation and strengthens "the encoder's own feature map may not be
+sensitive enough to local pixel changes" as the leading hypothesis (see
+item 7's detail above) -- worth verifying directly before sinking more
+effort into new data sources (MiniGrid, more Kaggle logs, etc.), since if
+the encoder is the bottleneck, more/better trajectory data alone won't
+fix it either.
 
 ## Next steps (pick up here)
 
-In priority order, per plan.md's own data-scarcity diagnosis:
+In priority order, given item 7's finding above:
 
-1. **Most likely next lever: MiniGrid/Sokoban trajectories.** plan.md's
-   original Stage 1 data recipe called for generated turn-based grid-env
-   trajectories (MiniGrid, Sokoban, Crafter, procgen) specifically because
-   they have *consistent* action semantics across all episodes/levels
-   (unlike ARC-3, where the same action id means something different in
-   every one of the 25 games). This was deferred to keep Stage 1 scoped;
-   given the current plateau, it's probably the right next experiment --
-   pretrain/co-train the dynamics predictor on MiniGrid rollouts (install
-   `minigrid`, generate random-policy trajectories, render to the same
-   17-channel grid format via `jepa/grid.py`, though MiniGrid's grid
-   representation will need a translation layer since it's
-   object/color/state channels rather than ARC's flat color code) before
-   fine-tuning on the scarce ARC-3 data.
-2. **Now that there's a GPU:** the training code has no `.to(device)`
-   calls anywhere -- add device handling to `jepa/train_encoder.py` and
-   `jepa/train_predictor.py` first, since none of the current CPU-bound
-   30-epoch/~15min runs will speed up on the RTX 2070 without it. Once
-   GPU'd, more epochs / a larger encoder (`out_channels` in `CNNEncoder`)
-   become cheap to try.
+1. **Verify the encoder-sensitivity hypothesis directly.** Before trying
+   another data source, check whether `CNNEncoder`'s 8x8 output actually
+   moves when a patch's pixels change: take matched (frame_t, frame_t1)
+   pairs with a known-changed patch, encode both with the trained
+   `encoder_finetuned.pt`, and compare the per-patch feature-space delta
+   at changed vs. unchanged patches. If changed-patch feature deltas
+   aren't meaningfully larger than unchanged-patch deltas, that confirms
+   the encoder itself (not the predictor, not the data) is the
+   bottleneck -- e.g. `GroupNorm` + stride-2 downsampling may be smoothing
+   out small local changes before the predictor ever sees them. Candidate
+   fixes if confirmed: reduce/remove normalization strength, add a loss
+   term that explicitly rewards feature-space sensitivity to pixel
+   changes, or reduce the encoder's downsampling stride.
+2. **If the encoder checks out fine:** MiniGrid/Sokoban trajectories are
+   still on the table per plan.md's original data recipe (consistent
+   action semantics across episodes, unlike ARC-3's per-game-meaning
+   action ids) -- install `minigrid`, generate random-policy trajectories,
+   translate to the shared 17-channel grid format via `jepa/grid.py`.
 3. **Or:** accept the current state as a documented limitation and move to
    Stage 2 (curiosity-driven agent) per plan.md -- it explicitly doesn't
    require a perfect world model, just prediction-error-based exploration,
@@ -206,9 +287,12 @@ In priority order, per plan.md's own data-scarcity diagnosis:
    legitimate scope decision, not a cop-out; plan.md's guiding principle
    #4 is "add components only when a measured bottleneck demands it."
 
-Whichever direction: keep using the honest `changed-patches` metric in
-`jepa/eval_stage1.py` (not the naive whole-grid MSE, which is misleadingly
-easy to "beat" by mostly predicting no change) as the real bar.
+Whichever direction: keep using the honest `changed-patches` metric (now
+via `jepa/benchmark.py eval`, which also gives the per-game breakdown --
+not the naive whole-grid MSE, which is misleadingly easy to "beat" by
+mostly predicting no change) as the real bar, and append new experiments
+to `logs/benchmarks/history.jsonl` via the benchmark tool so they stay
+comparable to items 5 and 7 above.
 
 ## Gotchas learned the hard way (don't re-discover these)
 
@@ -246,3 +330,28 @@ easy to "beat" by mostly predicting no change) as the real bar.
   online/EMA weight drift. For a fair comparison (predictor vs identity),
   encode both sides of the comparison with the *same* encoder weights.
   This is exactly the bug in iteration 1 above.
+- **`train_predictor.py`'s `num_workers=4` DataLoader workers each fork a
+  full copy of the in-memory transitions list** (Windows uses spawn, not
+  fork, so each worker process re-imports and re-pickles the dataset
+  rather than sharing memory) -- with both the train and val loaders using
+  `persistent_workers=True`, that's 8 worker processes, each holding its
+  own ~1.9GB copy of a ~55k-transition combined corpus (~15GB total, on
+  top of the ~2-3GB main process). Fine on a 32GB box with a few GB to
+  spare, but watch free RAM (`Get-CimInstance Win32_OperatingSystem`) if
+  training on a smaller machine or mixing in a much larger external corpus
+  -- drop `num_workers`/`persistent_workers` on the val loader specifically
+  first (it only iterates once per epoch, so the parallelism matters far
+  less there) if memory gets tight.
+- **A CPU-bound `num_workers=0` DataLoader can quietly dominate wall-clock
+  time even with a working GPU.** A first `--external-per-game 2000` run
+  (56k transitions, 60 epochs) ran for 45+ minutes with a healthy-looking
+  GPU (`jepa.benchmark throughput` measured 16x GPU vs CPU for the model
+  compute alone) because `TransitionDataset.__getitem__` builds the
+  one-hot tensors per-sample in the single main process. Confirmed via
+  `Get-Process | Select CPU` showing one process pegged at several
+  CPU-seconds per wall-second (BLAS/OpenMP threading inside a single
+  Python process, not real multiprocessing) rather than GPU utilization.
+  Killed and restarted after adding `num_workers=4` -- watch for this
+  symptom (long runtime, `nvidia-smi` showing low utilization, one bloated
+  Python process) as the tell that data loading, not the model, is the
+  bottleneck.

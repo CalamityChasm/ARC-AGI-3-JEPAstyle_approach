@@ -16,6 +16,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from .data.arc_static import MaskedGridDataset, load_all_grids
+from .device import get_device
 from .losses import prediction_loss, variance_regularizer
 from .models import CNNEncoder, make_ema_target, update_ema_target
 
@@ -24,12 +25,14 @@ EMA_MOMENTUM = 0.996
 
 
 def train(epochs: int, out_path: Path, batch_size: int = 64, lr: float = 3e-4) -> CNNEncoder:
+    device = get_device()
+    print(f"training on {device}")
     grids = load_all_grids(REPO_ROOT)
     print(f"loaded {len(grids)} ARC-1/2 grids")
     dataset = MaskedGridDataset(grids)
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
 
-    online = CNNEncoder()
+    online = CNNEncoder().to(device)
     target = make_ema_target(online)
     opt = torch.optim.AdamW(online.parameters(), lr=lr)
 
@@ -37,6 +40,7 @@ def train(epochs: int, out_path: Path, batch_size: int = 64, lr: float = 3e-4) -
         total_loss = 0.0
         n_batches = 0
         for masked, unmasked, patch_mask in loader:
+            masked, unmasked, patch_mask = masked.to(device), unmasked.to(device), patch_mask.to(device)
             pred_feat = online(masked)  # (B, C, 8, 8)
             with torch.no_grad():
                 target_feat = target(unmasked)  # (B, C, 8, 8)
@@ -61,7 +65,7 @@ def train(epochs: int, out_path: Path, batch_size: int = 64, lr: float = 3e-4) -
         print(f"epoch {epoch + 1}/{epochs}  loss={total_loss / n_batches:.4f}")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    torch.save(online.state_dict(), out_path)
+    torch.save({k: v.cpu() for k, v in online.state_dict().items()}, out_path)
     print(f"saved encoder weights to {out_path}")
     return online
 

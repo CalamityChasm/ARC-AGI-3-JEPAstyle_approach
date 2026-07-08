@@ -16,6 +16,7 @@ from PIL import Image
 from torch.utils.data import DataLoader, random_split
 
 from .data.trajectories import TransitionDataset, load_all_transitions
+from .device import get_device
 from .losses import per_region_error
 from .models import ActionConditionedPredictor, CNNEncoder
 from .train_predictor import evaluate
@@ -26,6 +27,8 @@ VAL_FRACTION = 0.1
 
 
 def main() -> None:
+    device = get_device()
+    print(f"evaluating on {device}")
     transitions = load_all_transitions(REPO_ROOT)
     game_vocab = json.loads((CHECKPOINT_DIR / "game_vocab.json").read_text())
     dataset = TransitionDataset(transitions, game_vocab)
@@ -36,14 +39,14 @@ def main() -> None:
     )
     val_loader = DataLoader(val_ds, batch_size=32, shuffle=False)
 
-    online = CNNEncoder()
-    online.load_state_dict(torch.load(CHECKPOINT_DIR / "encoder_finetuned.pt", map_location="cpu"))
+    online = CNNEncoder().to(device)
+    online.load_state_dict(torch.load(CHECKPOINT_DIR / "encoder_finetuned.pt", map_location=device))
     online.eval()
-    predictor = ActionConditionedPredictor(num_games=len(game_vocab))
-    predictor.load_state_dict(torch.load(CHECKPOINT_DIR / "predictor.pt", map_location="cpu"))
+    predictor = ActionConditionedPredictor(num_games=len(game_vocab)).to(device)
+    predictor.load_state_dict(torch.load(CHECKPOINT_DIR / "predictor.pt", map_location=device))
     predictor.eval()
 
-    stats = evaluate(online, predictor, val_loader)
+    stats = evaluate(online, predictor, val_loader, device=device)
 
     print(f"overall predictor MSE          : {stats['pred']:.5f}")
     print(f"overall identity-baseline MSE  : {stats['identity']:.5f}")
@@ -62,10 +65,10 @@ def main() -> None:
     else:
         print("FAIL: predictor does not beat identity on patches that actually changed.")
 
-    _render_salience_example(online, predictor, val_ds)
+    _render_salience_example(online, predictor, val_ds, device)
 
 
-def _render_salience_example(online, predictor, val_ds) -> None:
+def _render_salience_example(online, predictor, val_ds, device: torch.device) -> None:
     # Pick a transition with the most changed patches to make for a
     # legible example (most transitions are near-total no-ops).
     best_idx, best_count = 0, -1
@@ -76,11 +79,13 @@ def _render_salience_example(online, predictor, val_ds) -> None:
             best_idx, best_count = i, count
 
     cur, action_id, xy, nxt, patch_mask, game_idx = val_ds[best_idx]
+    cur, action_id, xy = cur.to(device), action_id.to(device), xy.to(device)
+    nxt, game_idx = nxt.to(device), game_idx.to(device)
     with torch.no_grad():
         cur_feat = online(cur.unsqueeze(0))
         pred_feat = predictor(cur_feat, action_id.unsqueeze(0), xy.unsqueeze(0), game_idx.unsqueeze(0))
         next_feat = online(nxt.unsqueeze(0))
-        error_map = per_region_error(pred_feat, next_feat)[0].numpy()  # (8, 8)
+        error_map = per_region_error(pred_feat, next_feat)[0].cpu().numpy()  # (8, 8)
 
     heat = (error_map - error_map.min()) / (np.ptp(error_map) + 1e-8)
     heat_img = (heat * 255).astype(np.uint8)

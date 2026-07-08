@@ -15,7 +15,9 @@ from pathlib import Path
 import torch
 from torch.utils.data import DataLoader, WeightedRandomSampler, random_split
 
+from .data.external_logs import load_external_transitions
 from .data.trajectories import TransitionDataset, build_game_vocab, load_all_transitions
+from .device import get_device
 from .losses import per_region_error, prediction_loss, variance_regularizer, weighted_prediction_loss
 from .models import ActionConditionedPredictor, CNNEncoder, make_ema_target, update_ema_target
 
@@ -24,13 +26,13 @@ EMA_MOMENTUM = 0.996
 VAL_FRACTION = 0.1
 
 
-def build_models(encoder_path: Path | None, num_games: int) -> tuple:
-    online = CNNEncoder()
+def build_models(encoder_path: Path | None, num_games: int, device: torch.device) -> tuple:
+    online = CNNEncoder().to(device)
     if encoder_path and encoder_path.exists():
-        online.load_state_dict(torch.load(encoder_path, map_location="cpu"))
+        online.load_state_dict(torch.load(encoder_path, map_location=device))
         print(f"warm-started encoder from {encoder_path}")
     target = make_ema_target(online)
-    predictor = ActionConditionedPredictor(num_games=num_games)
+    predictor = ActionConditionedPredictor(num_games=num_games).to(device)
     return online, target, predictor
 
 
@@ -40,9 +42,30 @@ def train(
     out_dir: Path,
     batch_size: int = 32,
     lr: float = 3e-4,
+    external_per_game: int | None = None,
 ) -> None:
+    device = get_device()
+    print(f"training on {device}")
     transitions = load_all_transitions(REPO_ROOT)
-    print(f"loaded {len(transitions)} ARC-3 transitions")
+    n_local = len(transitions)
+    print(f"loaded {n_local} local ARC-3 transitions")
+
+    n_external = 0
+    if external_per_game:
+        external = load_external_transitions(REPO_ROOT, max_per_game=external_per_game)
+        n_external = len(external)
+        if external:
+            print(
+                f"loaded {n_external} external ARC-3 transitions "
+                f"(arc-3-logs, capped at {external_per_game}/game)"
+            )
+            transitions += external
+        else:
+            print(
+                "--external-per-game set but data/arc3_logs.zip is missing -- "
+                "training on local transitions only (see CLAUDE.md to pull it)"
+            )
+
     game_vocab = build_game_vocab(transitions)
     print(f"{len(game_vocab)} distinct games")
     dataset = TransitionDataset(transitions, game_vocab)
@@ -60,10 +83,21 @@ def train(
     all_weights = dataset.sample_weights()
     train_weights = [all_weights[i] for i in train_ds.indices]
     sampler = WeightedRandomSampler(train_weights, num_samples=len(train_weights), replacement=True)
-    train_loader = DataLoader(train_ds, batch_size=batch_size, sampler=sampler)
-    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
+    # __getitem__ does CPU-side one-hot conversion per sample (see
+    # trajectories.py); with a GPU doing the actual compute, single-process
+    # loading (num_workers=0) becomes the bottleneck once the corpus is
+    # large (e.g. with --external-per-game mixed in). Workers persist across
+    # epochs so they aren't respawned every epoch.
+    num_workers = 4 if device.type == "cuda" else 0
+    loader_kwargs = dict(
+        num_workers=num_workers,
+        pin_memory=(device.type == "cuda"),
+        persistent_workers=num_workers > 0,
+    )
+    train_loader = DataLoader(train_ds, batch_size=batch_size, sampler=sampler, **loader_kwargs)
+    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, **loader_kwargs)
 
-    online, target, predictor = build_models(encoder_path, num_games=len(game_vocab))
+    online, target, predictor = build_models(encoder_path, num_games=len(game_vocab), device=device)
     opt = torch.optim.AdamW(
         list(online.parameters()) + list(predictor.parameters()), lr=lr
     )
@@ -74,6 +108,8 @@ def train(
         total_loss = 0.0
         n_batches = 0
         for cur, action_id, xy, nxt, patch_mask, game_idx in train_loader:
+            cur, action_id, xy = cur.to(device), action_id.to(device), xy.to(device)
+            nxt, patch_mask, game_idx = nxt.to(device), patch_mask.to(device), game_idx.to(device)
             cur_feat = online(cur)
             pred_feat = predictor(cur_feat, action_id, xy, game_idx)
             with torch.no_grad():
@@ -91,7 +127,7 @@ def train(
             total_loss += loss.item()
             n_batches += 1
 
-        stats = evaluate(online, predictor, val_loader)
+        stats = evaluate(online, predictor, val_loader, device=device)
         print(
             f"epoch {epoch + 1}/{epochs}  train_loss={total_loss / n_batches:.4f}  "
             f"val_pred_mse={stats['pred']:.5f}  val_identity_mse={stats['identity']:.5f}  |  "
@@ -99,14 +135,29 @@ def train(
         )
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    torch.save(online.state_dict(), out_dir / "encoder_finetuned.pt")
-    torch.save(predictor.state_dict(), out_dir / "predictor.pt")
+    torch.save({k: v.cpu() for k, v in online.state_dict().items()}, out_dir / "encoder_finetuned.pt")
+    torch.save({k: v.cpu() for k, v in predictor.state_dict().items()}, out_dir / "predictor.pt")
     (out_dir / "game_vocab.json").write_text(json.dumps(game_vocab, indent=2))
+    (out_dir / "training_meta.json").write_text(
+        json.dumps(
+            {
+                "epochs": epochs,
+                "batch_size": batch_size,
+                "lr": lr,
+                "device": str(device),
+                "n_local_transitions": n_local,
+                "n_external_transitions": n_external,
+                "external_per_game": external_per_game,
+                "n_games": len(game_vocab),
+            },
+            indent=2,
+        )
+    )
     print(f"saved encoder + predictor weights + game vocab to {out_dir}")
 
 
 @torch.no_grad()
-def evaluate(online, predictor, loader) -> dict:
+def evaluate(online, predictor, loader, device: torch.device | None = None) -> dict:
     """Fair comparison: both the predictor's target and the identity
     baseline's target are encoded with the *same* (online) encoder, so
     neither side gets an advantage/penalty from online/EMA weight drift.
@@ -123,6 +174,9 @@ def evaluate(online, predictor, loader) -> dict:
     n_batches = 0
     n_changed_batches = 0
     for cur, action_id, xy, nxt, patch_mask, game_idx in loader:
+        if device is not None:
+            cur, action_id, xy = cur.to(device), action_id.to(device), xy.to(device)
+            nxt, patch_mask, game_idx = nxt.to(device), patch_mask.to(device), game_idx.to(device)
         cur_feat = online(cur)
         pred_feat = predictor(cur_feat, action_id, xy, game_idx)
         next_feat = online(nxt)
@@ -156,5 +210,15 @@ if __name__ == "__main__":
         "--encoder", type=Path, default=REPO_ROOT / "checkpoints" / "encoder.pt"
     )
     parser.add_argument("--out", type=Path, default=REPO_ROOT / "checkpoints")
+    parser.add_argument(
+        "--external-per-game",
+        type=int,
+        default=None,
+        help=(
+            "Mix in up to this many transitions per game from the external "
+            "arc-3-logs Kaggle dataset (data/arc3_logs.zip), on top of the "
+            "local recordings. Omit to train on local recordings only."
+        ),
+    )
     args = parser.parse_args()
-    train(args.epochs, args.encoder, args.out)
+    train(args.epochs, args.encoder, args.out, external_per_game=args.external_per_game)
