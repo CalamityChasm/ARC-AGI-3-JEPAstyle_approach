@@ -6,11 +6,12 @@ __pycache__/
 build/
 dist/
 
-# data / logs / checkpoints (large, regenerable)
-data/
-logs/
-checkpoints/
-runs/
+# data / logs / checkpoints (large, regenerable) -- scoped to repo root so
+# this doesn't also swallow jepa/data/ (actual dataset-loading source code)
+/data/
+/logs/
+/checkpoints/
+/runs/
 *.log
 recordings/
 
