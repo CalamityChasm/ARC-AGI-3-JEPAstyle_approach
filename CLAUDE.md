@@ -600,6 +600,103 @@ this session, not something introduced here -- don't rely on it for
 debugging; use real `logging` calls instead (see `memory_agent.py`'s one
 example).
 
+### Stage 4 -- mixture-of-gated-experts predictor: BUILT, milestone NOT met (honest negative result)
+
+**Scope deviation, decided upfront:** plan.md's Stage 4 assumes pretraining
+on diverse generated grid envs (MiniGrid/Sokoban/Crafter/procgen) on a
+96GB box, with K=16-24 experts. Neither exists for this project (the
+MiniGrid data source was deferred back in Stage 1's "Next steps" and never
+built; this box has an RTX 2070, not a 96GB card). Trained on the same
+~55k-transition combined ARC-3 corpus (local + external `arc-3-logs`) as
+Stages 1/3 instead, with a smaller `--num-experts 8` default -- a
+pragmatic scope decision per plan.md's own guiding principle #4, not an
+oversight.
+
+**Built:**
+- `jepa/models/moe_predictor.py: MoEPredictor` -- K small pointwise-conv
+  experts + a gate (pooled feat + action/xy/game conditioning -> softmax
+  over K), weighted-sum combination. `jepa/models/moe_predictor.py:
+  load_balance_loss` -- Switch-Transformer-style auxiliary loss (`K * sum_i
+  f_i * P_i`, minimized at uniform usage, maximized at total collapse to
+  one expert). Combiner network explicitly deferred, per plan.md's Stage 4
+  scope.
+- `jepa/train_moe_predictor.py` -- same data/training setup as Stage 1's
+  `train_predictor.py` (i.i.d.-shuffled single transitions; MoE routing
+  doesn't need Stage 3's temporal ordering), plus the load-balance loss
+  term.
+
+**Milestone is "gate activations show experts specializing; better
+generalization than the Stage-3 monolith." Neither half was achieved,
+despite five different configurations tried (a real, reproducible
+negative result, not a single failed attempt):**
+
+1. First run (`--num-experts 8`, `LOAD_BALANCE_WEIGHT=0.01` -- the same
+   relative weight commonly used in LLM-scale MoE recipes): gate collapsed
+   to an **exact constant** (0.125 for all 8 experts, std ~0.0001 across a
+   whole validation batch, regardless of input) -- `load_balance_loss` hit
+   its theoretical minimum of 1.0 almost immediately and stayed there.
+   Root cause found by inspection, not guesswork: every expert's *last*
+   layer was zero-initialized (mirroring `ActionConditionedPredictor`'s
+   "start as identity" trick from Stage 1) -- with **all K experts
+   producing bit-for-bit identical zero output** at init, and a uniform
+   gate, every expert receives the *exact same* gradient every step and
+   stays identical to every other expert forever. A genuine symmetry that
+   gradient descent cannot break on its own, not a tuning problem. (The
+   zero-init trick was correct for Stage 1's single monolithic predictor --
+   it's specifically wrong for a multi-expert setup with a shared,
+   symmetric initialization.)
+2. Fixed the symmetry (small random init, not zero, on each expert's last
+   layer -- `jepa/models/moe_predictor.py`) and reduced the load-balance
+   weight 10x (0.001): experts *did* start differing from each other
+   (measured directly: expert-output std across experts ~0.0038 vs. mean
+   abs ~0.0032, i.e. genuinely different per-expert outputs) -- but the
+   *gate* still converged to ~uniform (`load_balance_loss` -> 1.000-1.001)
+   over 60 epochs, and `changed-patches` improvement was only **+0.3%**
+   to **+0.9%** across reruns -- nowhere near Stage 1's fixed-monolith
+   result on the *same* corrected data (**+29.2%**, see Stage 1 item 10).
+3. Ruled out "the aux loss is still too strong" as the sole explanation by
+   testing a **10x and 100x** further reduction (0.0001, then 0.00001,
+   30 epochs each): `load_balance_loss` still drifted back toward ~1.0
+   (uniform) by the end of training in both cases, just more slowly --
+   e.g. at 0.00001 it started at 2.08 (real imbalance) epoch 1 but eroded
+   to 1.001 by epoch 30. **Uniform blending is a genuine attractor for
+   this main task loss itself**, not purely an artifact of the auxiliary
+   term.
+4. Tested **`LOAD_BALANCE_WEIGHT=0.0`** (no balancing pressure at all) as
+   the other extreme: `load_balance_loss` rose to **~8.0** (out of a
+   maximum of `num_experts=8` -- i.e. near-*total* collapse to a single
+   dominant expert), the classic opposite MoE failure mode. So the
+   trainable range for this loss doesn't sit at "some small positive
+   weight" the way it does in typical large-scale MoE recipes -- it's
+   bimodal here (uniform-blend or total-collapse), not a smooth dial.
+5. Tested fewer experts (**K=3**, weight 0.0001, 30 epochs) in case 8
+   experts across ~55k transitions was simply diluting the data too thin
+   per architecture.md's own "expert collapse / data dilution" warning:
+   same story (`load_balance_loss` -> 1.000, changed-patches ~identity
+   parity).
+
+**Working conclusion:** with this data scale (~55k transitions, far short
+of plan.md's assumed diverse-multi-env pretraining corpus) and this expert
+architecture (small, shallow, per-expert conv nets), a uniform blend of
+all experts is a more loss-effective solution than genuine routing --
+plausibly because averaging several noisy small experts reduces variance
+in a way that helps the MSE objective directly, so the optimizer has no
+incentive to commit to sparse routing regardless of how the load-balance
+term is tuned. This is consistent with (not contradicting) Stage 1's own
+guiding principle #2 ("this is a data-bound problem, not a capacity-bound
+one") -- more experts without more/more-diverse data doesn't specialize,
+it just re-derives an ensemble average of the same underlying signal.
+**Closing this gap would most likely need plan.md's originally-intended
+diverse multi-environment data (MiniGrid/Sokoban/Crafter/procgen), not
+more tuning of the loss weight on the current ARC-3-only corpus** -- this
+is the same "data, not architecture" lesson Stage 1 eventually landed on
+too, just for a different symptom.
+
+If revisiting: try noisy top-k gating (forces hard, sparse per-example
+routing rather than a soft weighted blend) before more loss-weight
+sweeps -- soft blending may be the specific mechanism letting the
+optimizer avoid commitment here.
+
 ## Gotchas learned the hard way (don't re-discover these)
 
 - **CRITICAL (2026-07-08): `ARC-AGI-3-Agents/agents/agent.py`'s
