@@ -780,8 +780,53 @@ Stage 4's milestone is clearly met. The "gate activations show experts
 specializing" half is genuinely, measurably better than the pre-MiniGrid
 attempts (real per-input variation exists now, up to near-hard routing on
 some examples) but isn't the dominant pattern across the validation set --
-call this **mostly met**, with noisy top-k gating as the most promising
-next lever if a future session wants to close the remainder.
+call this **mostly met**.
+
+7. **(2026-07-08) Tried noisy top-k gating** (`jepa/models/moe_predictor.py`:
+   `top_k` param -- per-expert trainable noise added to gate logits during
+   training, `torch.topk` + `-inf`-masked softmax forces exactly `k`
+   nonzero experts per example instead of a dense blend over all 8;
+   `--top-k` CLI flag on `train_moe_predictor.py`). Same MiniGrid-pretrain
+   + ARC-finetune curriculum as item 6, `--top-k 2`. **Did not clearly
+   improve on item 6, and regressed prediction quality:**
+   - changed-patches improvement **+21.9%** (pred=0.00710 vs.
+     identity=0.00909 at epoch 60) -- roughly *half* item 6's dense-gate
+     result (+44.1%), now behind Stage 1's monolith (+29.2%) again, and
+     only narrowly ahead of Stage 3's recurrent monolith (+21.3%).
+   - Checked whether the forced sparsity at least bought cleaner
+     specialization to compensate: it didn't, really. Which *pair* of
+     experts gets selected does vary meaningfully per example (usage
+     counts across the 8 experts ranged 176-461, a 2.6x spread, so the
+     top-k selection itself isn't degenerate) -- but the *weighting
+     between the two selected experts* stays almost perfectly 50/50
+     (mean entropy 99.5% of the 2-expert maximum). So top-k gating traded
+     "blend all 8 near-uniformly" for "blend 2 (varying) experts
+     near-uniformly" -- structurally sparser, but not more *confident*,
+     and the forced hard cutoff apparently threw away useful signal the
+     dense blend could still use (hence the accuracy drop). The same
+     "hedge rather than commit" pull identified in items 1-5 persisted
+     even under a harder structural constraint.
+   - Not investigated further this session (e.g. `--top-k 1`, longer
+     MiniGrid pretraining, a smaller/larger noise scale) -- flagging as
+     the natural next things to try if a future session revisits this,
+     but per this session's own results, more data (item 6) was a
+     clearly better lever than forcing sparser routing (item 7).
+
+**Final status:** item 6 (MiniGrid pretraining, dense gate) is the best
+result and the one worth keeping/building on -- **+44.1% changed-patches,
+beats both monoliths, partial-but-real gate specialization.** Item 7
+(noisy top-k) is documented as a negative result on top of item 6, not a
+replacement for it. Note for a future session: `checkpoints/moe_predictor.pt`
+(gitignored, not committed) is currently item **7**'s weights (the *last*
+training run wins, and top-k ran after the dense-gate run) -- to get item
+6's better checkpoint back, rerun `python -m jepa.train_moe_predictor
+--pretrain-epochs 20 --epochs 60 --num-experts 8 --external-per-game 2000`
+*without* `--top-k`. Not regenerated this session to avoid another ~50min
+run purely to restore a non-committed file; the documented numbers above
+are what matter for the record, and are reproducible from the commands
+given. Session moved on to Stage 5 rather than continue tuning top-k, per
+plan.md's own guiding principle #4 and the fact that item 6 already met
+the milestone's harder half convincingly.
 
 ## Gotchas learned the hard way (don't re-discover these)
 

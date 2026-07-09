@@ -47,14 +47,18 @@ LOAD_BALANCE_WEIGHT = 0.001
 
 
 def build_models(
-    encoder_path: Path | None, num_games: int, num_experts: int, device: torch.device
+    encoder_path: Path | None,
+    num_games: int,
+    num_experts: int,
+    device: torch.device,
+    top_k: int | None = None,
 ) -> tuple:
     online = CNNEncoder().to(device)
     if encoder_path and encoder_path.exists():
         online.load_state_dict(torch.load(encoder_path, map_location=device))
         print(f"warm-started encoder from {encoder_path}")
     target = make_ema_target(online)
-    predictor = MoEPredictor(num_games=num_games, num_experts=num_experts).to(device)
+    predictor = MoEPredictor(num_games=num_games, num_experts=num_experts, top_k=top_k).to(device)
     return online, target, predictor
 
 
@@ -144,9 +148,11 @@ def train(
     pretrain_epochs: int = 0,
     minigrid_episodes_per_env: int = 40,
     minigrid_steps_per_episode: int = 80,
+    top_k: int | None = None,
 ) -> None:
     device = get_device()
-    print(f"training on {device}, {num_experts} experts")
+    gating = f"top-{top_k} noisy" if top_k is not None else "dense softmax"
+    print(f"training on {device}, {num_experts} experts, {gating} gate")
 
     arc_transitions = load_all_transitions(REPO_ROOT)
     n_local = len(arc_transitions)
@@ -189,7 +195,7 @@ def train(
     print(f"{len(game_vocab)} distinct games in the shared vocab")
 
     online, target, predictor = build_models(
-        encoder_path, num_games=len(game_vocab), num_experts=num_experts, device=device
+        encoder_path, num_games=len(game_vocab), num_experts=num_experts, device=device, top_k=top_k
     )
     opt = torch.optim.AdamW(list(online.parameters()) + list(predictor.parameters()), lr=lr)
 
@@ -214,6 +220,7 @@ def train(
                 "pretrain_epochs": pretrain_epochs,
                 "n_minigrid_transitions": len(minigrid_transitions),
                 "num_experts": num_experts,
+                "top_k": top_k,
                 "batch_size": batch_size,
                 "lr": lr,
                 "device": str(device),
@@ -286,6 +293,16 @@ if __name__ == "__main__":
         default=None,
         help="Mix in up to this many transitions per game from the external arc-3-logs dataset.",
     )
+    parser.add_argument(
+        "--top-k",
+        type=int,
+        default=None,
+        help=(
+            "Noisy top-k gating: route to only the top-k experts per example "
+            "(softmax over just those) instead of a dense blend over all "
+            "--num-experts. Omit for the original dense softmax gate."
+        ),
+    )
     args = parser.parse_args()
     train(
         args.epochs,
@@ -294,4 +311,5 @@ if __name__ == "__main__":
         num_experts=args.num_experts,
         external_per_game=args.external_per_game,
         pretrain_epochs=args.pretrain_epochs,
+        top_k=args.top_k,
     )

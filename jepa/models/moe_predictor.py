@@ -39,9 +39,26 @@ class MoEPredictor(nn.Module):
         game_embed_dim: int = 16,
         num_experts: int = 8,
         expert_hidden: int = 64,
+        top_k: int | None = None,
     ):
+        """
+        top_k: if set (Shazeer et al.-style "noisy top-k gating"), the gate
+            keeps only the top_k highest-scoring experts per example
+            (softmax over just those, -inf/zero elsewhere) instead of a
+            dense soft blend over all K -- forces genuinely sparse,
+            per-example routing rather than letting the optimizer settle
+            for "blend everyone a little," which is what a first attempt
+            at dense gating converged to regardless of load-balance-loss
+            tuning (see CLAUDE.md's Stage 4 status, items 1-5). During
+            training, per-expert trainable noise is added to the gate
+            logits before top-k selection (encourages exploration across
+            experts early on); at eval time the raw logits are used
+            directly. None (the default) reproduces the original dense
+            softmax gate.
+        """
         super().__init__()
         self.num_experts = num_experts
+        self.top_k = top_k
         self.action_embed = nn.Embedding(NUM_ACTIONS, action_embed_dim)
         self.coord_mlp = nn.Sequential(
             nn.Linear(2, action_embed_dim),
@@ -84,6 +101,14 @@ class MoEPredictor(nn.Module):
             nn.GELU(),
             nn.Linear(expert_hidden, num_experts),
         )
+        if top_k is not None:
+            if not (1 <= top_k <= num_experts):
+                raise ValueError(f"top_k={top_k} must be in [1, num_experts={num_experts}]")
+            # Per-expert trainable noise scale (softplus-transformed, so
+            # always positive), same pooled input as the gate itself.
+            self.noise_gate = nn.Linear(feature_channels + cond_dim, num_experts)
+            nn.init.zeros_(self.noise_gate.weight)
+            nn.init.zeros_(self.noise_gate.bias)
 
     def forward(
         self,
@@ -111,8 +136,19 @@ class MoEPredictor(nn.Module):
         cond = torch.cat([a_embed, xy_embed, g_embed], dim=-1)  # (B, cond_dim)
 
         pooled_feat = feat.mean(dim=(2, 3))  # (B, C)
-        gate_logits = self.gate(torch.cat([pooled_feat, cond], dim=-1))  # (B, K)
-        gate_weights = F.softmax(gate_logits, dim=-1)  # (B, K)
+        gate_input = torch.cat([pooled_feat, cond], dim=-1)
+        gate_logits = self.gate(gate_input)  # (B, K)
+
+        if self.top_k is not None:
+            if self.training:
+                noise_std = F.softplus(self.noise_gate(gate_input))
+                gate_logits = gate_logits + torch.randn_like(gate_logits) * noise_std
+            top_vals, top_idx = gate_logits.topk(self.top_k, dim=-1)
+            masked_logits = torch.full_like(gate_logits, float("-inf"))
+            masked_logits.scatter_(1, top_idx, top_vals)
+            gate_weights = F.softmax(masked_logits, dim=-1)  # (B, K), zero outside top_k
+        else:
+            gate_weights = F.softmax(gate_logits, dim=-1)  # (B, K)
 
         cond_spatial = cond.view(b, -1, 1, 1).expand(-1, -1, h, w)
         x = torch.cat([feat, cond_spatial], dim=1)
