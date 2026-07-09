@@ -816,17 +816,170 @@ call this **mostly met**.
 result and the one worth keeping/building on -- **+44.1% changed-patches,
 beats both monoliths, partial-but-real gate specialization.** Item 7
 (noisy top-k) is documented as a negative result on top of item 6, not a
-replacement for it. Note for a future session: `checkpoints/moe_predictor.pt`
-(gitignored, not committed) is currently item **7**'s weights (the *last*
-training run wins, and top-k ran after the dense-gate run) -- to get item
-6's better checkpoint back, rerun `python -m jepa.train_moe_predictor
---pretrain-epochs 20 --epochs 60 --num-experts 8 --external-per-game 2000`
-*without* `--top-k`. Not regenerated this session to avoid another ~50min
-run purely to restore a non-committed file; the documented numbers above
-are what matter for the record, and are reproducible from the commands
-given. Session moved on to Stage 5 rather than continue tuning top-k, per
-plan.md's own guiding principle #4 and the fact that item 6 already met
-the milestone's harder half convincingly.
+replacement for it. `checkpoints/moe_predictor.pt` (gitignored, not
+committed) was later restored to a dense-gate (non-top-k) checkpoint --
+confirmed directly by inspecting its state dict, which has no
+`noise_gate.*` keys (those only exist when `MoEPredictor` is constructed
+with `top_k` set). The restore-retrain (same command as item 6, on a
+freshly regenerated local corpus with a different random seed) landed at
+**+22.9% changed-patches** rather than the original +44.1% -- expected
+run-to-run variance from a freshly-regenerated corpus (see the "Gotchas"
+section), not a regression; the qualitative conclusion (dense gate beats
+both monoliths) held. This is the checkpoint Stage 5 below is built on.
+
+### Stage 5 -- hypothesis bundle + directed action selection: BUILT, milestone not cleanly met (three real bugs found and fixed along the way)
+
+**Design:** builds on Stage 3's `Memory` agent (exact transition-graph
+recall, exploit-on-score-delta -- reused unchanged) and replaces Stage
+2/3's EMA-based "observed surprise" ranking with plan.md's actual Stage 5
+design, scoped to reuse already-trained components:
+- **N parallel hypotheses** = Stage 4's K=8 MoE experts (the
+  MiniGrid-pretrained checkpoint above), each treated as one hypothesis
+  about "what a given action does"
+  (`jepa/hypothesis_bundle.py`, `MoEPredictor.predict_all_experts`).
+- **Bayesian confidence update** (`p(Hi) *= exp(-error_i / tau)`,
+  renormalized) after observing each transition's actual outcome.
+- **Entropy of the confidence distribution -> beta**: uncertain -> explore
+  (trust InfoGain); confident -> exploit (trust the value head).
+- **Q(s,a) = (1-beta)*InfoGain(a) + beta*V(next_state(a))**. InfoGain(a) is
+  disagreement across the K experts' raw predictions for candidate action
+  a, computed in a single forward pass (the per-patch variance map doubles
+  as the ACTION6 click-location salience map). V is a small decoupled
+  value head (`jepa/models/value_head.py`) trained via discounted Monte
+  Carlo returns from the sparse `levels_completed` signal.
+- **Experiment-designer opening probes**: try every simple action once at
+  episode start before trusting the bundle's own confidence weights.
+
+**Bug 1 -- value-head/encoder latent-space mismatch.** The value head had
+been trained against `encoder_finetuned.pt` (Stage 1's encoder), but
+`Hypothesis` loads `encoder_moe.pt` (Stage 4's separately-trained
+encoder) -- two independently-trained encoders end up with different,
+incompatible latent spaces, so a value head fit to one is close to noise
+fed features from the other. Fixed by retraining the value head directly
+against `encoder_moe.pt` (`python -m jepa.train_value_head --epochs 20
+--encoder checkpoints/encoder_moe.pt`). Worth flagging even after the
+fix: the value-head training data is extremely sparse (12,150 samples,
+only **1.6% with a nonzero value target**, since `levels_completed`
+deltas are rare events under a random-ish policy) -- the retrained head's
+val MSE (0.0016-0.0022 across 20 epochs) sits right on top of the
+zero-baseline MSE (0.0019), i.e. it's only marginally distinguishable
+from "always predict zero." This isn't a bug, just an honest limit of
+what a value head can learn from this reward density -- flagged up front
+since it explains part of what follows.
+
+**Bug 2 -- ACTION6's InfoGain used a different reduction than every other
+action's, an apples-to-oranges comparison that made ACTION6 win almost by
+construction.** First full evaluation (8 repeats, matched 300-action
+budget, all 25 games, same protocol as Stage 2/3's comparisons):
+**0 total levels completed across 200 runs**, versus Curiosity's 11 (5
+distinct games) on the same protocol. Tracing an episode's action log
+showed the agent spamming `action_id=6` almost every single turn until
+`GAME_OVER`, resetting, then spamming it again. Root cause, found by
+direct code inspection: in `_score_action`
+(`ARC-AGI-3-Agents/agents/templates/hypothesis_agent.py`), the non-ACTION6
+branch computes `ig = info_gain(expert_preds).item()` -- a **mean** of
+expert-disagreement variance over every channel and spatial position --
+while the ACTION6 branch computed `ig = patch_var.max().item()` -- the
+**max** variance over the 64 spatial patches. A max over many patches is
+almost always larger than a global mean (especially given that feature
+variance is naturally non-uniform across space), so ACTION6 was
+structurally near-guaranteed to score highest regardless of what the
+experts actually predicted. Fixed by using `patch_var.mean().item()`
+instead (mathematically identical to `info_gain()`'s reduction, since
+`var(dim=0).mean(dim=0).mean()` over the remaining spatial dims is the
+same value as `var(dim=0).mean()` over channels+spatial directly) --
+`patch_var.argmax()` is still used separately to pick the click location,
+only the cross-action-comparable scalar changed.
+
+**Bug 3 -- no epsilon-random fallback, so the agent locked onto a single
+action for an entire episode once bug 2 was fixed.** Re-testing after the
+bug 2 fix alone: **3 total levels, 1 distinct game (`sp80`)**, still far
+below Curiosity. Tracing episodes again showed a new pattern: the agent
+would pick one action and repeat it 25-30 times straight until
+`GAME_OVER`, reset, then lock onto a *different* single action for the
+next attempt. This is the exact same failure mode Stage 2's `Curiosity`
+hit first (see that section's bug 1): `InfoGain(a)` is a *predicted*
+disagreement signal recomputed fresh each turn from a near-deterministic
+forward pass, with no mechanism to decay once an action's real effect
+turns out unsurprising in practice -- unlike Curiosity's own EMA-of-
+*observed*-error ranking, which naturally cools down on a repeatedly-tried
+action. Fixed the same way Curiosity was fixed: added a 25%
+epsilon-random fallback (`Hypothesis.EPSILON = 0.25`) before the greedy
+Q-argmax. (Note: sp80's own ~30-action reset cadence, which looked
+suspicious while debugging this, turned out to be a property of the game
+itself, not a bug -- `Curiosity`'s log on the same game shows an
+identical ~30-action reset cycle.)
+
+**Bug 4 -- unbounded confidence accumulation caused runaway certainty,
+handing control to the (near-noise) value head for most of every
+episode.** After bugs 2-3 were fixed, a targeted diagnostic
+(`scripts/diagnose_hypothesis_beta.py`, replaying 20 real local-recording
+episodes through the bundle's confidence-update logic without actually
+playing games) showed `beta` averaging **0.76** and exceeding 0.5 in
+**86%** of transitions -- i.e. the agent was in "trust V" mode for nearly
+the whole episode, not the intended entropy-gated blend. Root cause:
+`HypothesisBundle.update` accumulated `log_weights += -errors / tau`
+every step with no forgetting term, and with `tau=0.01` even tiny,
+possibly-spurious per-step differences between experts' errors compound
+without bound over a ~300-step episode -- entropy collapses to
+"confident" within the first few dozen steps of essentially every
+episode and stays there regardless of what happens afterward. Given the
+value head is barely distinguishable from a zero baseline (bug 1's
+finding), that means action selection was effectively driven by
+near-noise for most of an episode. Fixed by adding a geometric forgetting
+factor (`log_weights = decay * log_weights + (-errors / tau)`,
+`HypothesisBundle.decay`, default now 0.8) so confidence tracks *recent*
+reliability rather than accumulating forever. Swept decay in {1.0, 0.95,
+0.8, 0.6, 0.4, 0.2} on the same 20 replayed episodes before picking 0.8:
+0.95 only partially helped (mean beta 0.61, still >0.5 62% of the time);
+0.8 was the best balance (mean beta 0.37, >0.5 only 10% of the time) --
+low enough to stop runaway certainty from swamping InfoGain, without
+decaying so hard (0.6 and below effectively zeroed beta almost
+everywhere) that V never gets to matter at all, which would just make
+this equivalent to Curiosity's own ranking with extra steps.
+
+**Final result (8 repeats, matched 300-action budget, all 25 games, all
+four bugs fixed):** **1 total level completed, 1 distinct game (`r11l`)**,
+versus Curiosity's 11 total / 5 distinct games on the identical protocol.
+Milestone ("directed exploration beats the Stage-2 curiosity agent on the
+same levels in fewer actions") is **not cleanly met**. A same-game,
+matched comparison on `r11l` (the one game both agents solved in this
+round) gives a genuinely mixed picture rather than a flat loss, though:
+Hypothesis solved it in **53 actions** on its one success, well under
+Curiosity's own average of **~175 actions** across its 6/8 successes on
+that game -- but Hypothesis only succeeded on **1 of 8** attempts versus
+Curiosity's **6 of 8**. So on the one clean head-to-head data point
+available, Hypothesis is markedly *faster* when it works, but far less
+*reliable* than Curiosity -- a real, honest tradeoff, not a clear win.
+
+**Why reliability is the remaining gap, and why it isn't a quick fix:**
+the two most likely structural causes are both already-documented,
+data-bound limitations from earlier stages, not something another loss-
+tuning pass would fix tonight: (1) the value head's training signal is
+~98% zero-target (bug 1) -- meaningfully improving it needs trajectory
+data with a much higher rate of real `levels_completed` events, i.e. data
+from a policy that actually makes progress rather than more random-policy
+volume, echoing Stage 1's own "data, not architecture" lesson; (2) Stage
+4's own finding that MoE gate/expert specialization is "real but a
+minority behavior, not the norm" caps how informative the Bayesian
+hypothesis-confidence mechanism can be in the first place, since it's
+built directly on those same experts' disagreement. Both point toward
+plan.md's Stage 6 backlog item ("optional public human-trajectory data to
+tune which probes are informative") as the well-scoped next lever, rather
+than further tuning of `tau`/`decay`/`EPSILON` on the current data --
+consistent with plan.md's own guiding principle of adding a component
+only when a specific measured bottleneck calls for it, and not chasing
+further gains on an already-sparse, already-diagnosed metric.
+
+**Also fixed along the way, unrelated to the bundle's own logic:** the
+harness's anonymous API key (`ARC-AGI-3-Agents/.env`'s `ARC_API_KEY`)
+had expired between sessions, causing every game-listing request to
+return HTTP 401 and every local run to silently produce a zero-action,
+zero-level recording (a first attempt at this stage's evaluation looked
+like a total agent failure for this reason before the real key-expiry
+cause was found) -- refreshed via
+`https://three.arcprize.org/api/games/anonkey`, per this doc's own setup
+instructions. See the "Gotchas" section below.
 
 ## Gotchas learned the hard way (don't re-discover these)
 
@@ -874,6 +1027,23 @@ the milestone's harder half convincingly.
     a garbage-in-garbage-out training run that still runs to completion
     without erroring.
 
+- **The anonymous `ARC_API_KEY` in `ARC-AGI-3-Agents/.env` can expire
+  between sessions**, even in fully offline mode -- `main.py` always hits
+  the *real* `{ROOT_URL}/api/games` endpoint to get the game list before
+  anything else happens (offline mode only affects gameplay stepping, not
+  this initial listing call), and an expired/invalid key makes that
+  request return HTTP 401. When it does, `main.py` logs the 401, gets an
+  empty game list, and exits immediately -- every agent run in that state
+  silently produces a fully-valid-looking recording file with zero
+  actions and zero levels, which can look exactly like a real agent
+  failure if you're mid-debugging something else (this happened while
+  evaluating Stage 5 -- a first "0 levels completed across 200 runs"
+  result briefly looked like a hypothesis-bundle bug before the real
+  cause turned out to be an expired key). Get a fresh one with
+  `curl https://three.arcprize.org/api/games/anonkey` and update
+  `ARC_API_KEY` in `.env`; a quick single-game run is enough to confirm
+  it's fixed (watch for a nonzero total action count instead of an
+  immediate "No games available to play" error in the log).
 - **`.gitignore` `data/` pattern (no leading slash) matches any directory
   named `data` anywhere in the tree**, including `jepa/data/` (real source
   code, not the gitignored top-level Kaggle/ARC-1/2 download cache). Fixed

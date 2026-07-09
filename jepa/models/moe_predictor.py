@@ -110,6 +110,22 @@ class MoEPredictor(nn.Module):
             nn.init.zeros_(self.noise_gate.weight)
             nn.init.zeros_(self.noise_gate.bias)
 
+    def _condition(
+        self, feat: torch.Tensor, action_id: torch.Tensor, xy: torch.Tensor, game_idx: torch.Tensor | None
+    ) -> tuple:
+        """Shared conditioning-vector setup used by both `forward` and
+        `predict_all_experts`. Returns (cond, cond_spatial, expert_input)."""
+        b, _c, h, w = feat.shape
+        a_embed = self.action_embed(action_id)
+        xy_embed = self.coord_mlp(xy)
+        if game_idx is None:
+            game_idx = torch.zeros(b, dtype=torch.long, device=feat.device)
+        g_embed = self.game_embed(game_idx)
+        cond = torch.cat([a_embed, xy_embed, g_embed], dim=-1)  # (B, cond_dim)
+        cond_spatial = cond.view(b, -1, 1, 1).expand(-1, -1, h, w)
+        expert_input = torch.cat([feat, cond_spatial], dim=1)
+        return cond, cond_spatial, expert_input
+
     def forward(
         self,
         feat: torch.Tensor,
@@ -127,13 +143,8 @@ class MoEPredictor(nn.Module):
         is exposed for the load-balancing loss and for inspecting whether
         experts actually specialize (see jepa/train_moe_predictor.py).
         """
-        b, c, h, w = feat.shape
-        a_embed = self.action_embed(action_id)
-        xy_embed = self.coord_mlp(xy)
-        if game_idx is None:
-            game_idx = torch.zeros(b, dtype=torch.long, device=feat.device)
-        g_embed = self.game_embed(game_idx)
-        cond = torch.cat([a_embed, xy_embed, g_embed], dim=-1)  # (B, cond_dim)
+        b = feat.shape[0]
+        cond, _cond_spatial, x = self._condition(feat, action_id, xy, game_idx)
 
         pooled_feat = feat.mean(dim=(2, 3))  # (B, C)
         gate_input = torch.cat([pooled_feat, cond], dim=-1)
@@ -150,14 +161,30 @@ class MoEPredictor(nn.Module):
         else:
             gate_weights = F.softmax(gate_logits, dim=-1)  # (B, K)
 
-        cond_spatial = cond.view(b, -1, 1, 1).expand(-1, -1, h, w)
-        x = torch.cat([feat, cond_spatial], dim=1)
-
         expert_outputs = torch.stack([e(x) for e in self.experts], dim=1)  # (B, K, C, H, W)
         weights = gate_weights.view(b, self.num_experts, 1, 1, 1)
         residual = (expert_outputs * weights).sum(dim=1)  # (B, C, H, W)
 
         return feat + residual, gate_weights
+
+    def predict_all_experts(
+        self,
+        feat: torch.Tensor,
+        action_id: torch.Tensor,
+        xy: torch.Tensor,
+        game_idx: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        """Stage 5: the *ungated* per-expert predicted next-features, one
+        per expert -- used as the "N parallel hypotheses" for a candidate
+        action (see jepa/models/hypothesis_bundle.py). Bypasses the gate
+        entirely; disagreement across this (B, K, C, H, W) tensor is the
+        InfoGain signal, and each expert's own prediction error against the
+        eventual observed outcome drives that hypothesis's Bayesian
+        confidence weight.
+        """
+        _cond, _cond_spatial, x = self._condition(feat, action_id, xy, game_idx)
+        expert_outputs = torch.stack([e(x) for e in self.experts], dim=1)  # (B, K, C, H, W)
+        return feat.unsqueeze(1) + expert_outputs
 
 
 def load_balance_loss(gate_weights: torch.Tensor) -> torch.Tensor:

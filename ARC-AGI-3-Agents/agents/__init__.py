@@ -9,6 +9,7 @@ from .templates.langgraph_functional_agent import LangGraphFunc, LangGraphTextOn
 from .templates.langgraph_random_agent import LangGraphRandom
 from .templates.langgraph_thinking import LangGraphThinking
 from .templates.curiosity_agent import Curiosity
+from .templates.hypothesis_agent import Hypothesis
 from .templates.llm_agents import LLM, FastLLM, GuidedLLM, ReasoningLLM
 from .templates.memory_agent import Memory
 from .templates.multimodal import MultiModalLLM
@@ -49,6 +50,7 @@ __all__ = [
     "PressOnce",
     "Curiosity",
     "Memory",
+    "Hypothesis",
     "Agent",
     "Recorder",
     "Playback",
