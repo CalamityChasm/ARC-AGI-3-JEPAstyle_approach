@@ -29,3 +29,10 @@ torch==2.12.1
 # jepa/ (Stage 4: MoE predictor's MiniGrid pretraining data source, see
 # jepa/data/minigrid_data.py). Pulls in gymnasium as a dependency.
 minigrid==3.1.0
+
+# jepa/ (Stage 4: MoE predictor's Sokoban pretraining data source, see
+# jepa/data/sokoban_data.py). Pulls in the legacy `gym` package (deprecated
+# upstream, unmaintained since 2022) as a dependency -- coexists fine with
+# gymnasium/minigrid above since sokoban_data.py instantiates SokobanEnv
+# directly rather than going through gym's environment registry.
+gym-sokoban==0.0.6

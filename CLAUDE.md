@@ -827,6 +827,98 @@ run-to-run variance from a freshly-regenerated corpus (see the "Gotchas"
 section), not a regression; the qualitative conclusion (dense gate beats
 both monoliths) held. This is the checkpoint Stage 5 below is built on.
 
+8. **(2026-07-09) Tried adding Sokoban as a second synthetic pretraining
+   source alongside MiniGrid** (`jepa/data/sokoban_data.py`, built on the
+   `gym-sokoban` package -- installs cleanly alongside `gymnasium`/
+   `minigrid` since it depends on the legacy `gym` package and
+   `sokoban_data.py` instantiates `SokobanEnv` directly rather than going
+   through `gym`'s environment registry, so there's no namespace
+   collision). Motivation, not "more data" but genuinely *new mechanics*:
+   MiniGrid's own pretraining win (item 6) came from exposing the shared
+   encoder/experts to consistent-but-different action semantics, not from
+   data volume alone -- Sokoban's "push a movable object with persistent,
+   potentially irreversible consequences" is a causal pattern neither
+   ARC-3 nor MiniGrid reliably exercises, and architecture.md's own
+   expert-vocabulary list calls it out specifically. Given `game_id`
+   already disambiguates per-source semantics, Sokoban got its own
+   `game_id="sokoban"`, distinct from `"minigrid"` (their action spaces
+   aren't consistent with *each other*, only internally).
+   - **Two real bugs hit before a clean run was possible, both found and
+     fixed the same session:**
+     1. Sokoban's own action space is 9 actions (0=no-op, 1-4=push,
+        5-8=move) -- one more than `jepa/models/predictor.py`'s
+        `NUM_ACTIONS=8` (sized for ARC-3's 8 actions; MiniGrid's 7 already
+        fit). Storing a raw action id of 8 crashed the shared
+        action-embedding lookup with a CUDA "vectorized gather kernel
+        index out of bounds" assert, on the very first training batch that
+        happened to sample it. Fixed by dropping Sokoban's true no-op
+        (redundant anyway -- "nothing changes" is already the trivial
+        baseline everywhere else in training) and remapping the remaining
+        8 actions (1-8) down to stored ids 0-7; `env.step()` itself still
+        gets the *original* unshifted id so push/move semantics stay
+        correct.
+     2. Separately (a machine/environment issue, not a code bug, but
+        directly caused a training run to crash mid-epoch with a
+        `MemoryError` inside a DataLoader worker's `pickle.load`): the
+        host machine ran completely out of disk space (54MB free out of
+        931GB) while this ablation was running. On Windows, a full disk
+        can prevent the pagefile from growing, which turns ordinary
+        memory-pressure moments into hard `MemoryError`s rather than
+        graceful paging -- confirmed by the crash clearing up completely
+        after freeing space (pip cache purge, ~23GB; deleting stale
+        already-documented `curiosity`/`hypothesis` evaluation recordings,
+        ~4.8GB) and rerunning with no code changes. Worth remembering: a
+        training crash with a generic `MemoryError` in a worker process is
+        worth checking `df -h` / free disk space for, not just RAM --
+        especially on Windows.
+   - **Controlled comparison** (both runs on the identical local ARC-3
+     corpus and identical, seeded MiniGrid corpus -- 67,200 transitions,
+     confirmed byte-identical transition counts in both runs -- so the
+     *only* difference is Sokoban's presence): `checkpoints_ablation/
+     minigrid_only` (baseline, MiniGrid-only pretrain) reached **+29.5%**
+     changed-patches (pred=0.00838, identity=0.01189) --
+     `checkpoints_ablation/minigrid_sokoban` (treatment, MiniGrid+Sokoban
+     pretrain, 33,600 additional Sokoban transitions) reached **+15.7%**
+     (pred=0.00656, identity=0.00778) -- **a clear regression, nearly
+     halving the improvement over identity, not an improvement.**
+   - **Gate specialization: flat to slightly worse, not better.** Directly
+     measured mean gate entropy and dominant-expert frequency on the same
+     held-out ARC-3 validation split for both checkpoints: mean entropy
+     99.3% of the uniform maximum in *both* cases (2.0639 vs 2.0649 nats,
+     essentially identical), and the fraction of validation examples with
+     one expert clearly dominant (weight > 0.3) was **lower** with Sokoban
+     (0.6% vs 2.3%) -- so adding Sokoban didn't move specialization in
+     either direction in any meaningful way, and if anything nudged it
+     the wrong way on that one metric.
+   - **Working hypothesis for the regression (not further verified this
+     session, flagged for a future one if Sokoban is revisited):** Sokoban
+     is known to be prone to irreversible deadlocks under random play --
+     pushing a box into a corner or against a wall away from any target
+     makes that box (and often the whole puzzle) permanently unsolvable
+     from that point on, after which the remainder of an episode is just
+     the player wandering a now-frozen, uninteresting room. The frame-level
+     changed-rate measured during pipeline validation (~47%) looked healthy
+     and comparable to MiniGrid's own (~43%), but "the frame changed"
+     doesn't distinguish meaningful, diverse dynamics from directionless
+     post-deadlock wandering -- so a real chunk of the 33,600 Sokoban
+     transitions may be low-information noise diluting the pretrain
+     signal rather than the intended new-mechanic enrichment, unlike
+     MiniGrid where even a random policy still produces reasonably varied
+     navigation experience throughout an episode. Not confirmed directly
+     (e.g. by measuring how early episodes hit a dead/frozen state) --
+     worth checking first if a future session revisits Sokoban, ahead of
+     other levers like non-random (e.g. curriculum or reduced-box-count)
+     Sokoban data collection.
+   - **Per the standing instruction this was scoped under ("if that fails
+     to get improvements, begin working on a teacher policy"): this is
+     being treated as a clean negative result, not iterated on further
+     right now.** `checkpoints/moe_predictor.pt` (the live, in-use
+     checkpoint) was *not* overwritten by either ablation run (both wrote
+     to `checkpoints_ablation/<variant>/` specifically to avoid clobbering
+     the working item-6-lineage checkpoint during this experiment) -- no
+     rollback needed. `jepa/train_moe_predictor.py --sokoban-episodes-per-config
+     N` remains available (opt-in, default 0) for a future revisit.
+
 ### Stage 5 -- hypothesis bundle + directed action selection: BUILT, milestone not cleanly met (three real bugs found and fixed along the way)
 
 **Design:** builds on Stage 3's `Memory` agent (exact transition-graph
@@ -982,6 +1074,29 @@ cause was found) -- refreshed via
 instructions. See the "Gotchas" section below.
 
 ## Gotchas learned the hard way (don't re-discover these)
+
+- **A new synthetic data source's action space must fit inside
+  `jepa/models/predictor.py`'s `NUM_ACTIONS=8`** (shared across every
+  data source's action embedding, sized for ARC-3's 8 actions -- MiniGrid's
+  7 fit without changes). Sokoban's native action space is 9 (see Stage 4
+  item 8) and silently produced a raw id of 8 the first time a random
+  rollout happened to sample it -- the resulting out-of-bounds embedding
+  lookup doesn't fail at data-generation time (plain Python list indexing
+  never checks against `NUM_ACTIONS`), it fails later, deep inside a CUDA
+  kernel, on whatever training batch first happens to include that sample
+  (`CUDA error: device-side assert triggered`, `vectorized gather kernel
+  index out of bounds`). If you add another data source, sanity-check
+  `max(action_ids) < NUM_ACTIONS` on its generated transitions *before*
+  a training run, not after a confusing CUDA crash.
+- **A `MemoryError` inside a DataLoader worker's `pickle.load` can be a
+  full-disk symptom, not a real memory shortage.** On Windows, an
+  almost-full disk can prevent the pagefile from growing, turning
+  ordinary memory-pressure moments into hard failures instead of graceful
+  paging. Hit this mid-training during the Stage 4 Sokoban ablation (see
+  that section) with 54MB free out of 931GB -- the crash (and a
+  crash-loop of repeatedly respawning, dying workers) cleared up
+  completely after freeing disk space, with zero code changes. Check
+  `df -h` before assuming a `MemoryError` means RAM.
 
 - **CRITICAL (2026-07-08): `ARC-AGI-3-Agents/agents/agent.py`'s
   `_convert_raw_frame_data` never copied `raw.action_input` into the

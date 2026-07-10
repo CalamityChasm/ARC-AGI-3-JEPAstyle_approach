@@ -766,6 +766,100 @@ an already-good dense-gate result. The dense-gate, MiniGrid-pretrained
 checkpoint (the +44.1% result) is the one carried forward into later
 stages, not the top-k variant.
 
+### 6.7 A second synthetic pretraining source (Sokoban): a real, controlled negative result
+
+A later pass at this stage tried adding a second synthetic pretraining
+source alongside the grid-navigation environment already in use, with a
+specific and different motivation than "more data": the earlier addition
+had helped by exposing the shared model to genuinely new, consistently-
+labeled action semantics, not just by increasing data volume — so the
+natural next question was whether a *third*, mechanically distinct
+environment family (this one built around pushing movable objects, with
+persistent and sometimes irreversible consequences — a causal pattern the
+existing two sources don't reliably exercise) would extend that same
+benefit further. A translation layer for this environment family was
+built following the same pattern as before: map its native grid
+representation onto the shared flat color-code format, generate
+unlimited random-policy trajectories cheaply, and give it its own
+distinct identifier in the game vocabulary (its action semantics aren't
+consistent with the *other* synthetic source's, only internally
+consistent with themselves, so sharing an identifier would have been
+inappropriate).
+
+Two real, unrelated bugs surfaced before a clean comparison was possible:
+
+- The new environment's action space turned out to be one action larger
+  than what the shared model's action-conditioning mechanism was sized
+  for (an embedding table originally sized to match the primary game
+  suite's own action count, which every other data source added so far
+  had happened to fit inside without needing to check). This didn't fail
+  at data-generation time — it's just an integer that gets stored — it
+  failed much later and much more confusingly, as a low-level index-out-
+  of-bounds crash deep inside a GPU kernel, on whatever training batch
+  first happened to include the one action id that exceeded the table's
+  size. Fixed by dropping that environment's true "do nothing" action
+  (already redundant with the trivial "nothing changed" baseline used
+  everywhere else) and remapping its remaining actions to fit within the
+  existing bound.
+- Separately, and unrelated to any code defect: the machine this was
+  running on ran completely out of disk space partway through a training
+  run, which surfaced as a generic out-of-memory crash inside a data-
+  loading worker process, repeatedly, in a crash-and-respawn loop. This
+  is a known operating-system-level interaction on the platform in
+  use — an almost-full disk can prevent virtual memory from being able to
+  grow, turning what would normally be a graceful slowdown into a hard
+  failure. The fix was entirely outside the code: freeing real disk space
+  (clearing a large, fully regenerable package-manager cache, and
+  removing already-fully-documented evaluation output that no longer
+  needed to exist on disk) resolved it completely, with no changes to any
+  training script at all. Worth remembering as a general debugging
+  instinct: a generic out-of-memory error during a long-running job is
+  worth checking available disk space for, not just available RAM —
+  especially on this platform, where the two are more entangled than they
+  might appear.
+
+With both fixed, a controlled comparison was run: the same held-out
+validation data, the same primary-game training corpus, and the same
+first synthetic source's data (confirmed identical transition counts
+across both runs), with the *only* difference being whether the second
+synthetic source's data was included in the pretraining mix or not. The
+result was a clear regression, not an improvement: changed-patches
+improvement dropped from roughly +29.5% (first-source-only) to roughly
++15.7% (both sources combined) on identical evaluation data — nearly
+half the improvement lost, not gained. A direct measurement of gate
+specialization (the other half of this stage's own milestone) told the
+same story: mean routing entropy was effectively identical between the
+two checkpoints (both essentially at the fully-uniform-blend ceiling),
+and the fraction of examples showing one clearly dominant expert was, if
+anything, slightly lower with the second source included than without
+it — so the addition didn't help specialization either, and nudged it
+mildly in the wrong direction on that one measure.
+
+The most likely explanation, not directly verified this round but worth
+checking first if this is revisited: the specific mechanic this second
+source was chosen for is known to produce irreversible dead ends under
+truly random play — a single careless move can permanently make part or
+all of a puzzle unsolvable, after which the remainder of that episode is
+just aimless wandering in a now-frozen, uninteresting arrangement. A
+basic frame-level "did anything visibly change" check looked healthy and
+comparable to the first synthetic source's own rate, but that check
+can't distinguish meaningfully varied dynamics from directionless
+wandering after an irrecoverable mistake — so a real portion of this
+second source's generated data may have been low-information noise
+diluting the pretraining signal rather than the intended enrichment,
+unlike the first source, where even a random policy still produces
+reasonably varied experience throughout an episode. A non-random,
+curriculum-style, or reduced-difficulty data collection approach for
+this specific source would be the natural thing to try first before
+concluding the mechanic itself isn't useful, if a future pass revisits
+it — but per the explicit scope this was undertaken under (try it, and
+if it doesn't clearly help, move on to a different lever entirely), this
+was treated as a clean, honest negative result and not iterated on
+further in the moment. The previously-working checkpoint was left
+completely untouched throughout this experiment (the comparison runs
+wrote to separate, clearly-labeled output locations specifically to
+avoid any risk of overwriting it), so there was nothing to roll back.
+
 ---
 
 ## 7. Stage 5 — hypothesis bundle and directed action selection (in progress)
@@ -1043,6 +1137,32 @@ tuning when the two are hard to tell apart.
   contained no real gameplay at all — worth ruling out an environment- or
   infrastructure-level explanation before assuming a fresh, complex
   design has failed outright.
+- **A shared conditioning table (like an action-embedding lookup) needs
+  every data source's value range checked against it explicitly, not
+  assumed.** A new data source with one more category than an existing
+  shared table's size produced no error at data-generation time — the
+  out-of-range value just got stored as a plain integer — and only
+  surfaced much later, as a confusing low-level crash deep inside GPU
+  code, on whichever training batch first happened to sample it. A quick
+  bounds check on newly generated data, before ever starting a training
+  run, would have caught this immediately instead of after a much more
+  confusing failure.
+- **Adding a second instance of "the same kind of fix that worked before"
+  is not guaranteed to produce the same result, and a second, differently
+  -sourced batch of synthetic data can measurably hurt rather than help,
+  even when the reasoning for trying it was sound.** The most likely
+  explanation found here was specific to the new source's own mechanic
+  (irreversible dead ends under random play degrading much of its data
+  into low-information noise), not a flaw in the general strategy of
+  adding diverse pretraining sources — a reminder that a strategy proven
+  once needs to be re-verified each time it's applied again, not assumed.
+- **A generic out-of-memory error during a long-running job can be a
+  full-disk symptom on some platforms, not an actual memory shortage.**
+  Confirmed directly: a training crash inside a data-loading worker
+  process, in a repeating crash-and-respawn loop, cleared up completely
+  after freeing real disk space, with zero changes to any code. Worth
+  checking available disk space, not just available memory, when a
+  memory-related error shows up unexpectedly mid-run.
 
 ---
 
@@ -1062,7 +1182,16 @@ tuning when the two are hard to tell apart.
   both single-predictor variants), with real but not yet dominant gate
   specialization. Noisy top-k gating was tried as a further push on
   specialization and documented as a negative result; the dense-gate,
-  MiniGrid-pretrained checkpoint is the one used going forward.
+  MiniGrid-pretrained checkpoint is the one used going forward. A later
+  attempt to add a second synthetic pretraining source (a push-mechanic
+  environment family, alongside the existing navigation-focused one) was
+  a clean, controlled negative result — changed-patches improvement fell
+  from +29.5% to +15.7% on an otherwise-identical comparison, and gate
+  specialization didn't improve either — most likely because that
+  source's random-policy data is prone to irreversible dead ends that
+  degrade much of it into low-information noise; not pursued further
+  per the explicit scope this was tried under, and the working checkpoint
+  was left untouched throughout.
 - Stage 5: hypothesis-bundle agent designed, built, and evaluated. Four
   real bugs were found and fixed along the way (a value-head/encoder
   latent-space mismatch, an apples-to-oranges information-gain comparison

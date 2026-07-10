@@ -1,15 +1,20 @@
 """Stage 4 dynamics pretraining: mixture-of-gated-experts predictor.
 
 Supports plan.md's originally-specified transfer curriculum: pretrain on
-MiniGrid (consistent action semantics across every layout, cheap to
-generate in unlimited quantity -- see jepa/data/minigrid_data.py) via
-`--pretrain-epochs N`, then fine-tune on the ARC-3 corpus (local
-recordings + optional external arc-3-logs) for `--epochs`. Both phases
-share one encoder/predictor/optimizer and one game vocabulary (the 25 ARC
-games + a single shared "minigrid" entry, built up front so the game
-embedding table is the same size in both phases) -- `--pretrain-epochs 0`
-(the default) skips MiniGrid entirely and reproduces the original
-ARC-3-only training.
+one or more synthetic environment families -- MiniGrid (consistent action
+semantics across every layout, cheap to generate in unlimited quantity --
+see jepa/data/minigrid_data.py) and, opt-in via `--sokoban-episodes-per-config`,
+Sokoban (a distinct "push a movable object with persistent consequences"
+mechanic neither ARC-3 nor MiniGrid reliably exercises -- see
+jepa/data/sokoban_data.py) -- via `--pretrain-epochs N`, then fine-tune on
+the ARC-3 corpus (local recordings + optional external arc-3-logs) for
+`--epochs`. Both phases share one encoder/predictor/optimizer and one game
+vocabulary (the 25 ARC games + whichever synthetic-source game_ids were
+actually used, built up front so the game embedding table is the same size
+in both phases) -- `--pretrain-epochs 0` (the default) skips synthetic
+pretraining entirely and reproduces the original ARC-3-only training.
+Sokoban is off by default (`--sokoban-episodes-per-config 0`) so a
+MiniGrid-only run remains a one-flag baseline for comparison.
 
 MoE routing doesn't need Stage 3's temporal ordering the way the
 recurrent core did -- both phases use i.i.d.-shuffled single transitions.
@@ -17,6 +22,7 @@ recurrent core did -- both phases use i.i.d.-shuffled single transitions.
 Usage:
     python -m jepa.train_moe_predictor --epochs 30 --num-experts 8
     python -m jepa.train_moe_predictor --pretrain-epochs 10 --epochs 30 --num-experts 8
+    python -m jepa.train_moe_predictor --pretrain-epochs 10 --epochs 30 --num-experts 8 --sokoban-episodes-per-config 60
 """
 
 import argparse
@@ -28,6 +34,11 @@ from torch.utils.data import DataLoader, WeightedRandomSampler, random_split
 
 from .data.external_logs import load_external_transitions
 from .data.minigrid_data import DEFAULT_ENV_NAMES, GAME_ID as MINIGRID_GAME_ID, generate_transitions
+from .data.sokoban_data import (
+    DEFAULT_CONFIGS as SOKOBAN_DEFAULT_CONFIGS,
+    GAME_ID as SOKOBAN_GAME_ID,
+    generate_transitions as generate_sokoban_transitions,
+)
 from .data.trajectories import TransitionDataset, load_all_transitions
 from .device import get_device
 from .losses import per_region_error, prediction_loss, variance_regularizer, weighted_prediction_loss
@@ -148,6 +159,8 @@ def train(
     pretrain_epochs: int = 0,
     minigrid_episodes_per_env: int = 40,
     minigrid_steps_per_episode: int = 80,
+    sokoban_episodes_per_config: int = 0,
+    sokoban_steps_per_episode: int = 80,
     top_k: int | None = None,
 ) -> None:
     device = get_device()
@@ -175,6 +188,7 @@ def train(
             )
 
     minigrid_transitions = []
+    sokoban_transitions = []
     if pretrain_epochs > 0:
         minigrid_transitions = generate_transitions(
             env_names=DEFAULT_ENV_NAMES,
@@ -185,12 +199,24 @@ def train(
             f"generated {len(minigrid_transitions)} MiniGrid transitions "
             f"across {len(DEFAULT_ENV_NAMES)} environments"
         )
+        if sokoban_episodes_per_config > 0:
+            sokoban_transitions = generate_sokoban_transitions(
+                configs=SOKOBAN_DEFAULT_CONFIGS,
+                episodes_per_config=sokoban_episodes_per_config,
+                steps_per_episode=sokoban_steps_per_episode,
+            )
+            print(
+                f"generated {len(sokoban_transitions)} Sokoban transitions "
+                f"across {len(SOKOBAN_DEFAULT_CONFIGS)} room configs"
+            )
+    synthetic_transitions = minigrid_transitions + sokoban_transitions
 
     # One shared vocabulary across both phases -- built from the union of
-    # ARC game_ids and (if pretraining) the single "minigrid" game_id, so
-    # the game-embedding table is the same size/meaning in both phases and
-    # weights carry over cleanly.
-    game_ids = sorted({t[6] for t in arc_transitions} | ({MINIGRID_GAME_ID} if pretrain_epochs > 0 else set()))
+    # ARC game_ids and (if pretraining) whichever synthetic-source
+    # game_ids were actually generated, so the game-embedding table is the
+    # same size/meaning in both phases and weights carry over cleanly.
+    synthetic_game_ids = {t[6] for t in synthetic_transitions}
+    game_ids = sorted({t[6] for t in arc_transitions} | synthetic_game_ids)
     game_vocab = {g: i for i, g in enumerate(game_ids)}
     print(f"{len(game_vocab)} distinct games in the shared vocab")
 
@@ -200,9 +226,10 @@ def train(
     opt = torch.optim.AdamW(list(online.parameters()) + list(predictor.parameters()), lr=lr)
 
     if pretrain_epochs > 0:
-        mg_train_loader, mg_val_loader = _make_loaders(minigrid_transitions, game_vocab, batch_size, device)
+        mg_train_loader, mg_val_loader = _make_loaders(synthetic_transitions, game_vocab, batch_size, device)
+        phase_name = "synthetic-pretrain" if sokoban_transitions else "minigrid-pretrain"
         _run_epochs(
-            online, target, predictor, opt, mg_train_loader, mg_val_loader, device, pretrain_epochs, "minigrid-pretrain"
+            online, target, predictor, opt, mg_train_loader, mg_val_loader, device, pretrain_epochs, phase_name
         )
         del mg_train_loader, mg_val_loader  # fully drop before building the next phase's loaders
 
@@ -219,6 +246,7 @@ def train(
                 "epochs": epochs,
                 "pretrain_epochs": pretrain_epochs,
                 "n_minigrid_transitions": len(minigrid_transitions),
+                "n_sokoban_transitions": len(sokoban_transitions),
                 "num_experts": num_experts,
                 "top_k": top_k,
                 "batch_size": batch_size,
@@ -303,6 +331,16 @@ if __name__ == "__main__":
             "--num-experts. Omit for the original dense softmax gate."
         ),
     )
+    parser.add_argument(
+        "--sokoban-episodes-per-config",
+        type=int,
+        default=0,
+        help=(
+            "Episodes per Sokoban room config to add to the synthetic "
+            "pretrain phase (0 = skip, MiniGrid-only pretraining -- see "
+            "jepa/data/sokoban_data.py). Only used when --pretrain-epochs > 0."
+        ),
+    )
     args = parser.parse_args()
     train(
         args.epochs,
@@ -311,5 +349,6 @@ if __name__ == "__main__":
         num_experts=args.num_experts,
         external_per_game=args.external_per_game,
         pretrain_epochs=args.pretrain_epochs,
+        sokoban_episodes_per_config=args.sokoban_episodes_per_config,
         top_k=args.top_k,
     )
