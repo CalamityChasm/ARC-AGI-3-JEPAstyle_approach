@@ -69,6 +69,19 @@ class Hypothesis(Agent):
     # around 1e-4 to 1e-2 (see CLAUDE.md's Stage 1/4 numbers); a temperature
     # tuned for O(1) losses would barely move the confidence weights at all.
     TAU = 0.01
+    # Out of 64 total 8x8 patches (see jepa/hypothesis_bundle.py: info_gain's
+    # top_k_patches docstring for the full rationale) -- a starting point,
+    # not swept; ~12.5% of the grid, deliberately between the two failure
+    # modes of k=64 (flat mean, underrates spatially localized actions) and
+    # k=1 (flat max, overrates them via extreme-value inflation).
+    TOP_K_PATCHES = 8
+    # None (default) uses the real entropy-driven beta from HypothesisBundle.
+    # Set to a fixed float (0.0 = pure InfoGain/explore, 1.0 = pure
+    # value-greedy/exploit) to ablate the Q-blend itself -- isolates
+    # whether combining IG and V actually helps over either half alone.
+    # See CLAUDE.md's Stage 5 bottleneck-hunting notes for the ablation
+    # this was built for.
+    FORCE_BETA: float | None = None
     # InfoGain(a) is *predicted* expert disagreement, recomputed fresh each
     # turn from a near-deterministic forward pass -- unlike Curiosity's
     # EMA-of-observed-error ranking, it has no built-in decay when an action
@@ -182,15 +195,26 @@ class Hypothesis(Agent):
         """Returns (Q(s, action_id), best_xy) -- best_xy is the
         InfoGain-salient click location if action_id is ACTION6, else None."""
         # Neutral xy for the "which action" scoring pass -- xy conditioning
-        # broadcasts uniformly across all spatial positions in this
-        # architecture (see MoEPredictor._condition), so it doesn't bias
-        # which patches look informative; only which action_id does.
+        # broadcasts as a uniform additive bias across every spatial
+        # position in this architecture (see MoEPredictor._condition), not
+        # a spatially-localized signal -- confirmed directly by re-scoring
+        # ACTION6 at its own best-patch location and observing no
+        # meaningful change (see CLAUDE.md's Stage 5 bottleneck-hunting
+        # notes), so a second forward pass at a "better" xy buys nothing
+        # and isn't worth the extra compute. One neutral-point pass is
+        # enough for every action, including ACTION6.
         expert_preds = self._predict_experts(feat, action_id, (32, 32))  # (K, C, 8, 8)
 
         weights = self.hypotheses.weights.to(self.device)  # (K,)
-        with torch.no_grad():
-            v_per_expert = self.value_head(expert_preds)  # (K,)
-        v = (weights * v_per_expert).sum().item()
+
+        # Same top-k-patch reduction for every action (see info_gain's own
+        # docstring for why: a flat mean over all 64 patches structurally
+        # underrates ACTION6, whose value comes from one good click
+        # location, not an average over mostly-irrelevant ones; a flat max
+        # overrates it instead via extreme-value inflation over more
+        # samples. Applying it uniformly, not just to ACTION6, keeps the
+        # comparison apples-to-apples).
+        ig = info_gain(expert_preds, top_k_patches=self.TOP_K_PATCHES).item()
 
         xy = None
         if action_id == GameAction.ACTION6.value:
@@ -198,20 +222,10 @@ class Hypothesis(Agent):
             best_patch = int(patch_var.argmax().item())
             row, col = divmod(best_patch, _PATCHES_PER_SIDE)
             xy = (col * PATCH + PATCH // 2, row * PATCH + PATCH // 2)
-            # ig must be computed the same way (mean over experts-variance across
-            # every patch/channel) as the non-ACTION6 branch below, or ACTION6
-            # wins the cross-action comparison almost by construction -- a max
-            # over 64 patches is nearly always larger than a global mean, so an
-            # earlier version (`patch_var.max()`) made ACTION6 look more
-            # "informative" than any other action regardless of what the experts
-            # actually predicted. patch_var.mean() here is mathematically
-            # identical to info_gain(expert_preds) (both reduce to
-            # var(dim=0).mean() over channels+spatial, just in a different
-            # order) -- argmax above still picks the best click location, only
-            # the scalar used for cross-action comparison changes.
-            ig = patch_var.mean().item()
-        else:
-            ig = info_gain(expert_preds).item()
+
+        with torch.no_grad():
+            v_per_expert = self.value_head(expert_preds)  # (K,)
+        v = (weights * v_per_expert).sum().item()
 
         q = (1.0 - beta) * ig + beta * v
         return q, xy
@@ -281,12 +295,19 @@ class Hypothesis(Agent):
                     xy = (x, y)
                 action.reasoning = "hypothesis agent: epsilon-random fallback"
             else:
-                beta = self.hypotheses.beta()
+                beta = self.FORCE_BETA if self.FORCE_BETA is not None else self.hypotheses.beta()
                 best_q, best_action_id, best_xy = -1e18, available[0], None
+                trace = []
                 for candidate in available:
                     q, xy_candidate = self._score_action(feat, candidate, beta)
+                    trace.append((candidate, q))
                     if q > best_q:
                         best_q, best_action_id, best_xy = q, candidate, xy_candidate
+                if logger.isEnabledFor(logging.DEBUG):
+                    trace_str = " ".join(f"a{c}:{q:.5f}" for c, q in trace)
+                    logger.debug(
+                        f"{self.game_id} - hypothesis trace: beta={beta:.3f} {trace_str} -> chosen a{best_action_id}"
+                    )
                 action_id, xy = best_action_id, best_xy
                 action = GameAction.from_id(action_id)
                 if action.is_complex():

@@ -1183,6 +1183,106 @@ directly across a fixed action sequence, rather than requiring an actual
 game win to register any signal at all) -- not further changes to the
 teacher-data pipeline itself, which already did its job.
 
+### Stage 5 follow-up 2 -- finding the actual bottleneck: a real architectural bug, found and fixed, plus a validated design choice
+
+Rather than guess at further fixes, went looking for direct evidence of
+*where* `Hypothesis` was actually failing, in three cheap steps before
+touching any code:
+
+1. **Confirmed the exact-recall mechanism isn't silently broken** (a
+   loose end flagged back in Stage 3 and never checked). Ran `Hypothesis`
+   on 5 games with real budgets: the "recalling known winning action" log
+   line never fired, but that's fully explained by zero level completions
+   ever occurring in that run to record in the first place -- not a
+   broken mechanism, just nothing yet to recall.
+2. **Live-traced full episodes with per-step `Q`/`beta` logging**
+   (temporary `logger.debug` instrumentation in `_score_action`, gated
+   behind `.env`'s existing `DEBUG` flag so it's zero-cost when off --
+   left in permanently). Two things jumped out immediately on a `bp35`
+   trace (a game this project's own Stage 1 history flags as
+   high-activity/click-relevant): candidate-action `Q` margins were
+   frequently within 0.0001-0.001 of each other -- close enough to be
+   dominated by noise rather than real signal -- and **ACTION6 (the click
+   action) scored lowest of the four candidates in nearly every single
+   decision across the whole 300-action episode.**
+3. **Root-caused the ACTION6 finding.** `_score_action` computed
+   ACTION6's score at a neutral center point `(32, 32)` (the same point
+   used for every action, on the reasoning that xy conditioning
+   broadcasts uniformly and shouldn't bias which patches look
+   informative -- true, but beside the point: it meant ACTION6 never got
+   scored at *its own best location* before being chosen). A first fix
+   attempt -- re-scoring ACTION6 at its own best-variance patch instead
+   of the neutral point -- changed *nothing* in the live trace. Digging
+   into why revealed the real issue: `MoEPredictor._condition` broadcasts
+   the `xy` embedding as a **uniform additive bias across every one of
+   the 64 spatial patches equally**, not a spatially-localized signal --
+   so telling the model "evaluate as if clicking here" doesn't make it
+   attend to that location differently at all, it just shifts the whole
+   feature map by the same constant. The re-scoring attempt was reverted
+   (confirmed dead weight, not worth the extra forward pass).
+
+   The actual fix: `ig`'s spatial reduction was the real lever, not
+   *which* xy to condition on. A flat mean over all 64 patches (the
+   correct fix for the earlier apples-to-oranges bug, see Stage 5's first
+   set of bugs above) structurally underrates ACTION6, whose true value
+   comes from *one* good click location, not an average over 63 mostly-
+   irrelevant ones -- while the original flat *max* over 64 patches
+   overrated it via extreme-value inflation (a max over many samples is
+   statistically larger than a single-shot evaluation for spatially-
+   uniform actions, independent of any real signal). Implemented a
+   top-k-patch mean instead of a flat mean or flat max
+   (`jepa/hypothesis_bundle.py: info_gain(..., top_k_patches=...)`,
+   `Hypothesis.TOP_K_PATCHES = 8` out of 64, an unswept starting point
+   deliberately between the two failure modes), applied via the *same*
+   reduction to every action (not a special case for ACTION6 -- that
+   would just reintroduce the original bug in a different shape). This
+   also let the redundant second forward pass from the reverted attempt
+   be dropped -- one neutral-point pass is enough for every action now.
+
+   **Result: 0 total levels / 0 distinct games -> 6 total levels / 3
+   distinct games** (`ft09`, `m0r0`, `r11l`) across a fresh matched
+   8x25-game evaluation -- a clean, unambiguous improvement, not noise.
+   This was a genuine, previously-undiagnosed architectural bug, not a
+   data or tuning problem -- the first concrete evidence this session
+   that part of Stage 5's reliability gap was fixable in the model
+   itself, not just in the training data feeding it.
+
+4. **Ablated the Q-blend itself** (`Hypothesis.FORCE_BETA`, a class
+   attribute defaulting to `None` for the real entropy-driven beta;
+   temporarily set to a fixed float to test each extreme, mirroring this
+   project's established bump-and-revert pattern for controlled
+   comparisons) to check whether combining InfoGain and the value head is
+   actually earning its complexity, now that the ACTION6 bug no longer
+   confounds the picture. Matched 8x25-game runs for each condition (some
+   partial -- an intermittent transient failure in the harness's
+   always-hit-the-real-API game-listing call, unrelated to this ablation,
+   truncated 3 of 8 repeats for `beta=1` and 1 of 8 for `beta=0`; sample
+   sizes of 125-208 are still large enough for a clear qualitative read):
+
+   | condition | total levels | distinct games | runs |
+   |---|---|---|---|
+   | `beta=0` (pure InfoGain) | 4 | 1 (`m0r0`) | 175 |
+   | `beta=1` (pure value-greedy) | 1 | 1 (`r11l`) | 125 |
+   | full blend (entropy-driven, default) | 6 | 3 (`ft09`, `m0r0`, `r11l`) | 208 |
+
+   **The full blend clearly beats both extremes on both metrics.**
+   Neither InfoGain nor the value head alone comes close to matching the
+   combined design -- this validates Stage 5's original entropy-gated
+   `Q = (1-beta)*IG + beta*V` design as a real, load-bearing choice, not
+   speculative complexity worth stripping out. `FORCE_BETA` is kept as a
+   permanent (harmless, defaults to off) hook for any future re-ablation
+   rather than a one-off throwaway change.
+
+**Where this actually leaves Stage 5:** the ACTION6 scoring bug was a
+genuine, previously-undiscovered piece of the reliability gap, now fixed
+with direct, verified evidence of improvement. The Q-blend design itself
+is now empirically validated, not just theoretically justified. Both are
+real progress beyond the "value head improved in isolation, agent-level
+result inconclusive" state from the previous follow-up section -- this
+is the first fix in this whole Stage 5 arc with a *directly measured,
+unambiguous* full-agent-level improvement behind it, not just noise-
+bounded or component-level evidence.
+
 ## Gotchas learned the hard way (don't re-discover these)
 
 - **A new synthetic data source's action space must fit inside

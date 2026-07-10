@@ -1127,6 +1127,84 @@ doesn't require an actual full game win just to register any signal —
 not further changes to the data-generation approach itself, which
 already did what it was meant to do.
 
+### 7.5 Finding the actual bottleneck: a real bug, found and fixed with direct evidence
+
+Rather than guessing at further fixes, the next step was to go looking
+for direct evidence of exactly where the hypothesis-driven agent was
+failing, in a few cheap steps before changing any code.
+
+First, confirmed that the exact-recall mechanism carried over from the
+memory-based agent wasn't silently broken — a loose end left unconfirmed
+much earlier in this project. Running the agent on a handful of games
+showed the "recalling a known winning action" log line never firing, but
+that turned out to be fully explained by zero level completions ever
+happening in that run to record in the first place, not a broken
+mechanism with nothing to show for it.
+
+Second, added temporary step-by-step logging of the internal scoring
+values behind every decision and watched a full real episode play out.
+Two things stood out immediately on a game already flagged elsewhere in
+this project as involving a lot of on-screen activity: the numeric gap
+between candidate actions was frequently tiny enough to be indistinguishable
+from noise, and — more strikingly — the click-based action scored lowest
+of the available options in nearly every single decision across an
+entire episode, on a game where clicking plausibly matters.
+
+Tracing why revealed a real, previously undiagnosed architectural issue.
+The click action was being scored at a fixed, neutral point on the grid
+— the same point used for every other action — under the reasoning that
+the coordinate information shouldn't bias which regions looked
+interesting, only the action type should. That reasoning held, but it
+missed something: the click action's own score was never being evaluated
+at the specific location it would actually pick if chosen. A first
+attempt to fix this — re-scoring it at its own best-looking location
+instead of the neutral point — changed nothing at all when tested. Digging
+into why revealed that the underlying model's coordinate conditioning
+is applied as a single uniform shift across every region of the grid
+simultaneously, not as a way of directing attention to one specific
+region — so telling it "evaluate as if acting here" doesn't actually make
+it look at "here" any differently than anywhere else. That attempted fix
+was reverted once confirmed to be dead weight.
+
+The real lever turned out to be how the click action's informativeness
+score was being *summarized* across the grid, not which coordinate it
+was conditioned on. Averaging across the entire grid (the correct fix for
+an earlier, different bug where the click action had been unfairly
+favored) structurally underrates an action whose true value comes from
+one good location out of many, not an average across mostly-irrelevant
+ones — while the original approach of taking the single highest value
+across the grid overrated it instead, for an unrelated statistical
+reason: the maximum of many samples tends to look larger than a single
+evaluation purely from having more chances, regardless of whether any of
+them are genuinely meaningful. The fix settled on a middle ground —
+averaging across only the top handful of regions instead of either the
+single best one or the entire grid — applied identically to every
+action's scoring, not as a special case for the click action alone,
+which would have just reintroduced a version of the original problem.
+
+The result was a clean, unambiguous improvement: from zero level
+completions across an entire matched evaluation sweep to six completions
+across three distinct games, on a fresh identical sweep. This was the
+first fix in this whole line of investigation with directly measured,
+unambiguous improvement behind it — not something bounded by sampling
+noise or only verified in isolation from actual play.
+
+With that confounding bug out of the way, one more question remained
+worth answering directly rather than assuming: was the strategy of
+blending an exploration signal with a value estimate actually earning
+its complexity, or would either half alone have done just as well? Ran
+the same matched evaluation three times, each with the blend fixed to
+one extreme or left at its normal adaptive setting: pure exploration
+signal alone reached one distinct game, pure value-estimate greediness
+alone also reached only one distinct game, and the normal adaptive blend
+reached three distinct games with more than double the total completions
+of either extreme (some of these comparison runs were shortened by an
+unrelated, intermittent connectivity hiccup during game setup, but the
+remaining sample sizes were still large enough for a clear read).
+Neither ingredient alone matched the combination — a real, validated
+confirmation that the original design decision to blend the two signals,
+rather than relying on just one, was sound.
+
 ---
 
 ## 8. Lessons and gotchas worth remembering
@@ -1297,6 +1375,46 @@ already did what it was meant to do.
   the same directory — worth filtering by filename pattern *before*
   opening and parsing file contents whenever files of very different
   sizes might coexist in the same location.
+- **Live, step-by-step tracing of real decisions can surface a bug that
+  purely offline, aggregate evaluation completely hides.** A pattern
+  invisible in summary statistics — one specific action type losing a
+  ranking comparison in nearly every single decision across an entire
+  episode — was obvious within seconds of watching the actual per-step
+  values scroll by. Worth reaching for direct, granular tracing earlier
+  when an aggregate result is flat or poor and the cause isn't obvious,
+  rather than only ever looking at final summary numbers.
+- **A plausible-sounding fix can be directly, cheaply falsified by
+  testing it in isolation before committing to it.** Re-scoring one
+  option at what seemed like a more representative input, instead of a
+  generic default one, was a reasonable-sounding hypothesis — and
+  produced no measurable change at all once actually tested, which
+  itself was the useful signal: it revealed that the underlying
+  mechanism didn't work the way it was assumed to (a supposedly
+  location-specific input was actually being applied as a uniform,
+  non-specific shift everywhere at once). Testing a fix's actual effect
+  before keeping it, even when the fix seems obviously correct, catches
+  wrong mental models of how a component works, not just wrong code.
+- **When two things being compared aren't naturally on the same footing
+  (one option's value depends on choosing the single best spot out of
+  many, another's doesn't depend on location at all), neither of the two
+  "obvious" ways of summarizing across those many spots — plain averaging
+  or taking the single highest value — treats them fairly, for two
+  different and opposite reasons.** Averaging washes out a genuinely
+  strong single spot; taking the maximum inflates a result purely from
+  having more chances to sample a high value, independent of whether
+  anything meaningful is actually there. A middle-ground summary
+  (averaging over just the strongest few, not one or all) can resolve
+  this kind of asymmetry when the two "obvious" extremes each fail in
+  opposite directions.
+- **Isolating each ingredient of a combined design, one at a time, is the
+  most direct way to check whether that combination is actually earning
+  its complexity — and the answer isn't always assumable in advance.**
+  Testing each half of a blended decision rule alone, against the same
+  matched evaluation used for the combined version, gave a clean,
+  unambiguous answer (the combination clearly beat either half) rather
+  than leaving it as an assumption. This is a general, reusable technique
+  for validating any design that blends multiple signals: force each
+  input to an extreme, one at a time, and compare against the blend.
 
 ---
 
@@ -1354,4 +1472,16 @@ already did what it was meant to do.
   of the same end-to-end comparison came back essentially flat, which is
   itself expected and uninformative at this sample size given how rare
   and binary the outcome being measured is, not evidence the improvement
-  wasn't real.
+  wasn't real. A subsequent, more direct investigation — live-tracing
+  real decisions step by step rather than only looking at outcome-level
+  summaries — found and fixed a genuine architectural bug: the
+  click-based action was being scored in a way that structurally
+  undervalued it relative to other actions, unrelated to any training
+  data question. Fixing it produced a clean, unambiguous improvement (from
+  zero level completions across a full matched evaluation to six
+  completions across three distinct games) — the first fix in this whole
+  line of investigation with directly measured, noise-proof evidence
+  behind it. A follow-up check confirmed the underlying design decision
+  to blend two different decision-making signals together, rather than
+  relying on either alone, was itself sound: isolating each signal
+  individually performed clearly worse than the combination.

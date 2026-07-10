@@ -93,13 +93,39 @@ class HypothesisBundle:
         return 1.0 - normalized_entropy
 
 
-def info_gain(expert_predictions: torch.Tensor) -> torch.Tensor:
+def info_gain(expert_predictions: torch.Tensor, top_k_patches: int | None = None) -> torch.Tensor:
     """expert_predictions: (K, C, H, W) raw per-expert predicted
     next-features for one (state, candidate action) pair (see
     `MoEPredictor.predict_all_experts`, called with batch size 1 and
     squeezed). Returns a scalar: variance across the K hypotheses,
-    averaged over channels and spatial positions -- how much the experts
-    disagree about what this action does, i.e. how informative actually
-    taking it would be.
+    how much the experts disagree about what this action does, i.e. how
+    informative actually taking it would be.
+
+    top_k_patches: if None (default), averages over every spatial patch
+    and channel -- the fair, apples-to-apples reduction used for actions
+    whose effect isn't spatially localized. If set, restricts the spatial
+    part of the reduction to the top-k highest-variance patches (by
+    per-patch, channel-mean variance) instead of all of them.
+
+    Why this matters specifically for ACTION6 (the click action): its
+    real value comes from its *one* best click location, not an average
+    over all 64 patches -- averaging over everything structurally
+    underrates it (confirmed directly via a live-play trace, see
+    CLAUDE.md's Stage 5 bottleneck-hunting notes: it scored lowest of the
+    four candidate actions in nearly every decision across a full
+    click-dependent-game episode), while an earlier version that used a
+    flat *max* over all 64 patches overrated it instead (a max over more
+    samples is statistically inflated relative to a single-shot
+    evaluation for spatially-uniform actions, independent of any real
+    signal -- the original apples-to-oranges bug this replaced). A top-k
+    mean sits between those two failure modes. Pass the *same*
+    `top_k_patches` value for every action's scoring call, not just
+    ACTION6's -- applying it selectively would just reintroduce the
+    apples-to-oranges problem in a different shape.
     """
-    return expert_predictions.var(dim=0).mean()
+    if top_k_patches is None:
+        return expert_predictions.var(dim=0).mean()
+    patch_var = expert_predictions.var(dim=0).mean(dim=0)  # (H, W)
+    flat = patch_var.flatten()
+    k = min(top_k_patches, flat.numel())
+    return flat.topk(k).values.mean()
