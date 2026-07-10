@@ -56,8 +56,16 @@ def main() -> None:
         print("Usage: python scripts/compare_agents.py <agent1> [agent2 ...]")
         return
 
-    rows = [analyze_file(p) for p in sorted(RECORDINGS_DIR.glob("*.recording.jsonl"))]
-    rows = [r for r in rows if r["agent"] in agents]
+    # Glob per requested agent name rather than "*.recording.jsonl" then
+    # filtering -- with a long-episode agent like Memory in the mix (whose
+    # recording files can run into the hundreds of MB, see CLAUDE.md's
+    # Stage 5 teacher-policy notes), parsing every file before filtering
+    # by agent name means paying that cost even when the agent in question
+    # isn't one you asked about.
+    files = []
+    for agent in agents:
+        files.extend(RECORDINGS_DIR.glob(f"*.{agent}.*.recording.jsonl"))
+    rows = [analyze_file(p) for p in sorted(files)]
 
     by_agent = defaultdict(list)
     for r in rows:

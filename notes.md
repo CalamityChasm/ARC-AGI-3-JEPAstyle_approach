@@ -1022,6 +1022,111 @@ add a new component or tune a parameter only when a specific, measured
 bottleneck calls for it, and prefer a data-side explanation over further
 tuning when the two are hard to tell apart.
 
+### 7.4 A "teacher" data source for the value head: a real component-level win, still unproven at the full-agent level
+
+Following up on the exact conclusion above, and after the second
+synthetic-pretraining attempt came back negative, the originally-scoped
+fallback plan was tried: generate denser, more purposeful training data
+by reusing an already-built, already-validated exploration policy as a
+data-collection tool, rather than building an entirely new search or
+reinforcement-learning system from scratch. The existing memory-and-
+recall agent from an earlier stage already does non-repeating, curiosity-
+ranked exploration and keeps its exact state-transition memory across
+resets — running it with a much larger action budget than its usual
+comparison budget was a low-risk way to approximate directed search
+without new exploration logic. The budget was temporarily increased
+roughly eightfold for a single data-collection pass across all 25 games,
+then immediately reverted afterward, following the same
+temporarily-adjust-and-revert pattern already used elsewhere in this
+project for fair comparisons.
+
+That single pass produced real completion events on five of the twenty-
+five games — a meaningful density improvement in absolute terms over the
+existing corpus, where such events were rare enough that a value-
+estimating component had previously found almost nothing to learn from.
+
+The first attempt to actually use this new data, however, was a genuine
+negative result, and an instructive one: retraining the value-estimating
+component on the combined corpus, with an ordinary unweighted loss,
+produced a component that had learned nothing at all — its error on
+held-out data matched a trivial "always predict nothing happens"
+baseline exactly, epoch after epoch. The cause traced back to episode
+length: the newly added data came from episodes roughly thirty times
+longer than the rest of the corpus, and a discounted-return target decays
+to a technically-nonzero but practically meaningless value hundreds of
+steps before any actual reward event. The vast majority of the newly
+added samples were, for training purposes, indistinguishable from the
+already-overwhelming majority of true-zero samples — diluting the
+signal rather than enriching it, purely because of how the loss weighted
+them. This is precisely the same class of problem encountered very early
+in this project's very first model, when an unweighted loss dominated by
+a trivial majority gave almost no usable signal for the rare, important
+minority case — and it was fixed the same way here as it was fixed
+there: oversampling the meaningful examples during training.
+
+With that fix applied, the picture became more interesting rather than
+simply "fixed." Evaluated the naive way — average error across the
+entire held-out validation population — the retrained component now
+looked *worse* than the trivial baseline, not better. But this is exactly
+the same trap as evaluating a whole grid instead of just the parts that
+changed, encountered and corrected very early in this project: the vast
+majority of validation examples are still trivially uninteresting, so an
+average over all of them mostly just measures how well a component
+handles the boring majority, not whether it has learned anything useful
+about the rare cases that actually matter. Restricting evaluation
+specifically to the meaningful examples told a different, more honest
+story: a real, roughly one-third reduction in error relative to the
+trivial baseline on exactly those examples, alongside a genuine (if
+modest) positive correlation between predicted and true values. A
+follow-up check for a systematic bias on ordinary, uninteresting states
+found only a small one — not the kind of collapse that would make the
+component useless in practice.
+
+Whether this translated into a better-performing full agent, though,
+remains genuinely unresolved rather than confirmed either way. Re-running
+the same matched comparison against the curiosity-only baseline agent
+produced zero total level completions this round for the hypothesis-
+bundle agent, down from a single completion in the prior best run —
+on the surface, a regression. But this agent's best-ever observed success
+rate across any prior round was already only about one in eight
+attempts, and under that same rate, seeing zero successes in eight fresh
+attempts would be expected to happen roughly a third of the time purely
+by chance — not an unusual outcome at all, and nowhere near strong enough
+evidence to conclude the change made things worse. This is the same
+sparse-metric caution that has come up repeatedly throughout this
+project: a raw win count at this sample size simply doesn't have enough
+resolution to distinguish a real, moderate improvement in one internal
+component from ordinary run-to-run noise in the final outcome.
+
+One piece of housekeeping worth recording: the long data-collection
+episodes produced individual recording files far larger than anything
+else generated in this project (some in the hundreds of megabytes,
+apparently reflecting genuine per-game differences in how much
+information a single frame carries, magnified thirty-fold by the much
+longer episodes) — briefly ballooning total disk usage for this kind of
+data to several gigabytes, on a machine that had already run out of
+storage once earlier in the same broader effort. All of it was deleted
+once results were extracted and the retrained component itself was
+safely saved, since none of it is uniquely irreproducible — the exact
+steps to regenerate it are documented. A comparison utility written
+earlier was also found to be needlessly slow because of this — it parsed
+every recording file before filtering by which agent produced it, paying
+the cost of reading multi-hundred-megabyte files even when they weren't
+the ones being asked about — and was fixed to filter before parsing
+instead.
+
+The honest summary: the underlying component genuinely, measurably
+improved on the metric that actually reflects what it's supposed to do.
+Whether that improvement is large enough to show up in a full end-to-end
+comparison is still an open question, not because the fix failed, but
+because eight attempts per condition isn't enough resolution to tell a
+real moderate improvement apart from noise on a metric this coarse and
+this rare an event. Resolving that would need either substantially more
+repeated trials, or a finer-grained way of measuring progress that
+doesn't require an actual full game win just to register any signal —
+not further changes to the data-generation approach itself, which
+already did what it was meant to do.
+
 ---
 
 ## 8. Lessons and gotchas worth remembering
@@ -1163,6 +1268,35 @@ tuning when the two are hard to tell apart.
   after freeing real disk space, with zero changes to any code. Worth
   checking available disk space, not just available memory, when a
   memory-related error shows up unexpectedly mid-run.
+- **A discounted-return target computed over episodes of very different
+  lengths can silently dilute a training signal rather than enrich it,**
+  even when the new data genuinely contains more of the rare events being
+  targeted. A target that decays smoothly with distance from a reward
+  event stays *technically* nonzero for a very long stretch before a much
+  longer episode's reward, but becomes practically indistinguishable from
+  the already-dominant "nothing happened" majority long before that — so
+  simply mixing in longer, richer episodes without accounting for the
+  loss's sensitivity to episode length can make an unweighted average
+  worse, not better, purely as an artifact of how much low-information
+  padding came along with the genuinely useful examples.
+- **A component that got measurably better on the metric that reflects
+  its actual job can still show a flat or even worse result in an
+  end-to-end comparison, without that meaning the improvement was fake.**
+  When the end-to-end outcome depends on a rare, effectively binary event
+  (win or no win, within a small handful of attempts), the outcome-level
+  measurement simply doesn't have the resolution to reliably detect a
+  moderate upstream improvement — the right response is to either gather
+  substantially more trials or measure something with finer resolution
+  than the binary outcome itself, not to conclude the improvement wasn't
+  real.
+- **A comparison or analysis utility that reads every matching file
+  before filtering by what was actually asked for pays the full cost of
+  the largest, least-relevant files too.** A utility that had run
+  instantly against a corpus of small files became unexpectedly slow once
+  much larger files (unrelated to what was being compared) were added to
+  the same directory — worth filtering by filename pattern *before*
+  opening and parsing file contents whenever files of very different
+  sizes might coexist in the same location.
 
 ---
 
@@ -1209,4 +1343,15 @@ tuning when the two are hard to tell apart.
   extremely sparse positive-signal rate, and a mixture-of-experts model
   whose specialization was already found to be a minority behavior) —
   the natural next lever is better or more purposeful training data, not
-  further parameter tuning on the current setup.
+  further parameter tuning on the current setup. A follow-up attempt to
+  address the sparse-signal cause directly — reusing an existing
+  exploration agent as a data-collection "teacher" with a much larger
+  action budget — produced a real, verified improvement in the value-
+  estimating component itself (roughly a third lower error than a trivial
+  baseline on the examples that actually matter, after also fixing a
+  genuine unweighted-loss dilution bug along the way), but whether that
+  translates into a better full agent remains an open question: a repeat
+  of the same end-to-end comparison came back essentially flat, which is
+  itself expected and uninformative at this sample size given how rare
+  and binary the outcome being measured is, not evidence the improvement
+  wasn't real.

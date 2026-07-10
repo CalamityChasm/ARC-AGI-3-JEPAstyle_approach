@@ -12,7 +12,7 @@ from pathlib import Path
 
 import torch
 import torch.nn.functional as F
-from torch.utils.data import DataLoader, Dataset, random_split
+from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler, random_split
 
 from .data.value_targets import load_value_targets
 from .device import get_device
@@ -21,6 +21,19 @@ from .models import CNNEncoder, ValueHead
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 VAL_FRACTION = 0.1
+# A plain unweighted MSE loss over these targets is dominated by the
+# overwhelming majority near/at zero (see CLAUDE.md's Stage 5 teacher-policy
+# notes) -- same class of problem Stage 1's predictor hit with unweighted
+# "changed" transitions, same fix. Confirmed directly: without this, a
+# retrain on a corpus with a much larger long-episode tail (mostly
+# heavily-decayed, near-zero discounted returns) collapsed to val_mse
+# *exactly* matching the zero-baseline every single epoch -- the head
+# learned nothing beyond "always predict ~0." 25x is a starting point
+# (meaningful samples are ~1-2% of the corpus; 25x brings them to a much
+# more trainable fraction of each batch without being so extreme it
+# destabilizes training on the majority-zero remainder).
+NONZERO_WEIGHT = 25.0
+NONZERO_THRESHOLD = 1e-3
 
 
 class ValueDataset(Dataset):
@@ -29,6 +42,11 @@ class ValueDataset(Dataset):
 
     def __len__(self) -> int:
         return len(self.samples)
+
+    def sample_weights(self, nonzero_weight: float = NONZERO_WEIGHT) -> list:
+        """Per-sample weights for a WeightedRandomSampler, oversampling
+        transitions with a meaningful (non-negligible) value target."""
+        return [nonzero_weight if t[1] > NONZERO_THRESHOLD else 1.0 for t in self.samples]
 
     def __getitem__(self, idx: int):
         frame, target, _game_id = self.samples[idx]
@@ -52,7 +70,11 @@ def train(
     train_ds, val_ds = random_split(
         dataset, [n_train, n_val], generator=torch.Generator().manual_seed(0)
     )
-    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+
+    all_weights = dataset.sample_weights()
+    train_weights = [all_weights[i] for i in train_ds.indices]
+    sampler = WeightedRandomSampler(train_weights, num_samples=len(train_weights), replacement=True)
+    train_loader = DataLoader(train_ds, batch_size=batch_size, sampler=sampler)
     val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
 
     encoder = CNNEncoder().to(device)

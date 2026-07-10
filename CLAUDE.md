@@ -1073,6 +1073,116 @@ cause was found) -- refreshed via
 `https://three.arcprize.org/api/games/anonkey`, per this doc's own setup
 instructions. See the "Gotchas" section below.
 
+### Stage 5 follow-up -- a "teacher policy" for denser value-head data: real component-level win, no clear agent-level win yet
+
+Given the Sokoban ablation (Stage 4 item 8) came back negative, the
+originally-scoped fallback was tried instead: rather than building a new
+RL-per-game or search-from-scratch teacher, `Memory` (Stage 3) was reused
+directly as a "teacher" -- it already does exact-graph-guided, non-
+repeating, curiosity-ranked exploration and persists its transition graph
+across resets, so running it with a much larger action budget than its
+usual milestone-comparison budget approximates directed search without
+new, riskier exploration code. `Memory.MAX_ACTIONS` was temporarily
+bumped 300 -> 2500 (mirroring this project's established practice of
+temporarily bumping an agent's budget for a data-generation/comparison
+run, then reverting -- see Stage 2's `Random` history), one pass across
+all 25 games was recorded, and the budget was reverted immediately after.
+
+**Teacher pass result:** 5 levels completed across 5 distinct games in a
+single 25-game pass (`ar25`, `cd82`, `lp85`, `m0r0`, `r11l`) -- versus
+random policy's ~1.6% nonzero-value-target rate over the entire existing
+150-file corpus. A genuine density win in absolute terms.
+
+**First retrain on the combined corpus (unweighted): a real negative
+result, same failure class as Stage 1's earliest predictor iteration.**
+`jepa/train_value_head.py`'s loss is plain unweighted MSE over
+per-transition discounted-return targets (`GAMMA=0.95`,
+`jepa/data/value_targets.py`). Memory's 2500-step episodes are far longer
+than the ~80-step episodes everything else in the corpus produces, and a
+discounted return decays to a *technically* nonzero but *practically*
+negligible value hundreds of steps before any actual reward event --
+meaning most of the ~62.5k newly-added samples are indistinguishable
+from zero to an unweighted loss, while inflating the denominator. Result:
+`val_mse` matched `zero-baseline_mse` bit-for-bit at **every one of 20
+epochs** -- the head learned nothing beyond "always predict ~0," a
+strictly worse outcome to observe than the earlier (pre-teacher-corpus)
+run, which at least showed epoch-to-epoch movement. This is the exact
+"unweighted loss dominated by an overwhelming trivial majority" failure
+Stage 1 hit with its first predictor iteration -- same root cause,
+different component.
+
+**Fix: oversampling, same pattern as Stage 1's `sample_weights()`.**
+Added `ValueDataset.sample_weights()` / `NONZERO_WEIGHT=25.0` /
+`NONZERO_THRESHOLD=1e-3` to `jepa/train_value_head.py`, wired through a
+`WeightedRandomSampler` on the training split only (validation stays
+unweighted/natural-distribution, same rationale as every other honest
+eval in this project). Retrained: **`val_mse` on the full validation
+population got *worse* than the zero baseline in every epoch (0.0018-
+0.0051 vs a flat 0.0011)** -- at first glance a regression, but this is
+measuring the wrong thing, exactly the way Stage 1's original whole-grid
+MSE was the wrong thing to measure (see that stage's own history) --
+98.8% of validation samples are still near-zero-target, so any
+population-wide average is dominated by them regardless of what the
+*meaningful* cases look like. Evaluating specifically on the meaningful
+(`target > 1e-3`) validation subset instead (mirroring Stage 1's own
+"changed-patches" pivot away from whole-grid MSE) tells a different,
+honest story: **`pred_mse=0.0633` vs `zero-baseline_mse=0.0976` on that
+subset -- a real ~35% improvement -- with a genuine positive
+correlation (0.284) between predicted and true value.** A small positive
+bias exists on typical/near-zero states too (mean predicted ~0.017 vs
+true ~0, directly measured on 500 held-out typical samples) but isn't
+severe enough to look like miscalibration collapse -- some spread exists
+(std 0.049, range roughly -0.05 to +0.18), not a constant output.
+
+**Downstream agent-level result: no clear win at this sample size.**
+Re-ran the same matched 8-repeat, 25-game `Hypothesis` vs `Curiosity`
+comparison with the improved value head: **Hypothesis 0 total levels / 0
+distinct games** (down from the prior best of 1/1), **Curiosity 8 total /
+2 distinct games** (down from its own prior 11/5, on unchanged
+checkpoints -- expected sampling noise, not a real change). Hypothesis
+landing at 0/8 this round is *not* strong evidence of a new regression:
+its best-ever observed success rate was already only 1/8 (~12.5%), and
+`P(zero successes in 8 trials | p=0.125) ~= 0.34` -- a highly plausible
+outcome under pure sampling variance at this rate, not an unusual one.
+Consistent with this project's own repeated observation that raw win/
+level counts are a genuinely noisy metric at n=8 on a 25-game sweep (see
+Stage 2 and Stage 5's own earlier sections) -- a component-level
+improvement of this size (a value head that's honestly better, but still
+noisy, on a rare event type) isn't guaranteed to be *detectable* in a
+full-agent milestone comparison this small, even when the component
+itself measurably improved.
+
+**Housekeeping:** `Memory`'s 2500-action teacher pass produced
+individual recording files up to 331MB (frame-size-dependent, not a bug
+-- some games' per-frame JSON is simply much larger than others, and at
+31x the usual episode length that difference compounds) -- 2.3GB total
+for 25 files, ballooning `ARC-AGI-3-Agents/recordings/` to 7GB combined
+with this round's evaluation recordings. All deleted after extracting
+results and saving the retrained `value_head.pt` (fully regenerable via
+the exact steps above; nothing here is uniquely irreproducible).
+`scripts/compare_agents.py` was fixed to glob per requested agent name
+rather than parsing every `*.recording.jsonl` file before filtering --
+parsing multiple 300MB+ files just to discard them was the direct cause
+of a comparison script silently taking several minutes instead of
+seconds.
+
+**Where this leaves Stage 5:** the value head component itself is now
+demonstrably better on the metric that matters (ranking/distinguishing
+meaningful states, not aggregate population MSE) -- a real, verified
+improvement worth keeping. Whether it meaningfully helps the full
+`Hypothesis` agent's reliability gap remains genuinely unresolved, not
+because the fix didn't work, but because the current evaluation protocol
+(8 repeats) doesn't have the statistical power to tell a real
+improvement of this size apart from noise on a metric this sparse. A
+future session wanting a real answer here should either run substantially
+more repeats (e.g. 25-30 instead of 8) or use a less binary,
+higher-resolution metric than raw levels-completed count (e.g. the
+`InfoGain`/`beta` diagnostics already built in `scripts/
+diagnose_hypothesis_beta.py`, or tracking `Q` values / value-head output
+directly across a fixed action sequence, rather than requiring an actual
+game win to register any signal at all) -- not further changes to the
+teacher-data pipeline itself, which already did its job.
+
 ## Gotchas learned the hard way (don't re-discover these)
 
 - **A new synthetic data source's action space must fit inside
