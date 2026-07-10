@@ -1283,7 +1283,31 @@ is the first fix in this whole Stage 5 arc with a *directly measured,
 unambiguous* full-agent-level improvement behind it, not just noise-
 bounded or component-level evidence.
 
-## Gotchas learned the hard way (don't re-discover these)
+**Correction, immediately after (2026-07-10): the milestone is still not
+met.** The 0/0 -> 6/3 result above is valid evidence the ACTION6 fix
+helped `Hypothesis` against its *own* prior broken baseline, but it was
+never actually re-checked against a *fresh* `Curiosity` baseline in the
+same round -- Curiosity's own numbers have ranged 8-11 total / 2-5
+distinct games across different rounds all session, so an isolated
+Hypothesis-only number doesn't tell you where it stands relative to a
+moving target. Ran the missing matched comparison: **Hypothesis 4 total
+levels / 1 distinct game (`m0r0`) vs Curiosity 9 total / 5 distinct
+games (`ft09`, `lp85`, `m0r0`, `r11l`, `sp80`)**, same round, both
+checkpoints/code as currently committed. Curiosity clearly wins on both
+metrics, especially breadth (5 distinct games vs 1). (One operational
+note along the way: the harness's anonymous API key had expired *again*
+before this run -- same symptom as before, all 16 subprocess calls
+returning HTTP 401 and silently producing zero real gameplay; refreshed
+via the same `https://three.arcprize.org/api/games/anonkey` endpoint and
+reran cleanly. These anonymous keys appear to be short-lived enough to
+expire within a single working session, not just between sessions --
+worth checking first, not last, if a comparison run ever comes back
+suspiciously empty.)
+
+The ACTION6 fix and Q-blend validation are still real, worth keeping, and
+directly demonstrated to help `Hypothesis` relative to its own prior
+broken state -- just not sufficient on their own to close the full gap
+against Curiosity. The milestone remains open.
 
 - **A new synthetic data source's action space must fit inside
   `jepa/models/predictor.py`'s `NUM_ACTIONS=8`** (shared across every

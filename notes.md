@@ -1205,6 +1205,23 @@ Neither ingredient alone matched the combination — a real, validated
 confirmation that the original design decision to blend the two signals,
 rather than relying on just one, was sound.
 
+**Correction, checked immediately afterward: the milestone is still not
+met.** The zero-to-six-completions result above is genuine, valid
+evidence that the fix helped the hypothesis-driven agent relative to its
+own earlier, broken state — but that comparison was only ever run against
+the agent's own prior baseline, never re-checked against a *fresh* run of
+the comparison agent in the same round. The comparison agent's own raw
+numbers had already been observed to swing considerably from round to
+round earlier in this project, so a number measured in isolation doesn't
+say where it stands relative to a moving target. Running the missing,
+properly matched, same-round comparison gave a clearly different
+picture: the comparison agent reached five distinct games this round
+against the hypothesis-driven agent's one, and led on total completions
+too. The fix was real and worth keeping, but on its own it wasn't enough
+to close the gap — the milestone remains unmet, and it would have been
+misleading to let the earlier, incomplete comparison stand as the final
+word without going back and checking it properly.
+
 ---
 
 ## 8. Lessons and gotchas worth remembering
@@ -1415,6 +1432,16 @@ rather than relying on just one, was sound.
   than leaving it as an assumption. This is a general, reusable technique
   for validating any design that blends multiple signals: force each
   input to an extreme, one at a time, and compare against the blend.
+- **"Improved against its own prior baseline" and "now beats a specific
+  competing approach" are two different claims, and confirming the first
+  is not evidence for the second when the competing approach's own
+  results move around from run to run.** A before/after comparison run
+  only against one thing's own earlier numbers, without a freshly
+  re-measured comparison point from the same round, can look like a
+  milestone was reached when the real, most relevant comparison hasn't
+  actually been run yet. Worth explicitly re-checking against a fresh,
+  same-round baseline before declaring a comparative milestone met, not
+  just a self-comparison.
 
 ---
 
@@ -1477,11 +1504,18 @@ rather than relying on just one, was sound.
   summaries — found and fixed a genuine architectural bug: the
   click-based action was being scored in a way that structurally
   undervalued it relative to other actions, unrelated to any training
-  data question. Fixing it produced a clean, unambiguous improvement (from
-  zero level completions across a full matched evaluation to six
-  completions across three distinct games) — the first fix in this whole
-  line of investigation with directly measured, noise-proof evidence
-  behind it. A follow-up check confirmed the underlying design decision
-  to blend two different decision-making signals together, rather than
-  relying on either alone, was itself sound: isolating each signal
-  individually performed clearly worse than the combination.
+  data question. Fixing it produced a clean, unambiguous improvement
+  against the agent's own prior broken state (from zero level completions
+  across a full matched evaluation to six completions across three
+  distinct games) — the first fix in this whole line of investigation
+  with directly measured, noise-proof evidence behind it. A follow-up
+  check confirmed the underlying design decision to blend two different
+  decision-making signals together, rather than relying on either alone,
+  was itself sound: isolating each signal individually performed clearly
+  worse than the combination. However, a properly matched, same-round
+  re-comparison against the exploration-only agent immediately afterward
+  showed the milestone is still not met — the exploration-only agent
+  reached five distinct games this round against the hypothesis-driven
+  agent's one, and led on total completions too. The fix was real and
+  worth keeping, but wasn't sufficient on its own to close the full gap;
+  the milestone remains open.
