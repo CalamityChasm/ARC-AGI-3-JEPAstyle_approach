@@ -862,7 +862,7 @@ avoid any risk of overwriting it), so there was nothing to roll back.
 
 ---
 
-## 7. Stage 5 — hypothesis bundle and directed action selection (in progress)
+## 7. Stage 5 — hypothesis bundle and directed action selection: milestone met
 
 ### 7.1 Design
 
@@ -1222,6 +1222,83 @@ to close the gap — the milestone remains unmet, and it would have been
 misleading to let the earlier, incomplete comparison stand as the final
 word without going back and checking it properly.
 
+### 7.6 The milestone is met: a second real bug, found by tracing exactly where the two agents diverged
+
+Rather than continuing to re-run the full sweep hoping for a different
+outcome, the next round of investigation deliberately narrowed to just
+the handful of games where the comparison agent had succeeded and the
+hypothesis-driven one hadn't. The reasoning: if there's a genuinely
+fixable bottleneck, it should show up clearly on exactly those games, not
+get averaged away across the majority of games where both agents already
+behave similarly for unrelated reasons.
+
+Live-tracing those specific games surfaced something the earlier,
+broader trace had completely missed: on three of the four, only a single
+type of action was ever available at all. There was no "which action"
+decision happening on these games whatsoever — the entire outcome
+depended purely on *where* on the grid a click landed. This meant the
+earlier fixes (the scoring-reduction fix, the exploration-blend
+validation) were structurally irrelevant to these specific games, since
+both operated on a comparison between different action types that never
+actually occurred here.
+
+Pulling the actual click coordinates played across a full episode on
+each of these games revealed real underlying diversity (dozens of
+distinct locations attempted), but with one specific point dominating
+overwhelmingly in each case — and that dominant point turned out to sit
+exactly at the center of the very first grid region in reading order.
+That's the signature of a deterministic "pick the single best-looking
+option" rule defaulting to the same fixed choice whenever its input is
+flat or nearly flat, rather than a genuine, confident preference — on
+turns where nothing about the current state stood out spatially
+(plausibly the common case, not a rare edge case), the mechanism fell
+back to clicking the same likely-uninformative spot again and again
+instead of continuing to explore.
+
+The telling part: an earlier stage of this same project had already
+solved this *exact* problem for its own click-selection logic — using a
+softened, temperature-weighted random choice among candidate regions
+instead of a hard "pick the single best one" rule, plus a randomly
+chosen point within the chosen region rather than always its exact
+center. The hypothesis-driven agent, built later and reusing much of
+that earlier agent's design in other respects, had never actually
+inherited this specific, already-proven fix — its own click-selection
+logic was written fresh and reintroduced the identical problem the
+earlier agent had already moved past. Fixed by directly reusing the same
+approach.
+
+Verified narrowly before scaling back up: replaying a single episode on
+the same three games and counting distinct click locations showed the
+fix working exactly as expected — from roughly a quarter of clicks being
+genuinely distinct locations to nearly every single click landing
+somewhere new. A focused, faster comparison on just the four diverging
+games (skipping the other twenty-one, which weren't where the gap was)
+showed real completions appearing on two of the four where there had
+been none before. Only then was it worth spending the time on a full,
+matched, same-round comparison again.
+
+That full comparison finally gave an unambiguous result: the hypothesis-
+driven agent reached more total level completions, more distinct games,
+and did so in fewer actions on average than the comparison agent, all
+three at once, in the same round. This is the first point across this
+entire line of investigation where every relevant number pointed the
+same direction simultaneously, rather than a mixed or noise-plausible
+picture. The milestone this whole effort was built around is met.
+
+The most useful general lesson from this last round: every earlier fix
+in this investigation had been found either through broad, generic
+tracing or by addressing an already-documented, general limitation —
+useful, but not specifically targeted at the actual, narrow place where
+the two agents' results diverged. Deliberately narrowing the
+investigation to just the cases where a comparison actually disagreed,
+rather than continuing to search across the full, averaged population,
+surfaced a bug that had been real and present all along but invisible in
+pooled results — because it only mattered decisively on a subset of
+cases where one particular option was the *only* option, diluted into
+near-invisibility everywhere else. When two things being compared
+diverge, tracing the specific cases where they diverge is far more
+informative than re-examining the whole population again.
+
 ---
 
 ## 8. Lessons and gotchas worth remembering
@@ -1442,6 +1519,35 @@ word without going back and checking it properly.
   actually been run yet. Worth explicitly re-checking against a fresh,
   same-round baseline before declaring a comparative milestone met, not
   just a self-comparison.
+- **A short-lived credential can expire mid-session, not just between
+  sessions, and the failure mode can look exactly like a real regression
+  rather than an infrastructure problem.** An authentication token used
+  for this project's harness turned out to expire within roughly a day —
+  short enough to lapse in the middle of active work, not just when
+  picking the project back up later. Every symptom (an empty result set,
+  every agent scoring zero across the board) looked identical to a real
+  behavioral regression until checked directly. Worth ruling out an
+  expired credential first, specifically, whenever a comparison
+  unexpectedly comes back completely empty rather than just different.
+- **A deterministic "pick the single best option" rule will default to
+  the exact same choice every time its input is flat or nearly flat, not
+  behave like a neutral non-preference.** A selection mechanism that
+  looked reasonable in isolation produced a strong, consistent bias
+  toward one specific repeated choice in practice, because ties (or
+  near-ties, which may be the common case rather than the exception) resolve
+  to the same low-indexed option every single time instead of exploring
+  among them. Worth checking whether an existing, already-debugged
+  component elsewhere in the same project already solved the identical
+  problem (a softened, weighted-random choice instead of a hard maximum)
+  before re-deriving a fresh solution that quietly reintroduces it.
+- **When two things being compared diverge, tracing the specific cases
+  where they diverge is far more informative than re-examining the whole
+  population again.** A trace across an entire broad sweep missed a real,
+  fully explanatory bug that became obvious within moments once narrowed
+  to just the handful of cases where the two things being compared
+  actually disagreed — the bug's effect was real in the pooled results
+  all along, just diluted into near-invisibility by everything else in
+  the average.
 
 ---
 
@@ -1514,8 +1620,23 @@ word without going back and checking it properly.
   was itself sound: isolating each signal individually performed clearly
   worse than the combination. However, a properly matched, same-round
   re-comparison against the exploration-only agent immediately afterward
-  showed the milestone is still not met — the exploration-only agent
-  reached five distinct games this round against the hypothesis-driven
-  agent's one, and led on total completions too. The fix was real and
-  worth keeping, but wasn't sufficient on its own to close the full gap;
-  the milestone remains open.
+  showed the milestone was still not met at that point — the exploration-
+  only agent reached five distinct games that round against the
+  hypothesis-driven agent's one, and led on total completions too.
+
+  A final round of investigation deliberately narrowed to just the
+  handful of games where the two agents' results actually diverged,
+  rather than continuing to re-run the full sweep. This surfaced a
+  second real bug, invisible in the broader trace: on the games where
+  only one type of action was ever available (so the entire outcome
+  depended purely on click placement), a deterministic "pick the single
+  best-looking option" rule was defaulting to the same repeated click
+  location whenever its input was flat or near-flat, rather than
+  exploring — the same problem an earlier stage of this project had
+  already solved for its own click logic, but which hadn't been carried
+  over when this later agent's click-selection was written fresh. Fixed
+  by reusing that already-proven approach directly. A final matched,
+  same-round comparison confirmed the fix worked: the hypothesis-driven
+  agent reached more total completions, more distinct games, and did so
+  in fewer actions on average than the exploration-only agent, all three
+  at once — the milestone this whole stage was built around is now met.

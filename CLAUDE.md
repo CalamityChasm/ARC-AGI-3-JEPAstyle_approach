@@ -919,7 +919,7 @@ both monoliths) held. This is the checkpoint Stage 5 below is built on.
      rollback needed. `jepa/train_moe_predictor.py --sokoban-episodes-per-config
      N` remains available (opt-in, default 0) for a future revisit.
 
-### Stage 5 -- hypothesis bundle + directed action selection: BUILT, milestone not cleanly met (three real bugs found and fixed along the way)
+### Stage 5 -- hypothesis bundle + directed action selection: BUILT, milestone MET (see the three "follow-up" sections below for the full arc -- this section documents the first three bugs found; the milestone wasn't actually cleared until follow-up 3)
 
 **Design:** builds on Stage 3's `Memory` agent (exact transition-graph
 recall, exploit-on-score-delta -- reused unchanged) and replaces Stage
@@ -1309,6 +1309,124 @@ directly demonstrated to help `Hypothesis` relative to its own prior
 broken state -- just not sufficient on their own to close the full gap
 against Curiosity. The milestone remains open.
 
+### Stage 5 follow-up 3 -- the milestone is met: a second real bug, found via targeted diagnosis on the games where the gap actually was
+
+Rather than keep re-running the full 25-game sweep hoping for a different
+number, focused specifically on the 4 games from the prior comparison
+where `Curiosity` won and `Hypothesis` didn't (`ft09`, `lp85`, `r11l`,
+`sp80`) -- if there's a fixable bottleneck, it should be visible in a
+live trace on exactly these games, not averaged away across 21 others
+where both agents already do fine or poorly for unrelated reasons.
+
+**Live-tracing these 4 games surfaced something the earlier trace missed
+entirely: on `ft09`, `lp85`, and `r11l`, the trace line only ever printed
+a single candidate action (`a6`) -- these games' `available_actions` is
+*only* ACTION6.** There's no action-choice decision happening on these
+games at all; the *entire* outcome depends on where the click lands. This
+reframes the earlier fixes (top-k patch reduction, Q-blend ablation) as
+irrelevant to these specific three games -- both operate on the
+action-level comparison, which never runs when there's only one action to
+begin with.
+
+Checked the actual click coordinates played across a full episode on each
+of the three games (pulled directly from the recording files' `action_input.data`
+fields): real diversity existed (73-84 distinct locations out of ~300
+clicks per game) but one specific point dominated overwhelmingly in each
+-- e.g. `(4, 4)` for `r11l`, which is the exact center of patch (0, 0),
+the first patch in row-major order. That's the signature of
+`patch_var.argmax()`'s tie-breaking behavior: whenever the per-patch
+expert-disagreement map is flat or near-flat (no clear spatial signal
+that turn -- plausibly the common case, not the exception), `argmax`
+deterministically returns the same low index every time, so the agent
+defaults to clicking the same likely-uninformative spot over and over
+rather than exploring, on exactly the games where click placement is the
+*entire* decision.
+
+`Curiosity` (Stage 2) already solved this exact problem for itself, twice
+over, in its own bug history: it uses temperature-weighted softmax
+sampling over patches instead of a hard argmax, and a uniform-random
+pixel *within* the chosen patch instead of always the exact center.
+`Hypothesis`'s click-location logic had neither fix, despite being built
+after `Curiosity` and able to reuse the same proven approach. Fixed by
+adding `Hypothesis._sample_click` (mirrors `Curiosity._sample_click`
+directly, `PATCH_SAMPLE_TEMPERATURE=0.1`, same value) and calling it in
+place of the `argmax`-based selection.
+
+**Verified before scaling up:** re-ran a single episode on the same 3
+click-only games and checked click diversity directly -- distinct
+locations jumped from ~75-85 out of ~300 clicks to **282-293 out of
+~300** (essentially every click now genuinely new; the previous dominant
+repeated point now appears only twice in an entire episode). Then ran 8
+repeats on just the 4 divergent games (32 runs, faster than a full
+25-game sweep) before committing to a full re-comparison: **3 total
+levels / 2 distinct games (`ft09`, `r11l`)**, up from 0/0 on these same 4
+games in the prior full-sweep round.
+
+**Full matched 8x25-game re-comparison against a fresh `Curiosity` run,
+both fixes in place:**
+
+| agent | total levels | distinct games | avg actions to 1st level |
+|---|---|---|---|
+| **Hypothesis** | **14** | **5** (`cn04`, `ft09`, `lp85`, `m0r0`, `r11l`) | **158.7** |
+| Curiosity | 11 | 4 (`cd82`, `m0r0`, `r11l`, `sp80`) | 180.4 |
+
+**The Stage 5 milestone is met: `Hypothesis` beats `Curiosity` on total
+levels, distinct games reached, *and* action-efficiency, all three at
+once, in a fresh same-round matched comparison.** This is the first
+result in this entire Stage 5 arc where all three numbers point the same
+direction simultaneously, not a mixed or noise-plausible picture.
+
+**Why this diagnostic approach succeeded where the broader sweeps
+didn't:** every earlier fix in this arc (teacher-policy value head,
+ACTION6 top-k reduction) was found either by generic live-tracing or by
+addressing an already-documented data-bound limitation -- useful, but not
+targeted at *specifically* where `Hypothesis` was losing to `Curiosity`.
+Narrowing the trace to the exact games where the two agents diverged
+surfaced a bug (argmax tie-breaking on click-only games) that a
+whole-sweep trace or an aggregate metric would never isolate, since it
+only shows up clearly on a subset of games where ACTION6 is the *only*
+option -- diluted across 25 games (most of which have 6-7 available
+actions), its effect on the pooled numbers was real but not obviously
+attributable to any one mechanism. Worth remembering as a general
+debugging strategy: when two things being compared diverge on a specific
+subset, trace *that subset specifically*, not the full population.
+
+## Gotchas learned the hard way (don't re-discover these)
+
+- **The harness's anonymous `ARC_API_KEY` expires within roughly a day,
+  not just between machines/sessions.** Hit this repeatedly across this
+  project's later sessions -- every game-listing call returns HTTP 401,
+  `main.py` silently proceeds with an empty game list, and every agent
+  run in that state produces a technically-valid recording file with zero
+  real actions and zero levels (which can look exactly like a real agent
+  regression if you're mid-comparison, not an infrastructure issue).
+  Refresh via `curl https://three.arcprize.org/api/games/anonkey` and
+  update `.env`'s `ARC_API_KEY` -- and if a comparison run ever comes back
+  suspiciously empty (0 runs found, or every agent scoring 0 across the
+  board), check for this *first*, before assuming a code change broke
+  something.
+- **A deterministic `argmax` over a salience/variance map will default to
+  the same fixed index every time the map is flat or near-flat, not a
+  "no preference" no-op.** `Hypothesis`'s original click-location
+  selection (`patch_var.argmax()`) looked reasonable in isolation, but
+  produced a strong, consistent bias toward one specific repeated click
+  location on every game tested, because ties (or near-ties) resolve to
+  the same low patch index every single time rather than exploring.
+  `Curiosity` had already solved this exact problem for itself
+  (temperature-weighted softmax sampling over patches, plus a uniform-
+  random pixel within the chosen patch, not always dead-center) --
+  worth checking whether an existing, already-debugged agent in the same
+  codebase already solved a given problem before re-deriving a
+  from-scratch solution that reintroduces it.
+- **When two things being compared diverge on a specific subset of cases,
+  trace *that subset specifically* -- an aggregate trace or pooled metric
+  can fail to isolate a bug that's fully explanatory on the subset where
+  it actually matters.** A live trace across a full 25-game sweep missed
+  a real bug that became immediately obvious once narrowed to just the
+  handful of games where two agents' results actually diverged (see
+  Stage 5's "follow-up 3" section above) -- the bug's effect was real in
+  the pooled numbers but not attributable to any one mechanism until
+  isolated to the right subset.
 - **A new synthetic data source's action space must fit inside
   `jepa/models/predictor.py`'s `NUM_ACTIONS=8`** (shared across every
   data source's action embedding, sized for ARC-3's 8 actions -- MiniGrid's

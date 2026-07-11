@@ -75,6 +75,10 @@ class Hypothesis(Agent):
     # modes of k=64 (flat mean, underrates spatially localized actions) and
     # k=1 (flat max, overrates them via extreme-value inflation).
     TOP_K_PATCHES = 8
+    # Softmax temperature for click-location sampling -- same value and
+    # same rationale as Curiosity's PATCH_SAMPLE_TEMPERATURE (see that
+    # agent's own _sample_click). Not swept here either.
+    PATCH_SAMPLE_TEMPERATURE = 0.1
     # None (default) uses the real entropy-driven beta from HypothesisBundle.
     # Set to a fixed float (0.0 = pure InfoGain/explore, 1.0 = pure
     # value-greedy/exploit) to ablate the Q-blend itself -- isolates
@@ -168,6 +172,41 @@ class Hypothesis(Agent):
         game_t = torch.full((b,), self.game_idx, dtype=torch.long, device=self.device)
         return self.predictor.predict_all_experts(feat, action_t, xy_t, game_t)[0]  # (K, C, 8, 8)
 
+    def _sample_click(self, patch_var: torch.Tensor) -> tuple[int, int]:
+        """Weighted-random pick of an 8x8 patch from its per-patch expert-
+        disagreement map (softmax over patch_var, temperature-scaled),
+        then a uniform-random pixel *within* that patch -- mirrors
+        Curiosity's own `_sample_click` (see that agent), which already
+        had to fix the exact same two problems this replaces:
+
+        1. A deterministic argmax always breaks ties toward the same
+           patch index whenever the variance map is flat or near-flat
+           (no clear spatial signal that turn) -- confirmed directly via
+           a live-play trace on click-only games (`ft09`, `lp85`, `r11l`
+           -- games whose *only* available action is ACTION6, so click
+           location is the entire decision): one specific patch dominated
+           the overwhelming majority of clicks in each game (e.g. patch
+           (0,0) for `r11l`), with only occasional deviations when a real
+           signal happened to appear elsewhere. That's the agent wasting
+           most of its click budget on a repeated, likely-uninformative
+           default rather than exploring, on exactly the games where
+           click placement is the only lever available at all.
+        2. Always clicking a patch's exact center throws away 7/8 of the
+           pixel-level precision a fully random click has, and the target
+           that actually matters for a given game's mechanic may not land
+           on a center pixel.
+        """
+        scores = patch_var.flatten().tolist()
+        patches = [(row, col) for row in range(_PATCHES_PER_SIDE) for col in range(_PATCHES_PER_SIDE)]
+        max_score = max(scores)
+        weights = [
+            pow(2.718281828, (s - max_score) / self.PATCH_SAMPLE_TEMPERATURE) for s in scores
+        ]
+        row, col = self._rng.choices(patches, weights=weights, k=1)[0]
+        x = col * PATCH + self._rng.randrange(PATCH)
+        y = row * PATCH + self._rng.randrange(PATCH)
+        return x, y
+
     def _update_hypotheses(self, feat: torch.Tensor, latest_frame: FrameData) -> None:
         """Records the observed transition into the exact graph, and (if
         an action was actually taken) attributes real prediction error to
@@ -219,9 +258,7 @@ class Hypothesis(Agent):
         xy = None
         if action_id == GameAction.ACTION6.value:
             patch_var = expert_preds.var(dim=0).mean(dim=0)  # (8, 8), variance across experts per patch
-            best_patch = int(patch_var.argmax().item())
-            row, col = divmod(best_patch, _PATCHES_PER_SIDE)
-            xy = (col * PATCH + PATCH // 2, row * PATCH + PATCH // 2)
+            xy = self._sample_click(patch_var)
 
         with torch.no_grad():
             v_per_expert = self.value_head(expert_preds)  # (K,)
