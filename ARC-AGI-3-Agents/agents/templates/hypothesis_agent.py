@@ -64,7 +64,17 @@ _PATCHES_PER_SIDE = CANVAS // PATCH  # 8
 class Hypothesis(Agent):
     """Bayesian hypothesis bundle over MoE experts + InfoGain/value-driven action selection."""
 
-    MAX_ACTIONS = 300
+    # Bumped from 300 (plan.md's original local-comparison budget) on this
+    # experimental branch. rules.md's real scoring formula wasn't known when
+    # 300 was chosen: completion is primary (a level never reached scores
+    # exactly 0, worse than a slow completion), efficiency only penalizes
+    # actions *beyond* the human baseline (never rewards finishing faster
+    # than human), and the harness runs one Python thread per game under
+    # the GIL (agents/swarm.py) -- so a bigger budget isn't free, it can
+    # starve other games' threads of CPU time within the 9-hour cap. Testing
+    # this tradeoff directly via scripts/run_scorecard.py's real score
+    # field (not a proxy) before deciding whether to keep it.
+    MAX_ACTIONS = 900
     EXPLOIT_REPEATS = 2
     # Bayesian update temperature -- small, since our latent MSE errors sit
     # around 1e-4 to 1e-2 (see CLAUDE.md's Stage 1/4 numbers); a temperature
