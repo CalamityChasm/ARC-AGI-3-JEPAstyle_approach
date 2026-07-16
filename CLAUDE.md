@@ -1556,7 +1556,18 @@ then `kaggle kernels output <owner>/<kernel-slug> -p <dir>` to pull
 submission.
 
 **4. Submit for real scoring** (consumes the daily submission quota --
-observed at 5/day this session):
+**correction (2026-07-16): the real limit is 1/day, not "5/day" as an
+earlier version of this doc claimed.** That "5/day" figure was wrong (or
+the limit changed) -- confirmed directly this session by hitting a 400 on
+a second same-day submission attempt with the real server error body
+(the plain `kaggle competitions submit` CLI swallows this detail --
+see the API-body-extraction trick two paragraphs down, which is how this
+was found): `"Submission not allowed:  Your team has used its daily
+Submission allowance (1) today, please try again tomorrow UTC (2.6 hours
+from now)."` The reset is a fixed daily UTC boundary (reads as UTC
+midnight from the "2.6 hours" phrasing observed at ~21:22 UTC) rather
+than a rolling 24h window from your last submission -- budget one real
+submission per UTC day, and treat every one as scarce, not five):
 ```
 kaggle competitions submit -c arc-prize-2026-arc-agi-3 -k <owner>/<kernel-slug> -v <version> -f submission.parquet -m "<message>"
 ```
@@ -1569,7 +1580,28 @@ API directly:
 ```
 curl -s -u <username>:<key> "https://www.kaggle.com/api/v1/competitions/submissions/list/arc-prize-2026-arc-agi-3"
 ```
-and read `errorDescriptionNullable`.
+and read `errorDescriptionNullable`. **This only helps for a submission
+that was actually created and then failed/errored later** (e.g. the DIAG
+run) -- it's useless for a `400 Client Error: Bad Request` that happens
+at the `CreateCodeSubmission` call itself (like the daily-quota case
+above), since no submission record ever gets created for those. For
+*that* case, the plain `kaggle competitions submit` CLI prints only the
+bare `400 Client Error: ...` line with zero body -- call the Python API
+directly instead to get the real JSON error message:
+```python
+from kaggle.api.kaggle_api_extended import KaggleApi
+api = KaggleApi()
+api.authenticate()
+try:
+    api.competition_submit_cli(file_name='submission.parquet', message='...',
+                                competition='arc-prize-2026-arc-agi-3',
+                                kernel='<owner>/<kernel-slug>', version='<version>')
+except Exception as e:
+    print(e.response.status_code, e.response.text)  # the real error body
+```
+(Note the kwarg is `version`, not `kernel_version` -- `competition_submit_cli`'s
+actual signature differs from what you might guess from the CLI's own
+`-v/--version` flag name.)
 
 **5. If it errors again with no useful detail:** don't guess-and-resubmit
 blindly (burns quota fast). First run a control test -- push the
