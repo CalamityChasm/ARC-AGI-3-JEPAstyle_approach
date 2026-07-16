@@ -1,0 +1,14 @@
+{
+  "id": "calamitychasm/arc3-hypothesis-agent-submission",
+  "title": "arc3-hypothesis-agent-submission",
+  "code_file": "arc3-hypothesis-agent-submission.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": false,
+  "dataset_sources": ["calamitychasm/jepa-hypothesis-agent"],
+  "competition_sources": ["arc-prize-2026-arc-agi-3"],
+  "kernel_sources": [],
+  "model_sources": []
+}

@@ -1391,6 +1391,177 @@ attributable to any one mechanism. Worth remembering as a general
 debugging strategy: when two things being compared diverge on a specific
 subset, trace *that subset specifically*, not the full population.
 
+## Kaggle competition submission: root cause found, real score obtained
+
+**Current status: the Stage 5 Hypothesis agent has a real, scored,
+`SubmissionStatus.COMPLETE` entry in the actual `arc-prize-2026-arc-agi-3`
+Kaggle competition, public score `0.23`.** Everything needed to reproduce
+this from scratch on a new machine is in `kaggle_submission/` (checked
+into git) plus the steps below. This section is the reproduction guide;
+the dated blow-by-blow (useful if the submission mechanism breaks again
+and needs re-diagnosing) follows it.
+
+### What actually broke, and what didn't
+
+Every real scored submission attempt failed identically (Kaggle's own
+generic `"A system error. Please try resubmitting..."` message, no
+further detail available via the API or CLI) across multiple, materially
+different fixes: hardened subprocess-based setup, a gateway-wait timing
+overlap, `enable_gpu` toggling, a top-level `try/except` "heartbeat"
+around `choose_action`/`is_done`, and writing a placeholder
+`submission.parquet` before any risky setup ran. None of those fixed it,
+because none of them addressed the actual bug -- but all are real,
+worth-keeping hardening and are described below.
+
+**The root cause: `kernel-metadata.json`'s `dataset_sources` mounts a
+Kaggle dataset at `/kaggle/input/datasets/<owner>/<dataset-slug>/`, not
+`/kaggle/input/<dataset-slug>/`.** Every version of the submission
+notebook's setup cell referenced the un-nested path
+(`/kaggle/input/jepa-hypothesis-agent/...`) for our own dataset, while
+correctly using the *nested* form for the competition's own attached data
+(`/kaggle/input/competitions/arc-prize-2026-arc-agi-3/...` -- that one was
+right from the start, copied from the official sample notebook). Every
+real scored run was hitting an uncaught `FileNotFoundError` on the very
+first `shutil.copytree` call in cell 1 -- before `main.py` ever opened a
+single game -- which explains why none of the other fixes ever had a
+chance to matter: the notebook was crashing before reaching any of that
+code.
+
+**How this was actually found:** a *free* (non-scored) `kaggle kernels
+push` with a diagnostic cell that ran unconditionally -- outside the
+`if os.getenv('KAGGLE_IS_COMPETITION_RERUN')` gate that hides all real
+setup logic during an ordinary test push -- printing `torch.__version__`
+and `os.walk("/kaggle/input")`, then attempting `torch.load(...)` on each
+checkpoint directly. Kaggle does not expose the actual execution log from
+a real scored competition rerun (`kaggle kernels output` only ever
+returns the *last test push's* non-rerun output, confirmed by checking it
+against a known-different real submission's result) -- so this
+"unconditional diagnostic cell in an otherwise-gated setup script" pattern
+is the only way found this session to get real signal out of the scored
+environment without spending a submission. Worth reusing directly if this
+ever needs debugging again: temporarily hoist a print/probe above the
+`KAGGLE_IS_COMPETITION_RERUN` check, push (free), pull the log, revert.
+
+**Also checked and ruled out, despite looking suspicious at first:** a
+torch version mismatch. Kaggle's notebook image ships `torch==2.10.0`;
+these checkpoints were trained locally under the `torch==2.12.1` pin (see
+this doc's own Environment setup section). Confirmed directly via the
+same diagnostic cell that `torch==2.10.0` loads all three
+`torch==2.12.1`-saved state dicts (`encoder_moe.pt`, `moe_predictor.pt`,
+`value_head.pt`) with zero errors -- state dicts are plain tensor
+`OrderedDict`s and are forward/backward compatible across this version
+gap. Not the bug.
+
+### Other real hardening added along the way (kept, not the root cause)
+
+- **Heartbeat pattern** (`ARC-AGI-3-Agents/agents/templates/hypothesis_agent.py`):
+  `choose_action` and `is_done` each wrap their real logic in a top-level
+  `try/except`, falling back to a new `_safe_fallback_action` (a random
+  legal action) on any exception instead of letting it propagate and kill
+  `main.py` for every remaining game. Directly motivated by a real,
+  previously-unguarded crash path: `jepa/grid.py`'s `grid_to_tensor`/
+  `patch_change_mask` hard-`raise ValueError` if any frame exceeds the
+  hardcoded 64x64 `CANVAS` -- our 25 local public games are all exactly
+  64x64 by coincidence, so this could never have been caught by any local
+  testing, only by a hidden competition game with a different shape.
+- **`__init__` hardening**: model construction and checkpoint loading
+  (`_init_models`) now run inside a `try/except` in `__init__`; on any
+  failure, `self._init_failed = True` and `choose_action` immediately
+  routes to `_safe_fallback_action` for that game rather than crashing
+  agent construction itself (which happens before `choose_action`'s own
+  try/except ever gets a chance to run).
+- **`DIAG_MODE`** (`HYPOTHESIS_DIAG_MODE=1` env var): makes
+  `choose_action` always return a safe random action while still running
+  `__init__` in full. Built specifically to isolate "does setup/checkpoint
+  loading work" from "does the real Q-scoring/MoE inference path work" --
+  kept as a permanent, zero-cost-when-off debugging lever for next time.
+- **Placeholder `submission.parquet`**, written before any risky setup
+  runs in the rerun branch. rules.md: submissions are "auto-generated as
+  long as the agent acts on the games" -- meaning a total setup crash
+  *before* `main.py` plays a single game would otherwise leave no
+  submission file at all. This is pure insurance, not a fix for anything
+  specific; kept because it's free and strictly safer.
+- **Gateway-wait/local-setup overlap**: the gateway-readiness `curl`
+  check now runs as a background `subprocess.Popen` (retry window shrunk
+  600s -> 90s) while file-copying/importing happens concurrently, joining
+  on it only right before `main.py` needs the gateway up. Motivated by
+  Kaggle's own guidance that a rerun errors out if the agent doesn't make
+  its first move within roughly 15 minutes of container start -- not the
+  actual bug this time, but a real latency improvement worth keeping.
+
+### Full reproduction steps (new machine, from scratch)
+
+**1. Stage the Kaggle dataset contents.** Needs: the whole `jepa/`
+package (small, ~50KB zipped -- `jepa/__init__.py` and
+`jepa/data/__init__.py` are both empty, so no eager imports of
+unavailable deps like `minigrid`/`gym_sokoban` happen just from copying
+the package), exactly four checkpoint files (`checkpoints/encoder_moe.pt`,
+`checkpoints/moe_predictor.pt`, `checkpoints/value_head.pt`,
+`checkpoints/game_vocab_moe.json` -- *not* the full `checkpoints/` dir,
+which also has non-MoE-era files from earlier stages),
+`ARC-AGI-3-Agents/agents/templates/hypothesis_agent.py`, and
+`kaggle_submission/dataset-metadata.json` (already in this repo). Copy
+all of these into one staging directory matching that layout (`jepa/`,
+`checkpoints/`, `hypothesis_agent.py`, `dataset-metadata.json` all as
+siblings).
+
+**2. Push the dataset:**
+```
+kaggle datasets create -p <staging-dir>              # first time only
+kaggle datasets version -p <staging-dir> --dir-mode zip -m "<message>"   # every update after
+```
+`--dir-mode zip` is required -- without it, `kaggle datasets create/version`
+silently *skips* folder arguments (`jepa/`, `checkpoints/`) with a
+"Skipping folder: X; use '--dir-mode'" message and only uploads loose
+files, which is a second, separate way to end up with missing files at
+the mount path (different from this section's main bug, but easy to
+conflate with it -- always double check the upload log names
+`jepa.zip`/`checkpoints.zip` as separate uploaded files, not raw folder
+skips). Wait for `kaggle datasets status <owner>/<slug>` to report
+`ready` before pushing a kernel that depends on it -- versioning is
+asynchronous.
+
+**3. Push the kernel** (`kaggle_submission/notebook/`, already in this
+repo -- `kernel-metadata.json` + `arc3-hypothesis-agent-submission.ipynb`):
+```
+kaggle kernels push -p kaggle_submission/notebook
+```
+This is free and safe to run repeatedly. It only exercises the notebook's
+*non-rerun* branch (writes a dummy `submission.parquet`, doesn't touch
+any of the `KAGGLE_IS_COMPETITION_RERUN`-gated setup/agent code) -- so it
+validates dependency installation and catches Python syntax errors, but
+cannot by itself catch a bug like this section's root cause. Check
+`kaggle kernels status <owner>/<kernel-slug>` until `COMPLETE`/`ERROR`,
+then `kaggle kernels output <owner>/<kernel-slug> -p <dir>` to pull
+`<kernel-slug>.log` and confirm no errors before spending a real
+submission.
+
+**4. Submit for real scoring** (consumes the daily submission quota --
+observed at 5/day this session):
+```
+kaggle competitions submit -c arc-prize-2026-arc-agi-3 -k <owner>/<kernel-slug> -v <version> -f submission.parquet -m "<message>"
+```
+Check status with `kaggle competitions submissions -c arc-prize-2026-arc-agi-3 --csv`
+(`SubmissionStatus.PENDING` can take hours to resolve to `COMPLETE`/
+`ERROR` -- this is real queued compute, not an instant check). For more
+detail than the CLI table shows on an error (though still not much --
+Kaggle's own generic message is usually all that's available), hit the
+API directly:
+```
+curl -s -u <username>:<key> "https://www.kaggle.com/api/v1/competitions/submissions/list/arc-prize-2026-arc-agi-3"
+```
+and read `errorDescriptionNullable`.
+
+**5. If it errors again with no useful detail:** don't guess-and-resubmit
+blindly (burns quota fast). First run a control test -- push the
+*unmodified* official sample notebook (if the competition provides one)
+as a completely separate kernel and submit it too. If the control also
+fails, the problem is platform/account-side, not this codebase. If the
+control succeeds (as it did this session, `SubmissionStatus.COMPLETE`,
+public score `0.06`), the bug is confirmed to be in this notebook/agent
+specifically -- use the free unconditional-diagnostic-cell trick described
+above to narrow it down without spending more of the daily quota.
+
 ## Gotchas learned the hard way (don't re-discover these)
 
 - **The harness's anonymous `ARC_API_KEY` expires within roughly a day,
@@ -1511,6 +1682,15 @@ subset, trace *that subset specifically*, not the full population.
   `ARC_API_KEY` in `.env`; a quick single-game run is enough to confirm
   it's fixed (watch for a nonzero total action count instead of an
   immediate "No games available to play" error in the log).
+- **A Kaggle `dataset_sources` attachment mounts at
+  `/kaggle/input/datasets/<owner>/<slug>/`, not `/kaggle/input/<slug>/`**
+  -- unlike a competition attachment, which *does* mount at the
+  un-nested-looking `/kaggle/input/competitions/<comp>/` (easy to
+  pattern-match from and assume datasets work the same simpler way, which
+  is exactly the mistake that cost this project every real competition
+  submission for a full debugging session -- see "Kaggle competition
+  submission" above for the full story and the free-diagnostic-cell trick
+  that found it).
 - **`.gitignore` `data/` pattern (no leading slash) matches any directory
   named `data` anywhere in the tree**, including `jepa/data/` (real source
   code, not the gitignored top-level Kaggle/ARC-1/2 download cache). Fixed

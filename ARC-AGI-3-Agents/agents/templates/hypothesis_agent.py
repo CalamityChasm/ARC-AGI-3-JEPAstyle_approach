@@ -34,6 +34,7 @@ from-scratch hypothesis-search system:
 
 import json
 import logging
+import os
 import random
 import sys
 from pathlib import Path
@@ -95,11 +96,53 @@ class Hypothesis(Agent):
     # picked every single turn, forever, since nothing about a repeat lowers
     # its score. Same fix, same rate.
     EPSILON = 0.25
+    # Diagnostic-only escape hatch (set HYPOTHESIS_DIAG_MODE=1 in the env):
+    # skips _choose_action_inner entirely and always returns a safe random
+    # action, while __init__ (device setup, checkpoint loading, model
+    # construction) still runs exactly as normal. Used to isolate "does
+    # setup+checkpoint loading work in this environment" from "does the
+    # real Q-scoring/MoE inference path work" when a scored run fails with
+    # no other diagnostic signal available. Off by default.
+    DIAG_MODE = os.getenv("HYPOTHESIS_DIAG_MODE") == "1"
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.device = get_device()
+        # self._rng must exist unconditionally -- it's what _safe_fallback_action
+        # needs, and _init_failed's whole point is to make that fallback reachable
+        # even when everything below fails.
         self._rng = random.Random()
+        self._init_failed = False
+
+        try:
+            self._init_models()
+        except Exception:
+            # An exception here happens during Agent construction, before
+            # choose_action's own try/except (which only wraps *its* body,
+            # not __init__) ever gets a chance to run -- uncaught, this
+            # would crash the whole scored run at the first game, not just
+            # degrade one action. Most likely cause: a torch version/pickle
+            # mismatch between wherever these checkpoints were trained and
+            # whatever torch build Kaggle's notebook image ships, or a
+            # load_state_dict shape/key mismatch -- neither of which our 25
+            # local public games (trained and evaluated in the same local
+            # environment) could ever have exercised.
+            logger.exception(
+                f"{self.game_id} - hypothesis agent: model init failed, "
+                "falling back to random-action-only mode for this game"
+            )
+            self._init_failed = True
+
+        self._last_levels_completed = 0
+        self._exploit_remaining = 0
+        self._probe_plan: list[int] = []
+
+        self._prev_feat: torch.Tensor | None = None
+        self._prev_action_id: int | None = None
+        self._prev_xy: tuple[int, int] | None = None
+        self._prev_state_key: str | None = None
+
+    def _init_models(self) -> None:
+        self.device = get_device()
 
         self.encoder = CNNEncoder().to(self.device)
         self.encoder.load_state_dict(
@@ -135,17 +178,12 @@ class Hypothesis(Agent):
         self.graph = TransitionGraph()
         self.hypotheses = HypothesisBundle(num_hypotheses=self.num_experts, tau=self.TAU)
 
-        self._last_levels_completed = 0
-        self._exploit_remaining = 0
-        self._probe_plan: list[int] = []
-
-        self._prev_feat: torch.Tensor | None = None
-        self._prev_action_id: int | None = None
-        self._prev_xy: tuple[int, int] | None = None
-        self._prev_state_key: str | None = None
-
     def is_done(self, frames: list[FrameData], latest_frame: FrameData) -> bool:
-        return latest_frame.state is GameState.WIN
+        try:
+            return latest_frame.state is GameState.WIN
+        except Exception:
+            logger.exception(f"{self.game_id} - hypothesis agent: is_done raised, treating as not-done")
+            return False
 
     @torch.no_grad()
     def _encode(self, latest_frame: FrameData) -> torch.Tensor:
@@ -268,6 +306,47 @@ class Hypothesis(Agent):
         return q, xy
 
     def choose_action(
+        self, frames: list[FrameData], latest_frame: FrameData
+    ) -> GameAction:
+        # Top-level catch-all: any unexpected exception here (a hidden
+        # competition game with a frame shape jepa/grid.py's CANVAS=64
+        # assumption doesn't hold for, an edge case our 25 known public
+        # games never exercised, anything) would otherwise propagate out
+        # of main.py's agent loop and kill the whole scored run for every
+        # remaining game -- exactly the failure mode a generic, opaque
+        # platform-side "system error" looks like from the outside, with
+        # zero diagnostic signal recoverable afterward. Falling back to a
+        # safe random legal action keeps the agent playing (and scoring
+        # whatever it can) instead of taking the whole run down.
+        try:
+            if self._init_failed or self.DIAG_MODE:
+                return self._safe_fallback_action(latest_frame)
+            return self._choose_action_inner(frames, latest_frame)
+        except Exception:
+            logger.exception(
+                f"{self.game_id} - hypothesis agent: choose_action raised, "
+                "falling back to a safe random action"
+            )
+            return self._safe_fallback_action(latest_frame)
+
+    def _safe_fallback_action(self, latest_frame: FrameData) -> GameAction:
+        if latest_frame.state in (GameState.NOT_PLAYED, GameState.GAME_OVER):
+            action = GameAction.RESET
+            action.reasoning = "hypothesis agent: reset (fallback)"
+            return action
+        available = latest_frame.available_actions or [
+            a.value for a in GameAction if a is not GameAction.RESET
+        ]
+        action_id = self._rng.choice(available)
+        action = GameAction.from_id(action_id)
+        if action.is_complex():
+            action.set_data(
+                {"x": self._rng.randrange(CANVAS), "y": self._rng.randrange(CANVAS)}
+            )
+        action.reasoning = "hypothesis agent: safe fallback after internal error"
+        return action
+
+    def _choose_action_inner(
         self, frames: list[FrameData], latest_frame: FrameData
     ) -> GameAction:
         if latest_frame.state in (GameState.NOT_PLAYED, GameState.GAME_OVER):

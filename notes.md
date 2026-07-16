@@ -1551,7 +1551,80 @@ informative than re-examining the whole population again.
 
 ---
 
-## 9. Current status (see `CLAUDE.md` for the live version of this section)
+## 9. Kaggle competition submission: a real scored entry obtained
+
+With Stage 5's milestone met, the agent was submitted to the actual
+competition this project targets. The submission mechanism itself turned
+out to be its own debugging project, worth documenting in full since the
+failure mode gave almost no useful information back and the eventual
+cause was easy to miss.
+
+**The symptom:** every real scored submission attempt came back with the
+platform's own generic system-error message and no further detail, no
+matter what changed between attempts — a hardened, more defensive setup
+script; a timing fix aimed at a documented "must make a first move within
+roughly fifteen minutes" constraint; toggling hardware acceleration on;
+wrapping the agent's per-turn decision logic in a safety net that falls
+back to a random legal move on any unexpected exception rather than
+letting the whole run die; even writing a placeholder result file before
+any risky setup ran, in case setup itself was the failure point. None of
+it changed the outcome. That pattern — several genuinely different fixes
+all landing on the identical failure — echoes the exact lesson from
+Stage 1's action-recording bug and Stage 4's Sokoban ablation: it's a
+sign to go looking for one shared upstream cause, not to keep iterating
+on downstream guesses.
+
+**The turning point** was running a control: submitting the platform's
+own unmodified example submission, byte-for-byte, as a completely
+separate entry. It succeeded, with a real score. That single result
+reframed everything — the platform, the account, and the basic submission
+mechanism all demonstrably worked; whatever was failing had to be
+specific to this project's own code or setup, not the environment around
+it.
+
+**The actual cause, once found, was almost embarrassingly simple: an
+attached data source doesn't mount where its name would suggest.** The
+platform nests an attached personal dataset under an extra directory
+layer beyond what the dataset's own name implies — a convention that had
+already been followed correctly, by coincidence, for the competition's
+own attached files (copied straight from the working example), but never
+applied to this project's own attached checkpoint-and-code bundle. Every
+real scored run was failing on the very first file-copy operation, before
+the agent ever played a single move — which is exactly why none of the
+other fixes ever mattered: they were all downstream of a line that never
+successfully ran.
+
+Finding this required a specific technique, since the platform gives no
+access to a real scored run's actual execution log: a free, non-scored
+test push with a diagnostic step placed *outside* the normal
+scored-run-only code path, so it runs during an ordinary harmless test
+rather than only during a real (and quota-limited) submission. That
+diagnostic printed the runtime's library versions, walked the attached
+data's actual mount location, and attempted to load each checkpoint file
+directly — surfacing both the wrong path and, as a secondary finding,
+confirming that a library-version difference between where the
+checkpoints were produced and where they were being loaded (a real,
+independently-worth-checking suspicion at the time) was not actually a
+problem at all. Once the path was corrected, the very next real
+submission succeeded outright.
+
+**Final result:** a real, completed, scored submission using the Stage 5
+hypothesis-bundle agent, meaningfully outscoring the platform's own
+unmodified random-policy example on the same scoring run. All of the
+defensive changes made while chasing the wrong hypotheses were kept
+regardless — a decision-logic safety net, a setup-time safety net, and a
+same-purpose diagnostic toggle are all genuinely good practice
+independent of this specific bug, even though none of them were the fix.
+
+**The general lesson, worth carrying into any future platform-integration
+work:** when an error message carries zero diagnostic content, don't
+keep guessing against the expensive, quota-limited, slow feedback loop.
+Find or construct a cheap, fast, repeatable one instead — here, a free
+test push with a probe planted outside the normally-gated code path —
+and use *that* to actually observe what's happening before spending
+another real attempt.
+
+## 10. Current status (see `CLAUDE.md` for the live version of this section)
 
 - Stage 0: done.
 - Stage 1: milestone passed (+29.2% changed-patches over identity,
