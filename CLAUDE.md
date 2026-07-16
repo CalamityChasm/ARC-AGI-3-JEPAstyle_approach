@@ -1393,13 +1393,32 @@ subset, trace *that subset specifically*, not the full population.
 
 ## Kaggle competition submission: root cause found, real score obtained
 
-**Current status: the Stage 5 Hypothesis agent has a real, scored,
-`SubmissionStatus.COMPLETE` entry in the actual `arc-prize-2026-arc-agi-3`
-Kaggle competition, public score `0.23`.** Everything needed to reproduce
-this from scratch on a new machine is in `kaggle_submission/` (checked
-into git) plus the steps below. This section is the reproduction guide;
-the dated blow-by-blow (useful if the submission mechanism breaks again
-and needs re-diagnosing) follows it.
+**Current status: the Stage 5 Hypothesis agent has two real, scored,
+`SubmissionStatus.COMPLETE` entries in the actual
+`arc-prize-2026-arc-agi-3` Kaggle competition, on identical code: public
+score `0.23` on the first submission, `0.06` on an immediate resubmit of
+the exact same kernel version.** That's a real finding, not noise to
+explain away: `Hypothesis.__init__` seeds `self._rng = random.Random()`
+with no fixed seed, so exploration genuinely differs run to run, and the
+private/public leaderboard game sampling may also differ between
+submissions -- both plausible contributors. The `0.06` run also exactly
+matches the unmodified official random-agent control's own score,
+meaning on that particular run the full hypothesis-bundle machinery did
+no better than picking actions uniformly at random. **This is the
+clearest concrete lead for future improvement work**: reducing variance
+and improving worst-case reliability likely matters at least as much as
+improving best-case peak score. See `experiments/stage6_max_actions.md`
+(branch `stage6-score-optimization`, not yet merged) for one lever tried
+in response to this -- raising the per-game action budget, on the
+reasoning that a level never reached scores exactly 0 under the real
+formula (see this doc's `rules.md` summary), so budget-starved games are
+a plausible contributor to bad-run variance.
+
+Everything needed to reproduce the submission from scratch on a new
+machine is in `kaggle_submission/` (checked into git) plus the steps
+below. This section is the reproduction guide; the dated blow-by-blow
+(useful if the submission mechanism breaks again and needs
+re-diagnosing) follows it.
 
 ### What actually broke, and what didn't
 
