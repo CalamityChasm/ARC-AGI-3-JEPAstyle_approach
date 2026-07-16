@@ -64,32 +64,47 @@ _PATCHES_PER_SIDE = CANVAS // PATCH  # 8
 class Hypothesis(Agent):
     """Bayesian hypothesis bundle over MoE experts + InfoGain/value-driven action selection."""
 
-    # Bumped from 300 (plan.md's original local-comparison budget) on this
-    # experimental branch. rules.md's real scoring formula wasn't known when
-    # 300 was chosen: completion is primary (a level never reached scores
-    # exactly 0, worse than a slow completion), efficiency only penalizes
-    # actions *beyond* the human baseline (never rewards finishing faster
-    # than human), and the harness runs one Python thread per game under
-    # the GIL (agents/swarm.py) -- so a bigger budget isn't free, it can
-    # starve other games' threads of CPU time within the 9-hour cap. Testing
-    # this tradeoff directly via scripts/run_scorecard.py's real score
-    # field (not a proxy) before deciding whether to keep it.
-    MAX_ACTIONS = 900
-    EXPLOIT_REPEATS = 2
+    # All of the following are overridable via env vars (HYPOTHESIS_*) so a
+    # sweep script can test values without editing/reverting this file each
+    # time -- same pattern as DIAG_MODE below. Defaults are unchanged from
+    # before these overrides existed.
+    #
+    # MAX_ACTIONS bumped from 300 (plan.md's original local-comparison
+    # budget) on this experimental branch. rules.md's real scoring formula
+    # wasn't known when 300 was chosen: completion is primary (a level
+    # never reached scores exactly 0, worse than a slow completion),
+    # efficiency only penalizes actions *beyond* the human baseline (never
+    # rewards finishing faster than human), and the harness runs one Python
+    # thread per game under the GIL (agents/swarm.py) -- so a bigger budget
+    # isn't free, it can starve other games' threads of CPU time within the
+    # 9-hour cap. Testing this tradeoff directly via scripts/run_scorecard.py's
+    # real score field (not a proxy) before deciding whether to keep it.
+    MAX_ACTIONS = int(os.getenv("HYPOTHESIS_MAX_ACTIONS", "900"))
+    EXPLOIT_REPEATS = int(os.getenv("HYPOTHESIS_EXPLOIT_REPEATS", "2"))
     # Bayesian update temperature -- small, since our latent MSE errors sit
     # around 1e-4 to 1e-2 (see CLAUDE.md's Stage 1/4 numbers); a temperature
     # tuned for O(1) losses would barely move the confidence weights at all.
-    TAU = 0.01
+    TAU = float(os.getenv("HYPOTHESIS_TAU", "0.01"))
     # Out of 64 total 8x8 patches (see jepa/hypothesis_bundle.py: info_gain's
     # top_k_patches docstring for the full rationale) -- a starting point,
     # not swept; ~12.5% of the grid, deliberately between the two failure
     # modes of k=64 (flat mean, underrates spatially localized actions) and
     # k=1 (flat max, overrates them via extreme-value inflation).
-    TOP_K_PATCHES = 8
+    TOP_K_PATCHES = int(os.getenv("HYPOTHESIS_TOP_K_PATCHES", "8"))
     # Softmax temperature for click-location sampling -- same value and
     # same rationale as Curiosity's PATCH_SAMPLE_TEMPERATURE (see that
-    # agent's own _sample_click). Not swept here either.
-    PATCH_SAMPLE_TEMPERATURE = 0.1
+    # agent's own _sample_click).
+    #
+    # Swept (2026-07-16, see experiments/stage6_score_variance.md) in
+    # {0.05, 0.1, 0.2}, n=3 repeats each at budget=300: 0.2 (flatter,
+    # closer-to-uniform click sampling) did cut score std sharply (0.005 vs
+    # baseline's 0.075) but by uniformly gutting performance (mean score
+    # 0.0035, 1/3 completions) rather than making good outcomes more
+    # reliable -- variance measured on a policy that rarely succeeds isn't
+    # the kind of "lower variance" worth having. 0.05 (sharper/more
+    # exploitative sampling) was, if anything, slightly noisier than
+    # baseline. Kept at 0.1.
+    PATCH_SAMPLE_TEMPERATURE = float(os.getenv("HYPOTHESIS_PATCH_TEMP", "0.1"))
     # None (default) uses the real entropy-driven beta from HypothesisBundle.
     # Set to a fixed float (0.0 = pure InfoGain/explore, 1.0 = pure
     # value-greedy/exploit) to ablate the Q-blend itself -- isolates
@@ -105,7 +120,17 @@ class Hypothesis(Agent):
     # CLAUDE.md's Stage 2 history): the single highest-scoring action gets
     # picked every single turn, forever, since nothing about a repeat lowers
     # its score. Same fix, same rate.
-    EPSILON = 0.25
+    #
+    # Swept (2026-07-16, see experiments/stage6_score_variance.md) in
+    # {0.0, 0.1, 0.15, 0.25}, n=3-5 repeats each at budget=300, fixed local
+    # 25-game set: EPSILON=0.0 reproduces the documented total lock-on
+    # failure (0/3 completions -- not new, confirms prior history). Neither
+    # 0.1 nor 0.15 showed a std reduction that survives sampling noise at
+    # this n without also reducing mean score/completion rate (0.15's std
+    # dropped but so did its mean; 0.1's std/mean were statistically
+    # indistinguishable from the 0.25 baseline). Kept at 0.25 -- no
+    # evidence-backed reason to change it.
+    EPSILON = float(os.getenv("HYPOTHESIS_EPSILON", "0.25"))
     # Diagnostic-only escape hatch (set HYPOTHESIS_DIAG_MODE=1 in the env):
     # skips _choose_action_inner entirely and always returns a safe random
     # action, while __init__ (device setup, checkpoint loading, model
