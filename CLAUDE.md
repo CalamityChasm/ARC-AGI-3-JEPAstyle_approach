@@ -1393,11 +1393,15 @@ subset, trace *that subset specifically*, not the full population.
 
 ## Kaggle competition submission: root cause found, real score obtained
 
-**Current status: the Stage 5 Hypothesis agent has two real, scored,
+**Current status: the Stage 5 Hypothesis agent has three real, scored,
 `SubmissionStatus.COMPLETE` entries in the actual
-`arc-prize-2026-arc-agi-3` Kaggle competition, on identical code: public
-score `0.23` on the first submission, `0.06` on an immediate resubmit of
-the exact same kernel version.** That's a real finding, not noise to
+`arc-prize-2026-arc-agi-3` Kaggle competition:** public score `0.23` on
+the first submission (`MAX_ACTIONS=300`), `0.06` on an immediate resubmit
+of the exact same kernel version (`MAX_ACTIONS=300`, identical code), and
+`0.22` on `stage6-score-optimization`'s candidate (`MAX_ACTIONS=900`,
+`EPSILON`/`PATCH_SAMPLE_TEMPERATURE` left unchanged after a sweep found
+no config improvement -- see `experiments/stage6_score_variance.md`),
+submitted 2026-07-17. That first pair is a real finding, not noise to
 explain away: `Hypothesis.__init__` seeds `self._rng = random.Random()`
 with no fixed seed, so exploration genuinely differs run to run, and the
 private/public leaderboard game sampling may also differ between
@@ -1407,12 +1411,26 @@ meaning on that particular run the full hypothesis-bundle machinery did
 no better than picking actions uniformly at random. **This is the
 clearest concrete lead for future improvement work**: reducing variance
 and improving worst-case reliability likely matters at least as much as
-improving best-case peak score. See `experiments/stage6_max_actions.md`
-(branch `stage6-score-optimization`, not yet merged) for one lever tried
-in response to this -- raising the per-game action budget, on the
-reasoning that a level never reached scores exactly 0 under the real
-formula (see this doc's `rules.md` summary), so budget-starved games are
-a plausible contributor to bad-run variance.
+improving best-case peak score.
+
+**Honest read on the `0.22` result: encouraging, but not conclusive on
+its own.** It's close to the best prior score (`0.23`) and far from the
+worst (`0.06`, the random-agent floor) -- consistent with the local
+backtest evidence in `experiments/stage6_max_actions.md`/
+`stage6_score_variance.md` (budget=900 dropped zero-completion runs from
+2/5 to 0/5 locally). But with only one submission at this config, it's
+equally consistent with "MAX_ACTIONS=900 doesn't change much and this
+run simply landed in the already-known good part of the 0.06-0.23
+variance range" -- the *same* code already demonstrated that range on a
+single unchanged config, so a single new data point at a different
+config can't cleanly separate "the change helped" from "got a good roll
+again." Telling those apart for real would need multiple submissions per
+config, which at Kaggle's real limit of **1 submission/day** (see this
+doc's step 4 below -- corrected from an earlier, wrong "5/day" claim)
+means several more days of one-a-day submissions, not something to
+resolve in a single session. Treat `0.22` as "no evidence of regression,
+some evidence of improvement" -- a real, honest data point, not a
+declared win.
 
 Everything needed to reproduce the submission from scratch on a new
 machine is in `kaggle_submission/` (checked into git) plus the steps
