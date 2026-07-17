@@ -1633,6 +1633,28 @@ above to narrow it down without spending more of the daily quota.
 
 ## Gotchas learned the hard way (don't re-discover these)
 
+- **`ARC-AGI-3-Agents/recordings/` (gitignored, fully regenerable) grows
+  without bound and will eventually fill the disk if nothing ever cleans
+  it up.** Hit this directly (2026-07-17): a backtest sweep and a
+  self-play data-harvest running concurrently pushed it to **20GB across
+  1,300 files**, dropping the C: drive to 0.3GB free and causing a real
+  mid-run failure (`OSError: [Errno 28] No space left on device` inside
+  `run_scorecard.py`'s own JSON write, silently dropping one repeat's
+  result -- the file existed but was 0 bytes, not merely missing, so a
+  naive glob-and-parse over `logs/scorecards/*.json` will crash rather
+  than skip it; check for and delete zero-byte scorecard files before
+  summarizing). Fixed by moving everything older than 15 minutes (to
+  avoid touching files an active run still had open) to a secondary
+  drive: `Get-ChildItem <recordings-dir> -File | Where-Object
+  {$_.LastWriteTime -lt (Get-Date).AddMinutes(-15)} | Move-Item
+  -Destination <archive-dir>` -- freed 18.8GB in one pass. If this
+  recurs, the durable fix (not yet done) would be a directory junction
+  pointing `recordings/` at the secondary drive so future writes land
+  there automatically, but that needs no active process holding a handle
+  into the directory when you convert it -- safest done between runs, not
+  mid-sweep. On this dev box specifically, `E:` is a second drive with
+  real free space (`Get-PSDrive` to check current free space on any
+  drive) -- worth checking before assuming C: is the only option.
 - **The harness's anonymous `ARC_API_KEY` expires within roughly a day,
   not just between machines/sessions.** Hit this repeatedly across this
   project's later sessions -- every game-listing call returns HTTP 401,
