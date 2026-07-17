@@ -2,8 +2,13 @@
 
 **Status: candidate, not merged.** Kept on `stage6-score-optimization`
 per standing instruction -- only merges to `master` after an official
-Kaggle submission validates it, since the local evidence here is
-directionally supportive but too noisy to be conclusive on its own.
+Kaggle submission validates it. **Update (2026-07-17, see bottom of this
+doc): a properly matched n=8 backtest refined the story** -- this is a
+real reliability improvement (zero-completion runs dropped from 3/8 to
+0/7), not a clear mean-score improvement (means are statistically
+indistinguishable at this sample size). A real Kaggle submission of this
+code scored `0.22`, close to the historical best. Worth keeping, but
+described accurately rather than oversold.
 
 ## Why this lever
 
@@ -102,3 +107,56 @@ local artifact, not committed) and prints the top-line score/completion
 summary. Run on `master` (300) vs this branch (900) for a fresh
 comparison; more repeats would narrow the noise band further if a future
 session has the time budget for it.
+
+## Update (2026-07-17): matched n=8 comparison -- a more nuanced picture, plus a real Kaggle data point
+
+Since the n=2-vs-n=2 comparison above, two more pieces of evidence landed:
+
+**A real Kaggle submission of this branch's code scored `0.22`** (see
+CLAUDE.md's Kaggle section) -- close to the best prior score (`0.23`,
+`MAX_ACTIONS=300`) and far from the worst (`0.06`, the same 300-budget
+code re-run, matching the plain random-agent floor). Encouraging, but
+explicitly documented there as not conclusive on its own at n=1.
+
+**A properly matched local backtest, n=8 both sides** (`matched300_r1..8`
+vs `matched900_r1..8`, same branch defaults otherwise, run back-to-back
+same session -- one `matched900` repeat, r6, was lost mid-run to a
+disk-full incident unrelated to this experiment, see CLAUDE.md's Gotchas
+section, leaving n=7 for that side):
+
+| condition | n | mean score | std | mean levels completed | zero-completion runs |
+|---|---|---|---|---|---|
+| 300 | 8 | 0.0296 | 0.0418 | 1.12 | 3/8 |
+| 900 | 7 | 0.0250 | 0.0430 | 1.71 | **0/7** |
+
+**This complicates the simple "bigger budget can only help" theoretical
+argument made above.** Mean *score* is statistically indistinguishable
+between the two conditions (both ~0.025-0.030, overlapping std) -- 900
+is not a clear win on raw score at this larger, more reliable sample
+size, unlike what the noisy n=2 comparison suggested. But mean *levels
+completed* is clearly higher (1.71 vs 1.12) and, more importantly,
+**zero-completion runs dropped from 3/8 to 0/7** -- the worst-case outcome
+(a level never reached, scoring exactly 0) got meaningfully rarer.
+
+The likely reason score didn't rise to match: this doc's original
+efficiency argument ("a bigger budget can only hurt efficiency on levels
+that would've completed anyway") assumed a bigger budget just *extends*
+the same trajectory prefix unchanged. It doesn't -- `MAX_ACTIONS` is the
+per-episode cap the agent's own exploration dynamics (epsilon-random
+fallback, exploit-on-level-up repeats, InfoGain scoring) unfold within,
+so a longer cap can change *which actions get taken even early in an
+episode*, not just whether it eventually times out. A level that
+completes under both budgets isn't guaranteed to complete in the same
+number of actions in both -- so efficiency-component regressions on
+otherwise-fine levels are a real possible mechanism here, not just a
+theoretical non-issue as originally framed.
+
+**Revised verdict**: `MAX_ACTIONS=900` is best understood as a
+**reliability lever, not a mean-score lever** -- it raises the floor
+(fewer catastrophic zero-completion levels) without clearly raising the
+average. That's still worth keeping given `rules.md`'s scoring rewards
+consistency across 110 hidden games more than any single game's peak, and
+it's consistent with the real submission landing near the historical best
+rather than the historical worst -- but it should be described accurately
+as "more consistent, not clearly higher-scoring on average" going
+forward, not oversold as a straightforward improvement.
