@@ -29,7 +29,15 @@ def main() -> None:
             continue
         scores, levels, actions = [], [], []
         for f in files:
-            card = json.loads(f.read_text())
+            text = f.read_text()
+            if not text.strip():
+                # A 0-byte file means run_scorecard.py's write got cut off
+                # mid-write (e.g. disk-full -- see CLAUDE.md's Gotchas
+                # section), not that the run produced no data. Skip it
+                # rather than crash the whole summary.
+                print(f"  (skipping {f.name}: empty/corrupt file)")
+                continue
+            card = json.loads(text)
             scores.append(card.get("score", 0.0))
             levels.append(card.get("total_levels_completed", 0))
             actions.append(card.get("total_actions", 0))
