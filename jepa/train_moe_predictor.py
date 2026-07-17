@@ -27,6 +27,7 @@ Usage:
 
 import argparse
 import json
+import os
 from pathlib import Path
 
 import torch
@@ -63,13 +64,37 @@ def build_models(
     num_experts: int,
     device: torch.device,
     top_k: int | None = None,
+    width_mult: float = 1.0,
 ) -> tuple:
-    online = CNNEncoder().to(device)
-    if encoder_path and encoder_path.exists():
+    """width_mult (stage6-capacity-sweep addition): scales the encoder's
+    output-channel count and each MoE expert's hidden width by this factor
+    (base 64), to test whether the model is capacity-bound rather than
+    data-bound -- see experiments/stage6_capacity_sweep.md. 1.0 reproduces
+    the original fixed width exactly. `encoder_path` warm-starts are only
+    compatible with width_mult=1.0 (a wider encoder has a different-shaped
+    state dict); a width!=1.0 run with a warm-start path silently trains
+    that wider encoder from scratch instead of erroring, since the whole
+    point of a width sweep is comparing architectures at equal training
+    budget, not silently falling back to a mismatched warm start.
+    """
+    channels = max(1, round(64 * width_mult))
+    online = CNNEncoder(out_channels=channels).to(device)
+    if width_mult == 1.0 and encoder_path and encoder_path.exists():
         online.load_state_dict(torch.load(encoder_path, map_location=device))
         print(f"warm-started encoder from {encoder_path}")
+    elif width_mult != 1.0 and encoder_path and encoder_path.exists():
+        print(
+            f"width_mult={width_mult} != 1.0: skipping warm-start from {encoder_path} "
+            f"(state dict shape wouldn't match a {channels}-channel encoder)"
+        )
     target = make_ema_target(online)
-    predictor = MoEPredictor(num_games=num_games, num_experts=num_experts, top_k=top_k).to(device)
+    predictor = MoEPredictor(
+        num_games=num_games,
+        num_experts=num_experts,
+        top_k=top_k,
+        feature_channels=channels,
+        expert_hidden=channels,
+    ).to(device)
     return online, target, predictor
 
 
@@ -84,7 +109,23 @@ def _make_loaders(transitions: list, game_vocab: dict, batch_size: int, device: 
     all_weights = dataset.sample_weights()
     train_weights = [all_weights[i] for i in train_ds.indices]
     sampler = WeightedRandomSampler(train_weights, num_samples=len(train_weights), replacement=True)
-    num_workers = 4 if device.type == "cuda" else 0
+    # JEPA_NUM_WORKERS env var override (stage6-selfplay-bootstrap): hit a
+    # live repro of CLAUDE.md's documented "MemoryError inside a DataLoader
+    # worker's pickle.load can be a full-disk symptom" gotcha during this
+    # branch's larger (74.5k-transition, self-play-augmented) corpus run --
+    # Windows spawn-based workers each pickle a copy of the dataset across
+    # a pipe, and a near-full disk can't grow the pagefile to absorb that,
+    # turning ordinary memory pressure into a hard crash-loop. The
+    # documented fix (free disk space) isn't always available if the
+    # pressure comes from another concurrent process on a shared machine --
+    # falling back to 0 workers sidesteps the spawn/pickle path entirely
+    # (slower, but doesn't depend on pagefile headroom). Unset behaves
+    # exactly as before (4 on cuda, 0 on cpu).
+    _num_workers_override = os.getenv("JEPA_NUM_WORKERS")
+    if _num_workers_override is not None:
+        num_workers = int(_num_workers_override)
+    else:
+        num_workers = 4 if device.type == "cuda" else 0
     # NOT persistent_workers here (unlike train_predictor.py): this script
     # builds a *second* set of DataLoaders for the ARC fine-tuning phase
     # after the MiniGrid pretrain phase's loaders go out of scope, and the
@@ -107,8 +148,18 @@ def _make_loaders(transitions: list, game_vocab: dict, batch_size: int, device: 
 
 
 def _run_epochs(
-    online, target, predictor, opt, train_loader, val_loader, device, epochs: int, phase: str
+    online, target, predictor, opt, train_loader, val_loader, device, epochs: int, phase: str,
+    checkpoint_cb=None, checkpoint_every: int = 0,
 ) -> None:
+    """checkpoint_cb(epoch_1_indexed, phase), if given, is called every
+    `checkpoint_every` epochs (stage6-selfplay-bootstrap addition) -- a
+    full pretrain+finetune run on this branch's larger (self-play-
+    augmented) corpus took long enough in practice to get killed by an
+    external process/environment event partway through arc-finetune with
+    *zero* checkpoints saved (this script previously only ever saved once,
+    at the very end of both phases) -- losing the entire run's progress.
+    Periodic mid-run saves mean an interruption costs at most
+    `checkpoint_every` epochs of progress, not the whole run."""
     for epoch in range(epochs):
         online.train()
         predictor.train()
@@ -146,6 +197,8 @@ def _run_epochs(
             f"val_pred_mse={stats['pred']:.5f}  val_identity_mse={stats['identity']:.5f}  |  "
             f"changed-patches: pred={stats['pred_changed']:.5f} identity={stats['identity_changed']:.5f}"
         )
+        if checkpoint_cb is not None and checkpoint_every > 0 and (epoch + 1) % checkpoint_every == 0:
+            checkpoint_cb(epoch + 1, phase)
 
 
 def train(
@@ -162,7 +215,21 @@ def train(
     sokoban_episodes_per_config: int = 0,
     sokoban_steps_per_episode: int = 80,
     top_k: int | None = None,
+    checkpoint_every: int = 0,
+    resume_from: Path | None = None,
+    width_mult: float = 1.0,
 ) -> None:
+    """resume_from (stage6-selfplay-bootstrap addition): if set, loads a
+    previously in-progress checkpoint (encoder_moe.pt/moe_predictor.pt/
+    game_vocab_moe.json from that directory, as written by this same
+    script's --checkpoint-every) instead of building fresh models, skips
+    the MiniGrid pretrain phase entirely (already baked into the resumed
+    weights), and treats `epochs` as *additional* arc-finetune epochs to
+    run from here -- not a total. Built after this branch's training run
+    got killed by an external process/environment event twice in a row
+    around the ~55-60 minute mark, well short of a full pretrain+60-epoch
+    run's wall-clock -- resuming from the last periodic checkpoint avoids
+    re-paying for epochs already completed."""
     device = get_device()
     gating = f"top-{top_k} noisy" if top_k is not None else "dense softmax"
     print(f"training on {device}, {num_experts} experts, {gating} gate")
@@ -189,6 +256,12 @@ def train(
 
     minigrid_transitions = []
     sokoban_transitions = []
+    if resume_from is not None and pretrain_epochs > 0:
+        print(
+            f"--resume-from set: skipping MiniGrid pretrain regardless of "
+            f"--pretrain-epochs={pretrain_epochs} (already baked into the resumed checkpoint)"
+        )
+        pretrain_epochs = 0
     if pretrain_epochs > 0:
         minigrid_transitions = generate_transitions(
             env_names=DEFAULT_ENV_NAMES,
@@ -211,56 +284,88 @@ def train(
             )
     synthetic_transitions = minigrid_transitions + sokoban_transitions
 
-    # One shared vocabulary across both phases -- built from the union of
-    # ARC game_ids and (if pretraining) whichever synthetic-source
-    # game_ids were actually generated, so the game-embedding table is the
-    # same size/meaning in both phases and weights carry over cleanly.
-    synthetic_game_ids = {t[6] for t in synthetic_transitions}
-    game_ids = sorted({t[6] for t in arc_transitions} | synthetic_game_ids)
-    game_vocab = {g: i for i, g in enumerate(game_ids)}
-    print(f"{len(game_vocab)} distinct games in the shared vocab")
+    if resume_from is not None:
+        # Reuse the exact vocab the resumed checkpoint was built with --
+        # rebuilding from scratch here would be fine in practice (same 25
+        # local games either way), but reusing the saved file is the more
+        # obviously-correct source of truth for what the resumed game-
+        # embedding table's indices actually mean.
+        game_vocab = json.loads((resume_from / "game_vocab_moe.json").read_text())
+        print(f"--resume-from set: reusing {len(game_vocab)}-game vocab from {resume_from}")
+    else:
+        # One shared vocabulary across both phases -- built from the union of
+        # ARC game_ids and (if pretraining) whichever synthetic-source
+        # game_ids were actually generated, so the game-embedding table is the
+        # same size/meaning in both phases and weights carry over cleanly.
+        synthetic_game_ids = {t[6] for t in synthetic_transitions}
+        game_ids = sorted({t[6] for t in arc_transitions} | synthetic_game_ids)
+        game_vocab = {g: i for i, g in enumerate(game_ids)}
+        print(f"{len(game_vocab)} distinct games in the shared vocab")
 
     online, target, predictor = build_models(
-        encoder_path, num_games=len(game_vocab), num_experts=num_experts, device=device, top_k=top_k
+        None if resume_from is not None else encoder_path,
+        num_games=len(game_vocab), num_experts=num_experts, device=device, top_k=top_k,
+        width_mult=width_mult,
     )
+    if resume_from is not None:
+        online.load_state_dict(torch.load(resume_from / "encoder_moe.pt", map_location=device))
+        predictor.load_state_dict(torch.load(resume_from / "moe_predictor.pt", map_location=device))
+        target = make_ema_target(online)  # fresh EMA copy of the resumed online weights
+        print(f"--resume-from set: loaded encoder + MoE predictor weights from {resume_from}")
     opt = torch.optim.AdamW(list(online.parameters()) + list(predictor.parameters()), lr=lr)
+
+    def _save(tag: str) -> None:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        torch.save({k: v.cpu() for k, v in online.state_dict().items()}, out_dir / "encoder_moe.pt")
+        torch.save({k: v.cpu() for k, v in predictor.state_dict().items()}, out_dir / "moe_predictor.pt")
+        (out_dir / "game_vocab_moe.json").write_text(json.dumps(game_vocab, indent=2))
+        (out_dir / "moe_training_meta.json").write_text(
+            json.dumps(
+                {
+                    "epochs": epochs,
+                    "pretrain_epochs": pretrain_epochs,
+                    "n_minigrid_transitions": len(minigrid_transitions),
+                    "n_sokoban_transitions": len(sokoban_transitions),
+                    "num_experts": num_experts,
+                    "top_k": top_k,
+                    "width_mult": width_mult,
+                    "feature_channels": max(1, round(64 * width_mult)),
+                    "batch_size": batch_size,
+                    "lr": lr,
+                    "device": str(device),
+                    "n_local_transitions": n_local,
+                    "n_external_transitions": n_external,
+                    "external_per_game": external_per_game,
+                    "n_games": len(game_vocab),
+                    "checkpoint_tag": tag,
+                },
+                indent=2,
+            )
+        )
+        print(f"[checkpoint] saved encoder + MoE predictor + game vocab to {out_dir} (tag={tag})")
+
+    def _checkpoint_cb(epoch_1_indexed: int, phase: str) -> None:
+        _save(f"{phase}-epoch{epoch_1_indexed}-inprogress")
 
     if pretrain_epochs > 0:
         mg_train_loader, mg_val_loader = _make_loaders(synthetic_transitions, game_vocab, batch_size, device)
         phase_name = "synthetic-pretrain" if sokoban_transitions else "minigrid-pretrain"
         _run_epochs(
-            online, target, predictor, opt, mg_train_loader, mg_val_loader, device, pretrain_epochs, phase_name
+            online, target, predictor, opt, mg_train_loader, mg_val_loader, device, pretrain_epochs, phase_name,
+            checkpoint_cb=_checkpoint_cb, checkpoint_every=checkpoint_every,
         )
         del mg_train_loader, mg_val_loader  # fully drop before building the next phase's loaders
+        if checkpoint_every > 0:
+            _save(f"{phase_name}-complete")  # cheap insurance at the phase boundary regardless of the interval
 
     arc_train_loader, arc_val_loader = _make_loaders(arc_transitions, game_vocab, batch_size, device)
-    _run_epochs(online, target, predictor, opt, arc_train_loader, arc_val_loader, device, epochs, "arc-finetune")
-
-    out_dir.mkdir(parents=True, exist_ok=True)
-    torch.save({k: v.cpu() for k, v in online.state_dict().items()}, out_dir / "encoder_moe.pt")
-    torch.save({k: v.cpu() for k, v in predictor.state_dict().items()}, out_dir / "moe_predictor.pt")
-    (out_dir / "game_vocab_moe.json").write_text(json.dumps(game_vocab, indent=2))
-    (out_dir / "moe_training_meta.json").write_text(
-        json.dumps(
-            {
-                "epochs": epochs,
-                "pretrain_epochs": pretrain_epochs,
-                "n_minigrid_transitions": len(minigrid_transitions),
-                "n_sokoban_transitions": len(sokoban_transitions),
-                "num_experts": num_experts,
-                "top_k": top_k,
-                "batch_size": batch_size,
-                "lr": lr,
-                "device": str(device),
-                "n_local_transitions": n_local,
-                "n_external_transitions": n_external,
-                "external_per_game": external_per_game,
-                "n_games": len(game_vocab),
-            },
-            indent=2,
-        )
+    arc_phase_name = "arc-finetune-resumed" if resume_from is not None else "arc-finetune"
+    _run_epochs(
+        online, target, predictor, opt, arc_train_loader, arc_val_loader, device, epochs, arc_phase_name,
+        checkpoint_cb=_checkpoint_cb, checkpoint_every=checkpoint_every,
     )
-    print(f"saved encoder + MoE predictor + game vocab to {out_dir}")
+
+    _save("final")
 
 
 @torch.no_grad()
@@ -341,6 +446,44 @@ if __name__ == "__main__":
             "jepa/data/sokoban_data.py). Only used when --pretrain-epochs > 0."
         ),
     )
+    parser.add_argument(
+        "--checkpoint-every",
+        type=int,
+        default=0,
+        help=(
+            "Save an in-progress checkpoint to --out every N epochs, in "
+            "both phases, plus once at the pretrain/finetune phase "
+            "boundary (0 = only save once, at the very end -- original "
+            "behavior). stage6-selfplay-bootstrap addition: a long run on "
+            "a larger corpus can take long enough to get interrupted "
+            "before the final save; this bounds how much progress an "
+            "interruption can cost."
+        ),
+    )
+    parser.add_argument(
+        "--resume-from",
+        type=Path,
+        default=None,
+        help=(
+            "Resume from a prior --checkpoint-every (or final) checkpoint "
+            "directory (encoder_moe.pt/moe_predictor.pt/game_vocab_moe.json). "
+            "Skips MiniGrid pretraining (already baked in) and treats --epochs "
+            "as *additional* arc-finetune epochs to run from here, not a total."
+        ),
+    )
+    parser.add_argument(
+        "--width-mult",
+        type=float,
+        default=1.0,
+        help=(
+            "stage6-capacity-sweep addition: scales the encoder's output-"
+            "channel count and each MoE expert's hidden width by this factor "
+            "(base 64 channels at 1.0). Used to test whether the model is "
+            "capacity-bound -- see experiments/stage6_capacity_sweep.md. "
+            "Only compatible with a fresh --encoder warm-start at 1.0 "
+            "(other values train the encoder from scratch)."
+        ),
+    )
     args = parser.parse_args()
     train(
         args.epochs,
@@ -351,4 +494,7 @@ if __name__ == "__main__":
         pretrain_epochs=args.pretrain_epochs,
         sokoban_episodes_per_config=args.sokoban_episodes_per_config,
         top_k=args.top_k,
+        checkpoint_every=args.checkpoint_every,
+        resume_from=args.resume_from,
+        width_mult=args.width_mult,
     )

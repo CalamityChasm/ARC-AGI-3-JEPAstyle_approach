@@ -32,8 +32,9 @@ from .data.trajectories import TransitionDataset, load_all_transitions
 from .device import get_device
 from .grid import CANVAS, NUM_CHANNELS
 from .losses import per_region_error
-from .models import ActionConditionedPredictor, CNNEncoder
+from .models import ActionConditionedPredictor, CNNEncoder, MoEPredictor
 from .train_predictor import evaluate
+from .train_moe_predictor import evaluate as evaluate_moe
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 HISTORY_PATH = REPO_ROOT / "logs" / "benchmarks" / "history.jsonl"
@@ -105,6 +106,177 @@ def _evaluate_per_game(online, predictor, val_ds, game_vocab: dict, device: torc
     return results
 
 
+def _load_moe_checkpoint(checkpoint_dir: Path, device: torch.device) -> tuple:
+    """MoE counterpart to `_load_checkpoint` (stage6-selfplay-bootstrap):
+    `jepa/benchmark.py eval` originally only knew how to load Stage 1's
+    monolithic predictor (encoder_finetuned.pt/predictor.pt/game_vocab.json)
+    -- there was no way to get an apples-to-apples changed-patches number
+    for two different `checkpoints*/moe_predictor.pt` checkpoints on a
+    shared held-out split (Stage 4's own changed-patches numbers all came
+    from train_moe_predictor.py's own per-run eval, which uses whatever
+    split *that* run's transitions list happened to produce -- not
+    comparable across runs with different corpora). This loads
+    encoder_moe.pt + moe_predictor.pt + game_vocab_moe.json instead.
+
+    `feature_channels` (stage6-capacity-sweep addition): read from
+    moe_training_meta.json's `feature_channels` key if present (written by
+    a width-swept train_moe_predictor.py run), else defaults to 64 (every
+    checkpoint predating the width sweep)."""
+    game_vocab = json.loads((checkpoint_dir / "game_vocab_moe.json").read_text())
+    num_experts = 8
+    feature_channels = 64
+    meta_path = checkpoint_dir / "moe_training_meta.json"
+    if meta_path.exists():
+        meta = json.loads(meta_path.read_text())
+        num_experts = meta.get("num_experts", 8)
+        feature_channels = meta.get("feature_channels", 64)
+    online = CNNEncoder(out_channels=feature_channels).to(device)
+    online.load_state_dict(
+        torch.load(checkpoint_dir / "encoder_moe.pt", map_location=device)
+    )
+    online.eval()
+    predictor = MoEPredictor(
+        num_games=len(game_vocab),
+        num_experts=num_experts,
+        feature_channels=feature_channels,
+        expert_hidden=feature_channels,
+    ).to(device)
+    predictor.load_state_dict(
+        torch.load(checkpoint_dir / "moe_predictor.pt", map_location=device)
+    )
+    predictor.eval()
+    return online, predictor, game_vocab
+
+
+@torch.no_grad()
+def _evaluate_per_game_moe(online, predictor, val_ds, game_vocab: dict, device: torch.device) -> dict:
+    """MoE counterpart to `_evaluate_per_game` -- `MoEPredictor.forward`
+    returns (pred_feat, gate_weights), unlike the monolith's plain tensor,
+    otherwise identical."""
+    idx_to_game = {v: k for k, v in game_vocab.items()}
+    per_game = {
+        g: {"pred": 0.0, "identity": 0.0, "n": 0, "pred_changed": 0.0, "identity_changed": 0.0, "n_changed": 0}
+        for g in game_vocab
+    }
+
+    loader = DataLoader(val_ds, batch_size=32, shuffle=False)
+    for cur, action_id, xy, nxt, patch_mask, game_idx in loader:
+        cur, action_id, xy = cur.to(device), action_id.to(device), xy.to(device)
+        nxt, patch_mask, game_idx = nxt.to(device), patch_mask.to(device), game_idx.to(device)
+        cur_feat = online(cur)
+        pred_feat, _gate_weights = predictor(cur_feat, action_id, xy, game_idx)
+        next_feat = online(nxt)
+
+        pred_err = per_region_error(pred_feat, next_feat)  # (B, 8, 8)
+        identity_err = per_region_error(cur_feat, next_feat)
+
+        for b in range(cur.shape[0]):
+            g = idx_to_game[int(game_idx[b])]
+            stats = per_game[g]
+            stats["pred"] += pred_err[b].mean().item()
+            stats["identity"] += identity_err[b].mean().item()
+            stats["n"] += 1
+            m = patch_mask[b]
+            if m.any():
+                stats["pred_changed"] += pred_err[b][m].mean().item()
+                stats["identity_changed"] += identity_err[b][m].mean().item()
+                stats["n_changed"] += 1
+
+    results = {}
+    for g, s in per_game.items():
+        if s["n"] == 0:
+            continue
+        n_changed = max(s["n_changed"], 1)
+        results[g] = {
+            "n": s["n"],
+            "pred_mse": s["pred"] / s["n"],
+            "identity_mse": s["identity"] / s["n"],
+            "n_changed": s["n_changed"],
+            "pred_changed_mse": s["pred_changed"] / n_changed,
+            "identity_changed_mse": s["identity_changed"] / n_changed,
+        }
+    return results
+
+
+def run_eval_moe(checkpoint_dir: Path, tag: str, notes: str, split: str = "val") -> dict:
+    """MoE counterpart to `run_eval`. Builds the val split from whatever
+    local recordings are on disk *right now* (`load_all_transitions`,
+    sorted-glob deterministic order) with the same VAL_FRACTION and the
+    same fixed `manual_seed(0)` split `train_moe_predictor.py`'s own
+    `_make_loaders` uses -- so as long as the recordings directory's file
+    set doesn't change between two calls to this function, both get the
+    exact same held-out examples, making a `checkpoints/` vs
+    `checkpoints_selfplay/` comparison genuinely apples-to-apples. Caveat
+    worth stating plainly: this only guarantees the *split indices* match
+    across runs, not that neither checkpoint ever trained on any given
+    held-out example -- a checkpoint trained before some of today's
+    recording files existed obviously never saw them either way, but for
+    files that predate *both* checkpoints, this val split is not
+    guaranteed identical to whatever split that checkpoint's own training
+    run happened to draw (different random_split call, same seed, only
+    identical if the input list order was also identical at both times).
+
+    `split` (stage6-capacity-sweep addition): "val" (default, the original
+    behavior -- held-out data the *arc-finetune* phase's own `_make_loaders`
+    call never trained on) or "train" (the complementary 90% -- data the
+    checkpoint *did* see during arc-finetune, assuming the recordings
+    directory's file set matches what was on disk at training time; see
+    experiments/stage6_capacity_sweep.md for why this matters and how that
+    precondition was verified for the production checkpoint specifically).
+    Both draw from the exact same `random_split(..., manual_seed(0))` call
+    used by `train_moe_predictor.py: _make_loaders` -- this function does
+    not rederive a different split."""
+    if split not in ("train", "val"):
+        raise ValueError(f"split must be 'train' or 'val', got {split!r}")
+    device = get_device()
+    transitions = load_all_transitions(REPO_ROOT)
+    online, predictor, game_vocab = _load_moe_checkpoint(checkpoint_dir, device)
+
+    dataset = TransitionDataset(transitions, game_vocab)
+    n_val = max(1, int(len(dataset) * VAL_FRACTION))
+    n_train = len(dataset) - n_val
+    train_ds, val_ds = random_split(
+        dataset, [n_train, n_val], generator=torch.Generator().manual_seed(0)
+    )
+    eval_ds = train_ds if split == "train" else val_ds
+    eval_loader = DataLoader(eval_ds, batch_size=32, shuffle=False)
+
+    overall = evaluate_moe(online, predictor, eval_loader, device=device)
+    per_game = _evaluate_per_game_moe(online, predictor, eval_ds, game_vocab, device)
+
+    training_meta = {}
+    meta_path = checkpoint_dir / "moe_training_meta.json"
+    if meta_path.exists():
+        training_meta = json.loads(meta_path.read_text())
+
+    changed_improvement = (
+        (overall["identity_changed"] - overall["pred_changed"]) / overall["identity_changed"] * 100
+    )
+    result = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "tag": tag,
+        "notes": notes,
+        "checkpoint_dir": str(checkpoint_dir),
+        "model_type": "moe",
+        "split": split,
+        "device": str(device),
+        "n_val_transitions": len(eval_ds),
+        "n_total_transitions": len(dataset),
+        "overall": overall,
+        "changed_patches_improvement_pct": changed_improvement,
+        "milestone_pass": overall["pred_changed"] < overall["identity_changed"],
+        "per_game": per_game,
+        "training_meta": training_meta,
+    }
+
+    HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(HISTORY_PATH, "a", encoding="utf-8") as f:
+        f.write(json.dumps(result) + "\n")
+
+    _print_eval_summary(result)
+    return result
+
+
 def run_eval(checkpoint_dir: Path, tag: str, notes: str) -> dict:
     device = get_device()
     transitions = load_all_transitions(REPO_ROOT)
@@ -154,8 +326,9 @@ def run_eval(checkpoint_dir: Path, tag: str, notes: str) -> dict:
 
 def _print_eval_summary(result: dict) -> None:
     o = result["overall"]
+    split_label = result.get("split", "val")
     print(f"=== benchmark: {result['tag']} ({result['timestamp']}) ===")
-    print(f"device: {result['device']}  val transitions: {result['n_val_transitions']}")
+    print(f"device: {result['device']}  split: {split_label}  n transitions: {result['n_val_transitions']}")
     if result["training_meta"]:
         print(f"training config: {result['training_meta']}")
     print(f"overall improvement: {(o['identity'] - o['pred']) / o['identity'] * 100:+.1f}%")
@@ -267,6 +440,20 @@ if __name__ == "__main__":
     p_eval.add_argument("--checkpoint-dir", type=Path, default=REPO_ROOT / "checkpoints")
     p_eval.add_argument("--tag", type=str, default="untagged")
     p_eval.add_argument("--notes", type=str, default="")
+    p_eval.add_argument(
+        "--moe",
+        action="store_true",
+        help="Evaluate a Stage 4 MoE checkpoint (encoder_moe.pt/moe_predictor.pt/game_vocab_moe.json) "
+        "instead of the Stage 1 monolith (stage6-selfplay-bootstrap addition).",
+    )
+    p_eval.add_argument(
+        "--split",
+        choices=["train", "val"],
+        default="val",
+        help="Evaluate against the training split instead of the held-out val split (stage6-capacity-sweep "
+        "addition, --moe only) -- reuses the exact same random_split(manual_seed(0)) call, just reports "
+        "the complementary 90%% instead of the usual 10%%. See experiments/stage6_capacity_sweep.md.",
+    )
 
     p_tp = sub.add_parser("throughput", help="Benchmark CPU vs GPU training throughput.")
     p_tp.add_argument("--batch-size", type=int, default=32)
@@ -277,7 +464,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.command == "eval":
-        run_eval(args.checkpoint_dir, args.tag, args.notes)
+        if args.moe:
+            run_eval_moe(args.checkpoint_dir, args.tag, args.notes, split=args.split)
+        else:
+            run_eval(args.checkpoint_dir, args.tag, args.notes)
     elif args.command == "throughput":
         run_throughput(args.batch_size, args.n_batches)
     elif args.command == "history":
