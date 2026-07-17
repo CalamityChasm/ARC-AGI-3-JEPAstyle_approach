@@ -9,6 +9,7 @@ Usage (run from repo root, inside the venv):
     python scripts/run_stage0.py --agent curiosity
     python scripts/run_stage0.py --agent memory
     python scripts/run_stage0.py --agent hypothesis
+    python scripts/run_stage0.py --agent solver
 """
 
 import argparse
@@ -25,7 +26,7 @@ def main() -> None:
     parser.add_argument(
         "--agent",
         required=True,
-        choices=["random", "pressonce", "curiosity", "memory", "hypothesis"],
+        choices=["random", "pressonce", "curiosity", "memory", "hypothesis", "solver"],
         help="Agent to run.",
     )
     parser.add_argument(

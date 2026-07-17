@@ -12,6 +12,7 @@ dist/
 /logs/
 /checkpoints/
 /checkpoints_ablation/
+/checkpoints_search/
 /runs/
 *.log
 recordings/

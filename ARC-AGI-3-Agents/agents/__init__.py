@@ -17,6 +17,7 @@ from .templates.press_once_agent import PressOnce
 from .templates.random_agent import Random
 from .templates.reasoning_agent import ReasoningAgent
 from .templates.smolagents import SmolCodingAgent, SmolVisionAgent
+from .templates.solver_agent import Solver
 
 load_dotenv()
 
@@ -51,6 +52,7 @@ __all__ = [
     "Curiosity",
     "Memory",
     "Hypothesis",
+    "Solver",
     "Agent",
     "Recorder",
     "Playback",
