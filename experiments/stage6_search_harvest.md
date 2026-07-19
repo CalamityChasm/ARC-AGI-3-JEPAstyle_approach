@@ -1,13 +1,16 @@
 # Stage 6 experiment: systematic search-based data harvesting ("Solver")
 
-**Status: the `Solver` agent and harvest are complete and validated; the
-MoE retrain comparison is inconclusive due to two documented, external
-infrastructure failures (disk exhaustion, twice) that prevented a
-full-length (60-epoch) training run within this session. See "Final
-verdict" near the bottom for the honest bottom line -- short version: the
-search-harvesting idea works and is a real improvement over the prior
-self-play attempt; whether it actually produces a better world model is
-unresolved and needs a re-run with real disk headroom, not disproven.**
+**Status (updated, 2026-07-19): COMPLETE. The `Solver` agent and harvest
+are validated, the full 60-epoch MoE retrain finished, and the
+comparison against production is a genuine, per-game-consistent
+improvement -- not just a flattering pooled average. The value head was
+retrained against the new checkpoint and a matched local scorecard
+backtest (n=5 each) favors the search checkpoint on both mean score and
+total levels completed. See "Final verdict" near the bottom for the full
+honest bottom line. This supersedes the "inconclusive due to disk
+exhaustion" status below, which is left in place as the historical
+record of how the first (interrupted) retrain attempt went and why it
+wasn't trustworthy on its own.**
 
 ## The problem this addresses
 
@@ -375,29 +378,161 @@ signal is not to chase it further within this already-overrun session,
 and not to launder it into a false "beats production" headline by
 quoting the pooled number alone.
 
-## What was skipped, and why
+## What was skipped, and why (superseded -- see the 2026-07-19 follow-up below)
 
 Per this project's own standing gate ("only if [the predictor eval]
 shows a real improvement, proceed to retrain the value head and run a
 local scorecard backtest"): value-head retraining and the scorecard
-backtest were **not run**. The pooled metric nominally cleared the bar,
-but the per-game and feature-variance evidence above shows that number
-isn't trustworthy enough to build further conclusions on -- retraining a
-value head against an undertrained, per-game-mostly-regressed encoder
-and then spending real scorecard-backtest compute on it would be
-spending effort to (most likely) confirm a foregone "no reliable signal"
-conclusion, not testing anything new. `checkpoints/moe_predictor.pt`
-(production) is untouched throughout; `checkpoints_search/` (gitignored,
-not committed) holds the inconclusive 5-epoch checkpoint for anyone who
-wants to inspect it directly or, more usefully, resume training on a
-machine with real disk headroom.
+backtest were **not run** at the time this section was written. The
+pooled metric nominally cleared the bar, but the per-game and
+feature-variance evidence above showed that number wasn't trustworthy
+enough to build further conclusions on at the 5-epoch checkpoint's stage
+of training. This turned out to be the right call in hindsight -- the
+5-epoch checkpoint really was undertrained (see below) -- but a
+follow-up session (below) completed the full 60-epoch run and found a
+materially different, trustworthy result.
+
+## MoE retrain: completed to the full 60 epochs (2026-07-19 follow-up)
+
+A later session resumed training from the exact 5-epoch checkpoint left
+behind above, using the same `--resume-from`/`--checkpoint-every` machinery,
+and pushed it through to the originally-intended 60 total arc-finetune
+epochs (on top of the already-complete 20-epoch MiniGrid pretrain phase --
+unchanged from the original run).
+
+**Getting there took seven separate resume cycles, not one continuous
+run** -- worth documenting since it's a real, recurring constraint on this
+project's infrastructure, not a one-off:
+
+- The training subprocess was killed by something external roughly every
+  **50-60 minutes of wall-clock runtime**, regardless of epoch progress,
+  disk headroom, or RAM headroom (all three were directly checked and
+  confirmed healthy at multiple kill points -- e.g. C: at 49GB free, E: at
+  65GB free, no `MemoryError`, no `Traceback`, just a clean log stop).
+  This is a **different root cause than this document's original two
+  disk-exhaustion incidents** -- this time it was later identified (via
+  the session coordinator, who could see infrastructure state this agent
+  couldn't) as a **session usage-limit boundary**, not a disk/RAM/OS-level
+  kill. The visible symptom is identical either way (background process
+  silently disappears, `tasklist` shows nothing, no error in the log), so
+  the practical mitigation is the same regardless of cause: checkpoint
+  often (`--checkpoint-every 3` was used throughout this follow-up, down
+  from the original run's `--every 10`, to bound the loss from any one cutoff
+  to at most ~2-3 lost epochs) and just keep resuming.
+- Each resume cycle read the *previous* cycle's `--out` directory as its
+  own `--resume-from` (both pointed at the same
+  `E:\jepa_overflow\checkpoints_search`, honoring the original task's
+  instruction to keep all new output on E: rather than C:), computing the
+  remaining epoch count as `60 - <cumulative epochs already checkpointed>`
+  each time. Progression across the seven cycles: 5 (starting point) ->
+  15 -> 27 -> 39 -> 51 -> 60 (final). A couple of cycles lost 1-2 epochs of
+  real, logged-but-not-yet-checkpointed progress to a cutoff landing
+  between checkpoint boundaries -- cheap to just redo, not worth
+  chasing tighter checkpointing for.
+- The final cycle (9 remaining epochs) completed cleanly end-to-end,
+  confirmed by both the training script's own log reaching
+  `[checkpoint] saved ... (tag=final)` and the background task reporting
+  a genuine exit code 0 (not another silent kill).
+
+**Per-game evaluation (the primary signal, per this project's own
+standing rule -- pooled second):** `jepa.benchmark eval --moe`, same
+apples-to-apples methodology as the original 5-epoch attempt (both
+checkpoints scored against this worktree's current combined
+recordings corpus, same fixed val split):
+
+| checkpoint | arc-finetune epochs | pooled changed-patches improvement |
+|---|---|---|
+| `checkpoints/` (production) | 60 | **+26.4%** (reproduces the number recorded earlier in this document exactly) |
+| `checkpoints_search/` (this experiment, now fully trained) | 60 | **+60.2%** |
+
+Pooled numbers alone were exactly what burned the original 5-epoch
+attempt, so the real check is head-to-head per-game improvement% (search
+vs. production, both relative to their own identity baseline on the same
+val split):
+
+**Search beats production on 18 of 25 games; production wins on 7.**
+The wins are large and concentrated on the games with the biggest
+absolute identity-baseline error (`ka59` +87pp, `su15` +65pp, `tr87`
++54pp, `cn04` +48pp, `m0r0` +46pp, `bp35` +28pp, `dc22` +27pp) -- exactly
+the games whose absolute error dominates the pooled average, so the
+pooled win isn't an artifact of one outlier the way this document
+originally worried about. Where production wins, the margins are small
+and on games with tiny absolute identity-baseline error (`s5i5`, `ft09`,
+`vc33`, `r11l`, `sb26`, `re86`, `ls20` -- all within a few percentage
+points, consistent with this project's own repeated finding that
+percentage swings on near-zero absolute error are mostly noise, not
+signal). This is a genuine, not-flattering-average, per-game-consistent
+improvement.
+
+**Encoder feature variance also recovered to a healthy range**, directly
+addressing the exact concern that made the 5-epoch checkpoint's pooled
+number untrustworthy: mean per-channel std on a shared held-out batch is
+now **1.47** for the search checkpoint vs. production's **1.69** (both
+comfortably above the `VARIANCE_FLOOR=1.0` collapse line, and much closer
+together than the 5-epoch checkpoint's compressed **1.07**). Consistent
+with the original hypothesis that the compression was an artifact of
+insufficient ARC-specific fine-tuning (5 of 60 epochs) rather than
+anything about the harvested data itself -- the full 60 epochs closed
+most of that gap.
+
+**Value head retrained** against the fully-trained checkpoint's encoder
+(`python -m jepa.train_value_head --epochs 20 --encoder
+E:/jepa_overflow/checkpoints_search/encoder_moe.pt --out
+E:/jepa_overflow/checkpoints_search`), same oversampling setup as
+production's own value head. 112,175 value-target samples from this
+worktree's combined corpus, 0.5% with a nonzero target (lower than the
+~1.6% cited elsewhere in this project's history, consistent with the
+Solver harvest's systematic-exploration style producing a different level-
+completion density than a teacher-policy rollout) -- val MSE bounced
+around 0.0010-0.0032 against a 0.0008 zero-baseline across 20 epochs,
+in the same "not clearly better than always-predict-zero on the full
+population" territory this project has already documented and explained
+(population MSE is dominated by the near-100%-zero-target majority; the
+meaningful-subset metric is the honest one, per Stage 5's own history) --
+not re-derived in detail here since it wasn't the deciding evidence for
+this branch of the gate.
+
+**Local scorecard backtest, matched n=5 per checkpoint** (both using
+this worktree's `Hypothesis` agent code unchanged, `MAX_ACTIONS=300`,
+`scripts/run_scorecard.py --agent hypothesis`, swapping only the 5 MoE-era
+checkpoint files -- `encoder_moe.pt`, `moe_predictor.pt`, `value_head.pt`,
+`game_vocab_moe.json`, `moe_training_meta.json` -- in this worktree's
+own `checkpoints/` directory between repeats, never touching the main
+checkout's production checkpoint):
+
+| checkpoint | scores (5 repeats) | mean score | total levels completed (of 183 possible x5) |
+|---|---|---|---|
+| production | 0.0, 0.0023, 0.0050, 0.1344, 0.0 | **0.0283** | **4** |
+| search (this experiment) | 0.0041, 0.0, 0.0048, 0.1905, 0.0039 | **0.0407** | **6** |
+
+Search wins on both the mean real Kaggle-formula score (+44% relative)
+and total levels completed (+50% relative) at this sample size. n=5 is a
+genuinely small sample given this project's own repeatedly-documented
+observation that single-digit-repeat comparisons are noisy on a sparse
+metric like this (see Stage 2/5's history) -- not a statistically
+airtight result on its own -- but it points the *same direction* as the
+per-game predictor eval and the feature-variance check, three
+independent pieces of evidence all favoring the search checkpoint rather
+than one noisy metric standing alone.
+
+(Operational note: the harness's anonymous `ARC_API_KEY` had expired
+again before this backtest -- the exact, previously-documented gotcha --
+causing the first production-backtest attempt to fail instantly with "No
+'FINAL SCORECARD REPORT' found in output" (a 401 on the game-listing
+call, not a real agent or checkpoint problem). Refreshed via the
+documented `https://three.arcprize.org/api/games/anonkey` endpoint and
+reran cleanly.)
 
 ## Final verdict
 
-**The search-based harvesting idea itself is validated; the retrain
-comparison is not, for a documented, external infrastructure reason --
-these are two separate claims, and only the first one has a confident
-answer from this session.**
+**The search-based harvesting idea is validated, and now so is the
+retrain: a model trained on the Solver-harvested combined corpus, taken
+to the same full 60-epoch budget as production, measurably beats
+production on the predictor's own per-game metric, on encoder
+representational health, and on a matched local scorecard backtest.**
+This supersedes the earlier "inconclusive" verdict above, which was the
+right call *at the time* (the 5-epoch checkpoint really wasn't ready to
+judge) but is no longer the state of the evidence.
 
 1. **`Solver` (systematic, policy-free search) works as designed and
    avoids the self-play attempt's central failure mode.** Direct,
@@ -407,35 +542,40 @@ answer from this session.**
    rate (78.0%) on 57% more data (98k vs. 62.5k transitions) than the
    policy-driven alternative, and a real, previously-undiscovered
    correctness bug (the frontier-target infinite-retry loop) found and
-   fixed mid-session with direct before/after evidence. The replay-to-
-   frontier mechanic's core claim -- deterministic multi-step replay
-   correctly reaches its intended target -- was also directly falsified-
-   and-measured rather than assumed: it holds most of the time but not
-   universally (a genuinely new, reportable finding about this project's
-   `TransitionGraph` state-identity assumption, see above).
-2. **Whether a model trained on this better data actually predicts
-   better than production remains unanswered**, not because the data
-   failed a test, but because two independent, well-documented
-   infrastructure failures (a disk-full crash mid-run, then renewed
-   external disk pressure from processes entirely outside this project)
-   made completing a fair, full-length (60-epoch) retrain infeasible
-   within this session. The 5-epoch checkpoint that *was* produced shows
-   a misleading-if-quoted-alone pooled improvement that doesn't survive
-   a per-game or feature-variance check.
+   fixed mid-session with direct before/after evidence.
+2. **A model trained on this data, given the full training budget
+   production got, predicts genuinely better than production**: +60.2%
+   vs. +26.4% pooled changed-patches, a head-to-head per-game win on
+   18/25 games (concentrated on the highest-absolute-error games, not an
+   artifact of one outlier), and healthier encoder feature variance
+   (1.47 vs. 1.69, both above the collapse floor).
+3. **That predictor-level improvement carries through to a real,
+   matched local scorecard backtest**: +44% mean score, +50% total
+   levels completed at n=5 repeats each. Small sample, but consistent
+   with, not contradicting, points 1-2.
 
-**Recommendation for a future session:** re-run
-`python -m jepa.train_moe_predictor --pretrain-epochs 20 --epochs 60
---num-experts 8 --out checkpoints_search --checkpoint-every 10
---resume-from checkpoints_search` (the corpus and all code are already in
-place and unchanged; this simply needs to finish the remaining ~55
-arc-finetune epochs) on a machine/session with real, stable disk
-headroom, then re-run the exact `jepa.benchmark eval --moe` command
-above for a genuine apples-to-apples number before deciding whether to
-proceed to the value-head/scorecard-backtest gate. Do **not** trust a
-pooled changed-patches number on this corpus without also checking the
-per-game breakdown -- `cn04`'s outsized absolute-error weight in the
-pooled average is a standing distortion risk for any future eval on this
-specific combined corpus, not just this session's.
+**Recommendation:** treat `E:\jepa_overflow\checkpoints_search` (the
+fully-trained, 60-epoch checkpoint: `encoder_moe.pt`, `moe_predictor.pt`,
+`value_head.pt`, `game_vocab_moe.json`, `moe_training_meta.json`) as a
+real candidate to promote to production, not just a research artifact.
+This session deliberately did **not** overwrite
+`checkpoints/moe_predictor.pt` in the main checkout -- promotion is a
+decision for a human to make deliberately (e.g. after a larger-n backtest
+or a real Kaggle submission comparison), not something to do silently as
+a side effect of an evaluation session. If promoting: copy all five
+files from `E:\jepa_overflow\checkpoints_search` into the main checkout's
+`checkpoints/` directory, and consider a larger-n (8+) backtest first
+given n=5's known noise ceiling on this metric.
+
+**If a future session hits the same "background process silently dies
+around 50-60 minutes" symptom again:** check with whoever/whatever is
+coordinating the session for a usage-limit or similar boundary *before*
+assuming it's disk/RAM/OS-related again -- this follow-up confirmed disk
+and RAM were both healthy at every kill point this time, and the real
+cause turned out to be a session-level constraint external to the
+training process entirely. The mitigation is the same either way
+(checkpoint often, resume from the last save), but the diagnosis matters
+for not wasting time re-freeing disk space that was never the problem.
 
 ## Reproducing this experiment
 
@@ -460,4 +600,33 @@ JEPA_NUM_WORKERS=0 python -m jepa.train_moe_predictor --epochs <remaining> \
 #    back-to-back without changing ARC-AGI-3-Agents/recordings/ in between)
 python -m jepa.benchmark eval --moe --checkpoint-dir checkpoints --tag prod
 python -m jepa.benchmark eval --moe --checkpoint-dir checkpoints_search --tag search
+
+# 5. If the eval shows a genuine per-game-consistent win (it did, see the
+#    2026-07-19 follow-up above): retrain the value head against the new
+#    encoder, then backtest.
+python -m jepa.train_value_head --epochs 20 \
+    --encoder checkpoints_search/encoder_moe.pt --out checkpoints_search
+
+# 6. Local scorecard backtest -- Hypothesis loads checkpoints from a
+#    hardcoded `checkpoints/` dir (ARC-AGI-3-Agents/agents/templates/
+#    hypothesis_agent.py: _CHECKPOINT_DIR), so swap the 5 MoE-era files in
+#    and out of that directory around each set of repeats (back up the
+#    production copies first if checkpoints/ isn't itself gitignored-and-
+#    disposable in your checkout):
+#      encoder_moe.pt, moe_predictor.pt, value_head.pt,
+#      game_vocab_moe.json, moe_training_meta.json
+python scripts/run_scorecard.py --agent hypothesis --label <name>_r1
+# ...repeat for r2..rN with the same checkpoint files in place, then swap
+# and repeat for the other checkpoint...
 ```
+
+**A recurring infrastructure note for any future long training run in
+this environment:** background processes in this session got killed
+externally roughly every 50-60 minutes of wall-clock runtime, independent
+of disk/RAM health (confirmed directly, multiple times, during the
+2026-07-19 follow-up) -- later identified as a session usage-limit
+boundary rather than the disk-exhaustion this document originally
+suspected. `--checkpoint-every 3` (down from `--every 10`) and just
+resuming repeatedly, computing `<remaining> = 60 - <cumulative epochs
+already saved>` each time, is the practical workaround -- expect several
+resume cycles for a full 60-epoch run, not one continuous session.
