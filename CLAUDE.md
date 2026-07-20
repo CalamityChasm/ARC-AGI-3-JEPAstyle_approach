@@ -1393,17 +1393,22 @@ subset, trace *that subset specifically*, not the full population.
 
 ## Kaggle competition submission: root cause found, real score obtained
 
-**Current status: the Stage 5 Hypothesis agent has three real, scored,
+**Current status: the Stage 5 Hypothesis agent has four real, scored,
 `SubmissionStatus.COMPLETE` entries in the actual
 `arc-prize-2026-arc-agi-3` Kaggle competition:** public score `0.23` on
 the first submission (`MAX_ACTIONS=300`), `0.06` on an immediate resubmit
-of the exact same kernel version (`MAX_ACTIONS=300`, identical code), and
+of the exact same kernel version (`MAX_ACTIONS=300`, identical code),
 `0.22` on `stage6-score-optimization`'s candidate (`MAX_ACTIONS=900`,
 `EPSILON`/`PATCH_SAMPLE_TEMPERATURE` left unchanged after a sweep found
 no config improvement -- see `experiments/stage6_score_variance.md`),
-submitted 2026-07-17. That first pair is a real finding, not noise to
-explain away: `Hypothesis.__init__` seeds `self._rng = random.Random()`
-with no fixed seed, so exploration genuinely differs run to run, and the
+submitted 2026-07-17, and `0.16` on `stage6-search-harvest`'s candidate
+(the production checkpoint swapped for one retrained on a systematic,
+policy-free search-harvested corpus, `MAX_ACTIONS` left at the original
+`300` -- deliberately not combined with the `stage6-score-optimization`
+budget change, to keep this one variable isolated), submitted
+2026-07-20. That first pair is a real finding, not noise to explain
+away: `Hypothesis.__init__` seeds `self._rng = random.Random()` with no
+fixed seed, so exploration genuinely differs run to run, and the
 private/public leaderboard game sampling may also differ between
 submissions -- both plausible contributors. The `0.06` run also exactly
 matches the unmodified official random-agent control's own score,
@@ -1431,6 +1436,28 @@ means several more days of one-a-day submissions, not something to
 resolve in a single session. Treat `0.22` as "no evidence of regression,
 some evidence of improvement" -- a real, honest data point, not a
 declared win.
+
+**Honest read on the `0.16` search-harvest result: the same
+noise-floor problem, and it cuts the other way this time -- don't
+overcorrect into reading it as a regression.** The local evidence behind
+this checkpoint was real and carefully verified (`experiments/
+stage6_search_harvest.md`: beats production on 18/25 games individually
+on changed-patches, not just pooled; wins a matched local scorecard
+backtest at n=8, mean score 0.0586 vs 0.0180, 10 vs 5 levels completed).
+`0.16` is lower than both `0.23` and `0.22`, which could look like a
+regression at a glance -- but it sits almost exactly at the midpoint of
+the *old* checkpoint's own already-documented `0.06`-`0.23` range at this
+exact `MAX_ACTIONS=300` config, using nothing but run-to-run variance
+already proven to exist on identical code. A single submission cannot
+distinguish "this checkpoint is worse," "this checkpoint is the same,"
+and "this checkpoint is better but landed a below-average roll" from
+each other when the noise floor is this wide. Symmetric with the `0.22`
+case: treat `0.16` as "no strong evidence either way," not as a
+disproof of the local backtest -- the local evidence and the real score
+aren't in conflict, they're just not resolvable against each other at
+n=1. Getting a real answer needs more same-config submissions on both
+checkpoints, which at 1/day is a multi-day undertaking, not a
+same-session one.
 
 Everything needed to reproduce the submission from scratch on a new
 machine is in `kaggle_submission/` (checked into git) plus the steps
