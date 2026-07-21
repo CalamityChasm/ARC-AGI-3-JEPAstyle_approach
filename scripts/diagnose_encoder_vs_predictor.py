@@ -59,6 +59,10 @@ N_PROBE_FRAMES = 8  # frames sampled per game for diagnostic B
 CHECKPOINTS = {
     "production": Path("checkpoints"),
     "search-harvest": Path("E:/jepa_overflow/checkpoints_search"),
+    # Stage 6 object-identity experiment (experiments/stage6_object_identity.md):
+    # same curriculum + corpus as search-harvest, plus a same-color
+    # contrastive auxiliary loss (jepa/losses.py: same_color_contrastive_loss).
+    "object-identity-stage1": Path("checkpoints_object_identity"),
 }
 
 PROBE_GAMES = ["ft09", "m0r0", "r11l", "bp35", "s5i5", "tr87", "ka59", "vc33"]

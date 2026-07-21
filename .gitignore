@@ -12,6 +12,8 @@ dist/
 /logs/
 /checkpoints/
 /checkpoints_ablation/
+/checkpoints_object_identity/
+/checkpoints_smoketest/
 /runs/
 *.log
 recordings/

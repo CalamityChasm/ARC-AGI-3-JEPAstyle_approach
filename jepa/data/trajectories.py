@@ -33,7 +33,7 @@ def _load_frame_lines(path: Path) -> list:
     return lines
 
 
-def load_all_transitions(repo_root: Path) -> list:
+def load_all_transitions(repo_root: Path, name_substrings: list | None = None) -> list:
     """Returns a list of (frame_t, action_id, x, y, frame_t+1, changed, game_id) tuples.
 
     `changed` is a cheap pixel-level flag (frame_t != frame_t+1). A large
@@ -46,10 +46,23 @@ def load_all_transitions(repo_root: Path) -> list:
     completely different effect in each of the 25 games, so a predictor
     that can't tell which game it's in is being asked to fit 25
     mutually-inconsistent action->effect mappings at once.
+
+    `name_substrings` (stage6-object-identity addition): if given, only
+    recording files whose name contains at least one of these substrings
+    are loaded (e.g. `[".random.", ".solver."]`). Needed because
+    `ARC-AGI-3-Agents/recordings/` can end up holding files from several
+    different sources at once (random-policy corpus, search-harvest,
+    ad-hoc agent-comparison eval runs, ...) -- an apples-to-apples
+    comparison against a specific prior checkpoint needs the exact same
+    file set that checkpoint was trained on, not "whatever happens to be
+    in the directory right now." None (the default) preserves the
+    original behavior of loading every recording file present.
     """
     recordings_dir = repo_root / RECORDINGS_DIR
     transitions = []
     for path in sorted(recordings_dir.glob("*.recording.jsonl")):
+        if name_substrings is not None and not any(s in path.name for s in name_substrings):
+            continue
         frames = _load_frame_lines(path)
         for i in range(len(frames) - 1):
             cur, nxt = frames[i], frames[i + 1]
