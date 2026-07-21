@@ -376,3 +376,51 @@ from the main checkout.)
   value head's training corpus" and "the world model's training corpus"
   are *not* the same 175 files -- worth knowing if a future session ever
   needs to reason precisely about what data went into which component.
+
+## Follow-up: re-sweeping EPSILON against the new checkpoint
+
+The project's original `EPSILON` sweep (`experiments/stage6_score_variance.md`)
+found no value differed meaningfully from the default `0.25`, but that
+sweep ran against the *old*, much weaker checkpoint -- worth checking
+whether that null result was itself an artifact of a Q-signal too weak to
+be worth trusting more, now that the world model is dramatically better.
+
+Added the same `HYPOTHESIS_EPSILON` env-var override this branch's
+`hypothesis_agent.py` didn't yet have (it branched from `master` before
+that pattern existed on `stage6-score-optimization`), swept the same
+values as the original sweep (`{0.0, 0.1, 0.15, 0.25}`, n=5 each,
+`MAX_ACTIONS=300`) against the object-identity checkpoint:
+
+| eps | mean score | std | total levels (of 5 runs) |
+|---|---|---|---|
+| 0.0 | 0.00219 | 0.00180 | 4 |
+| 0.1 | 0.00333 | 0.00451 | 2 |
+| 0.15 | 0.04337 | 0.07429 | 4 |
+| 0.25 (current default) | 0.00582 | 0.00532 | 3 |
+
+**No clear, robust winner -- same qualitative conclusion as the original
+sweep.** `eps=0.15`'s much higher mean is a single-outlier artifact (one
+run scored `0.1915`; its other four runs were `0.0137, 0, 0, 0.0116`,
+in line with everything else) -- exactly the "one lucky completion on a
+low-level-count game dominates the mean at this sample size" pattern this
+project has flagged repeatedly. Not treating it as a real effect.
+
+**The one genuinely interesting difference from the old checkpoint's
+documented behavior**: `eps=0.0` (no random fallback at all) does **not**
+catastrophically fail here. On the old checkpoint, `EPSILON` exists
+specifically because removing it caused the agent to lock onto a single
+action for an entire episode (Stage 5's bug 3) -- a real, previously
+fatal failure mode. Here, `eps=0.0` reached 4 total levels across 5 runs,
+comparable to (if anything slightly better than) the current default's 3.
+That doesn't mean `eps=0.0` is now a better setting (n=5 is far too small
+to claim that), but it's a real, qualitative signal that the improved
+world model's Q-argmax alone is differentiating actions well enough to
+not collapse into the old lock-on failure -- consistent with everything
+else this experiment found about the encoder now actually representing
+useful structure. Worth a larger-n resweep in a future session if
+`EPSILON` tuning is revisited, but not conclusive enough to change the
+default today.
+
+**Verdict: keep `EPSILON=0.25` unchanged.** No evidence-backed reason to
+move it, same as the original sweep's conclusion -- just now confirmed
+against the checkpoint that will actually matter going forward.

@@ -95,7 +95,7 @@ class Hypothesis(Agent):
     # CLAUDE.md's Stage 2 history): the single highest-scoring action gets
     # picked every single turn, forever, since nothing about a repeat lowers
     # its score. Same fix, same rate.
-    EPSILON = 0.25
+    EPSILON = float(os.getenv("HYPOTHESIS_EPSILON", "0.25"))
     # Diagnostic-only escape hatch (set HYPOTHESIS_DIAG_MODE=1 in the env):
     # skips _choose_action_inner entirely and always returns a safe random
     # action, while __init__ (device setup, checkpoint loading, model
