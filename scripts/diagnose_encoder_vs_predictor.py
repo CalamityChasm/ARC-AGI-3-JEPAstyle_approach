@@ -59,6 +59,7 @@ N_PROBE_FRAMES = 8  # frames sampled per game for diagnostic B
 CHECKPOINTS = {
     "production": Path("checkpoints"),
     "search-harvest": Path("E:/jepa_overflow/checkpoints_search"),
+    "object-identity": Path("C:/Users/desktop-06/Cal/ARC-AGI-3-JEPAstyle_approach/.claude/worktrees/agent-a5728f08b06dab74a/checkpoints_object_identity"),
 }
 
 PROBE_GAMES = ["ft09", "m0r0", "r11l", "bp35", "s5i5", "tr87", "ka59", "vc33"]
