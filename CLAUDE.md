@@ -1459,6 +1459,33 @@ n=1. Getting a real answer needs more same-config submissions on both
 checkpoints, which at 1/day is a multi-day undertaking, not a
 same-session one.
 
+**Update (2026-07-21): a 5th submission, `0.08`, gives the search-harvest
+checkpoint its own n=2 at this same `MAX_ACTIONS=300` config (the first
+was `0.16`).** Honest read, same standard applied to every prior point in
+this section rather than a double standard now that the number is lower:
+the two search-harvest points (`0.16`, `0.08`) span a narrower range than
+the *old* checkpoint's own established `0.06`-`0.23` spread, but both
+land comfortably *inside* that old range -- so at n=2 per side, this still
+does not separate "the search-harvest checkpoint performs differently
+(better or worse) than the old one on real scored runs" from "both
+checkpoints are drawing from a similar wide noise distribution and we
+just haven't sampled enough to tell." The mean of the two search-harvest
+points (`0.12`) is, if anything, slightly below the old checkpoint's own
+two-point mean (`0.145`) -- **not evidence of improvement on real
+submissions yet, despite strong, carefully-verified local evidence**
+(18/25 games individually on changed-patches, a clean n=8 local scorecard
+win). This is worth sitting with rather than explaining away: the local
+backtest signal for this checkpoint has been consistently strong, and
+real-world scores so far haven't confirmed it either way -- which is
+exactly the kind of gap more same-config submissions exist to resolve,
+not a reason to distrust either source on its own. (Separately, and even
+more starkly: `stage6-object-identity`'s new checkpoint -- see that
+experiment's own section -- has dramatically stronger local evidence
+still (object-identity gap +1.20 vs. this checkpoint's +0.079, backtest
+win where every run beat every run) and has **zero** real submissions yet.
+Worth keeping in mind when deciding where to spend the next scarce
+daily submission.)
+
 Everything needed to reproduce the submission from scratch on a new
 machine is in `kaggle_submission/` (checked into git) plus the steps
 below. This section is the reproduction guide; the dated blow-by-blow
