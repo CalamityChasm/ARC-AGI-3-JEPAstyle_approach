@@ -1486,6 +1486,41 @@ win where every run beat every run) and has **zero** real submissions yet.
 Worth keeping in mind when deciding where to spend the next scarce
 daily submission.)
 
+**Update (2026-07-22): the object-identity checkpoint's first real
+submission scored `0.00`** -- `SubmissionStatus.COMPLETE` (not `ERROR`,
+so the run wasn't rejected outright), `MAX_ACTIONS=300` unchanged, ref
+`54889426`. This is the lowest score of all six real submissions so far,
+and notably sits *below* the previously-established floor: the `0.06`
+result earlier in this section exactly matched the plain random-agent
+control, but `0.00` is lower than that -- worth being honest that this is
+a real outlier, not just "another point inside the known noise range,"
+without jumping to "something is broken" on n=1 alone.
+
+What argues against a hidden crash/regression: the free kernel test push
+(same version, v13) ran with zero tracebacks before this was submitted;
+this exact checkpoint produced plenty of nonzero real scores across ~20
+local backtest runs in the same-day `EPSILON` resweep (see
+`experiments/stage6_object_identity.md`'s follow-up section); and Kaggle
+marked the run `COMPLETE`, meaning its own harness didn't flag a fatal
+error. What can't be ruled out from here: Kaggle exposes no execution
+detail for a `COMPLETE`-but-low-scoring run (the `errorDescriptionNullable`
+trick only helps for submissions that errored, not ones that finished and
+scored 0), so there's no way to directly confirm *why* from the API alone.
+Plausible innocent explanation: 300 actions across up to 110 largely-novel
+hidden games is already a tight budget, the established variance floor
+was already wide (`0.06`-`0.23` on identical code), and this checkpoint's
+much sharper, more confident representations (`+1.20` object-identity
+gap, all trained on *local* games' specific color statistics) could
+plausibly make it less robust -- not more -- to hidden games whose visual
+patterns differ from what it specialized on. That's a real, honest
+hypothesis, not a dismissal -- and exactly the kind of thing a second
+same-config submission would help distinguish from a genuine outlier
+roll. **Treating this as inconclusive at n=1, same as every other new-
+checkpoint submission this session, not as a disproof of the strong local
+evidence** -- but it's the most concerning single data point yet, and
+worth prioritizing a same-config resubmission before spending further
+quota on new candidates.
+
 Everything needed to reproduce the submission from scratch on a new
 machine is in `kaggle_submission/` (checked into git) plus the steps
 below. This section is the reproduction guide; the dated blow-by-blow
