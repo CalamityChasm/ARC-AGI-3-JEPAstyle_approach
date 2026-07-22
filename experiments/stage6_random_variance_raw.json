@@ -1,0 +1,5728 @@
+[
+  {
+    "repeat": 1,
+    "elapsed_sec": 84.1,
+    "exit_code": 2,
+    "total_levels_completed": 2,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "ar25-0c556536",
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 1,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.08977542117297198
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.15964330584445643
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 2,
+    "elapsed_sec": 96.5,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.15964330584445643
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 3,
+    "elapsed_sec": 100.1,
+    "exit_code": 2,
+    "total_levels_completed": 2,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "r11l-495a7899",
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.08465608465608465
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.1828958143192632
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 4,
+    "elapsed_sec": 118.1,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 1.4367897526001079
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 5,
+    "elapsed_sec": 91.9,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 4.761904761904762
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 6,
+    "elapsed_sec": 93.0,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 1.0513655309706986
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 7,
+    "elapsed_sec": 111.3,
+    "exit_code": 2,
+    "total_levels_completed": 2,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "m0r0-492f87ba",
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.6096167951230657
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.04992153997966529
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 8,
+    "elapsed_sec": 120.8,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 1.7142857142857142
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 9,
+    "elapsed_sec": 129.0,
+    "exit_code": 2,
+    "total_levels_completed": 0,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [],
+    "per_game": {
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 10,
+    "elapsed_sec": 112.7,
+    "exit_code": 2,
+    "total_levels_completed": 0,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [],
+    "per_game": {
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 11,
+    "elapsed_sec": 120.9,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 4.761904761904762
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 12,
+    "elapsed_sec": 117.2,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.24200130785716673
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 13,
+    "elapsed_sec": 120.1,
+    "exit_code": 2,
+    "total_levels_completed": 2,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af",
+      "tr87-cd924810"
+    ],
+    "per_game": {
+      "tr87-cd924810": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.8746355685131194
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 4.761904761904762
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 14,
+    "elapsed_sec": 116.2,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.11681839233007763
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 15,
+    "elapsed_sec": 115.2,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 1.5663618388531881
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 16,
+    "elapsed_sec": 117.4,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.5985832349468714
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 17,
+    "elapsed_sec": 115.1,
+    "exit_code": 2,
+    "total_levels_completed": 0,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [],
+    "per_game": {
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 18,
+    "elapsed_sec": 117.4,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.2901320759035869
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 19,
+    "elapsed_sec": 111.5,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.5476640561706724
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 20,
+    "elapsed_sec": 113.9,
+    "exit_code": 2,
+    "total_levels_completed": 2,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "cd82-fb555c5d",
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.14180548873946947
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.284538506760729
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 21,
+    "elapsed_sec": 115.3,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 4.761904761904762
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 22,
+    "elapsed_sec": 113.5,
+    "exit_code": 2,
+    "total_levels_completed": 0,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [],
+    "per_game": {
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 23,
+    "elapsed_sec": 116.7,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0957733175914994
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 24,
+    "elapsed_sec": 122.1,
+    "exit_code": 2,
+    "total_levels_completed": 2,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "cd82-fb555c5d",
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.17128135439669326
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 2.5784468290698266
+      }
+    }
+  },
+  {
+    "repeat": 25,
+    "elapsed_sec": 114.1,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 1.1605283036143477
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 26,
+    "elapsed_sec": 119.2,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 4.761904761904762
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 27,
+    "elapsed_sec": 119.7,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.3134893153937475
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 28,
+    "elapsed_sec": 120.6,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.7242857142857143
+      }
+    }
+  },
+  {
+    "repeat": 29,
+    "elapsed_sec": 116.4,
+    "exit_code": 2,
+    "total_levels_completed": 0,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [],
+    "per_game": {
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  },
+  {
+    "repeat": 30,
+    "elapsed_sec": 116.5,
+    "exit_code": 2,
+    "total_levels_completed": 1,
+    "total_levels": 183,
+    "total_actions": 7525,
+    "total_environments_completed": 0,
+    "total_environments": 25,
+    "n_games_reported": 25,
+    "distinct_games_with_levels": [
+      "sp80-589a99af"
+    ],
+    "per_game": {
+      "vc33-5430563c": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ka59-38d34dbb": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lp85-305b61c3": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ls20-9607627b": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "g50t-5849a774": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ar25-0c556536": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cd82-fb555c5d": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "m0r0-492f87ba": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "bp35-0a0ad940": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "wa30-ee6fef47": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "cn04-2fe56bfb": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sk48-d8078629": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "dc22-fdcac232": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "lf52-271a04aa": {
+        "levels_completed": 0,
+        "level_count": 10,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sc25-635fd71a": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sp80-589a99af": {
+        "levels_completed": 1,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 2.229257353911094
+      },
+      "s5i5-18d95033": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "ft09-0d8bbf25": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tn36-ef4dde99": {
+        "levels_completed": 0,
+        "level_count": 7,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "su15-1944f8ab": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "re86-8af5384d": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "r11l-495a7899": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "sb26-7fbdac44": {
+        "levels_completed": 0,
+        "level_count": 8,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tu93-0768757b": {
+        "levels_completed": 0,
+        "level_count": 9,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      },
+      "tr87-cd924810": {
+        "levels_completed": 0,
+        "level_count": 6,
+        "completed": false,
+        "actions": 301,
+        "score": 0.0
+      }
+    }
+  }
+]
