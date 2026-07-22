@@ -12,6 +12,9 @@ dist/
 /logs/
 /checkpoints/
 /checkpoints_ablation/
+/checkpoints_holdout_baseline/
+/checkpoints_holdout_objid/
+/checkpoints_smoke_test/
 /runs/
 *.log
 recordings/
