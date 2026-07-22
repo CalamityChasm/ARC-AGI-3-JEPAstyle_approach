@@ -1521,6 +1521,67 @@ evidence** -- but it's the most concerning single data point yet, and
 worth prioritizing a same-config resubmission before spending further
 quota on new candidates.
 
+**Follow-up (2026-07-22), a real user catch: "I've never seen a random
+agent score 0.0 before -- it would require the agent not moving or
+making any change on the game board for every trial."** That's a sharper
+objection than "treat it as noise." The heartbeat pattern means any
+runtime exception during play falls back to `_safe_fallback_action` --
+a genuinely random legal action -- not to a no-op or a crash; if
+`_init_models` had failed on every single game, the score should land
+near the random floor (`~0.06`), not below it. A literal `0.00` is more
+consistent with **zero actions ever being recorded at all** (the
+placeholder `submission.parquet` shipping because `main.py` never played
+a single game) than with "the agent played and did unusually poorly." So
+this needed direct checking, not another hedge. Also worth retracting
+outright: the "free kernel test push (v13) ran with zero tracebacks"
+point made above is weaker evidence than it sounds -- that push only
+ever exercises the notebook's *non-rerun* branch (writes a dummy
+`submission.parquet`, never touches the `KAGGLE_IS_COMPETITION_RERUN`-
+gated setup/copy/checkpoint-load code), exactly the blind spot that let
+the original path-mounting bug survive multiple submissions undetected
+earlier in this project. It was never real evidence the gated path
+worked for this dataset version.
+
+Built a standalone diagnostic kernel (`kaggle_submission/notebook_diag/`,
+reusable going forward, same free-unconditional-cell trick this doc
+already documents) that runs *unconditionally* -- no rerun gate -- and
+replicates `hypothesis_agent.py: _init_models`'s exact logic against the
+live `calamitychasm/jepa-hypothesis-agent` dataset: walks
+`/kaggle/input`, copies `jepa/` + `checkpoints/` from the nested dataset
+mount path, loads all three checkpoints (`encoder_moe.pt`,
+`moe_predictor.pt`, `value_head.pt`) via `load_state_dict`, and runs one
+real forward pass through encoder -> predictor -> value head. **Result:
+`ALL DIAGNOSTICS PASSED`** -- dataset mount correct, all three checkpoints
+load with zero shape/key errors on Kaggle's actual `torch 2.10.0+cpu`
+image, game vocab loads with the expected 26 entries, forward pass
+produces correctly-shaped output. Also directly diffed this checkpoint's
+`encoder_moe.pt` state dict against the production checkpoint's (same
+keys, same shapes, zero mismatches) and confirmed `game_vocab_moe.json`
+is byte-identical between the two -- ruling out a shape/vocab-size
+mismatch as well. This is the same checkpoint files that were live for
+the real `0.00` submission (not re-versioned since), so a corrupted
+checkpoint or broken dataset mount is now ruled out directly, not just
+argued around.
+
+**This retracts the "sharper representations, less robust" hypothesis
+above -- it was speculation floated without actually checking the more
+basic failure mode first, and it doesn't survive this diagnostic.** What
+remains genuinely open, now that setup/checkpoint-loading is confirmed
+fine: (1) this diagnostic ran CPU-only and never exercises the real
+`main.py`/gateway game loop, so it cannot rule out a GPU-specific or
+live-harness-specific failure in the actual scored path; (2) the
+project has only ever tested the plain random-agent control *once*
+(`0.06`) -- its own run-to-run variance on this same tight 300-action,
+~110-largely-novel-game budget has never been measured, so "even a
+working random-ish agent can occasionally land on zero completions
+across every one of ~110 games" hasn't been ruled out either. Neither of
+these is confirmed -- both are just what's left after ruling out the
+setup/checkpoint layer directly. A same-config resubmission (or, cheaper
+and non-quota-consuming, another instrumented free diagnostic push that
+also drives a real `main.py --agent hypothesis` run against a local
+mock gateway if one can be improvised) remains the most direct way to
+actually resolve this, not further hypothesis generation.
+
 Everything needed to reproduce the submission from scratch on a new
 machine is in `kaggle_submission/` (checked into git) plus the steps
 below. This section is the reproduction guide; the dated blow-by-blow
