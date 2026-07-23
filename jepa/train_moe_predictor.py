@@ -137,12 +137,26 @@ def _make_loaders(transitions: list, game_vocab: dict, batch_size: int, device: 
 def _run_epochs(
     online, target, predictor, opt, train_loader, val_loader, device, epochs: int, phase: str,
     contrast_weight: float = CONTRAST_WEIGHT_DEFAULT, checkpoint_cb=None, checkpoint_every: int = 0,
+    ablate_game_id: bool = False,
 ) -> None:
     """checkpoint_cb(epoch_1_indexed, phase), if given, is called every
     `checkpoint_every` epochs (ported from stage6-selfplay-bootstrap /
     stage6-object-identity) -- periodic mid-run saves so an interruption
     on a shared/contended GPU costs at most `checkpoint_every` epochs of
-    progress, not the whole run."""
+    progress, not the whole run.
+
+    ablate_game_id (stage6-gameid-ablation addition): if True, every
+    transition's real game_idx (whatever TransitionDataset looked up from
+    the batch's actual game_id) is overwritten with a constant 0 before
+    it ever reaches the predictor -- see MoEPredictor._condition, which
+    already treats a missing game_idx (None) as an all-zeros tensor, so
+    forcing every batch to index 0 is exactly equivalent to never
+    conditioning on game identity at all, while keeping the model's
+    game_embed table (and therefore the checkpoint's state-dict shape)
+    unchanged -- only row 0 of it ever receives a real gradient, and eval
+    must force the same constant-0 substitution for this to be a fair,
+    self-consistent ablation (see evaluate() below and
+    scripts/eval_gameid_ablation.py)."""
     for epoch in range(epochs):
         online.train()
         predictor.train()
@@ -153,6 +167,8 @@ def _run_epochs(
         for cur, action_id, xy, nxt, patch_mask, game_idx in train_loader:
             cur, action_id, xy = cur.to(device), action_id.to(device), xy.to(device)
             nxt, patch_mask, game_idx = nxt.to(device), patch_mask.to(device), game_idx.to(device)
+            if ablate_game_id:
+                game_idx = torch.zeros_like(game_idx)
             cur_feat = online(cur)
             pred_feat, gate_weights = predictor(cur_feat, action_id, xy, game_idx)
             with torch.no_grad():
@@ -178,7 +194,7 @@ def _run_epochs(
             total_lb_loss += lb_loss.item()
             n_batches += 1
 
-        stats = evaluate(online, predictor, val_loader, device=device)
+        stats = evaluate(online, predictor, val_loader, device=device, ablate_game_id=ablate_game_id)
         print(
             f"[{phase}] epoch {epoch + 1}/{epochs}  train_loss={total_loss / n_batches:.4f}  "
             f"lb_loss={total_lb_loss / n_batches:.3f}  "
@@ -208,12 +224,20 @@ def train(
     exclude_games: list | None = None,
     recording_substrings: list | None = None,
     checkpoint_every: int = 0,
+    ablate_game_id: bool = False,
 ) -> None:
     device = get_device()
     gating = f"top-{top_k} noisy" if top_k is not None else "dense softmax"
     print(f"training on {device}, {num_experts} experts, {gating} gate, contrast_weight={contrast_weight}")
     if exclude_games:
         print(f"excluding games from all local/external corpora: {exclude_games}")
+    if ablate_game_id:
+        print(
+            "--ablate-game-id set: every transition's game_idx will be forced to 0 "
+            "(regardless of its real game) in both training and validation -- the "
+            "game_embed table's rows 1+ never receive a real gradient, equivalent "
+            "to num_games=1 conditioning-wise (stage6-gameid-ablation)"
+        )
 
     arc_transitions = load_all_transitions(
         REPO_ROOT, name_substrings=recording_substrings, exclude_games=exclude_games
@@ -300,6 +324,7 @@ def train(
                     "n_games": len(game_vocab),
                     "contrast_weight": contrast_weight,
                     "exclude_games": exclude_games,
+                    "ablate_game_id": ablate_game_id,
                     "checkpoint_tag": tag,
                 },
                 indent=2,
@@ -316,6 +341,7 @@ def train(
         _run_epochs(
             online, target, predictor, opt, mg_train_loader, mg_val_loader, device, pretrain_epochs, phase_name,
             contrast_weight=contrast_weight, checkpoint_cb=_checkpoint_cb, checkpoint_every=checkpoint_every,
+            ablate_game_id=ablate_game_id,
         )
         del mg_train_loader, mg_val_loader  # fully drop before building the next phase's loaders
         if checkpoint_every > 0:
@@ -325,14 +351,23 @@ def train(
     _run_epochs(
         online, target, predictor, opt, arc_train_loader, arc_val_loader, device, epochs, "arc-finetune",
         contrast_weight=contrast_weight, checkpoint_cb=_checkpoint_cb, checkpoint_every=checkpoint_every,
+        ablate_game_id=ablate_game_id,
     )
 
     _save("final")
 
 
 @torch.no_grad()
-def evaluate(online, predictor, loader, device: torch.device | None = None) -> dict:
-    """Same fair same-encoder comparison as Stage 1's train_predictor.evaluate."""
+def evaluate(
+    online, predictor, loader, device: torch.device | None = None, ablate_game_id: bool = False
+) -> dict:
+    """Same fair same-encoder comparison as Stage 1's train_predictor.evaluate.
+
+    ablate_game_id: must match how the checkpoint being evaluated was
+    trained -- if the checkpoint was trained with every game_idx forced to
+    0 (stage6-gameid-ablation), evaluation must do the same, or trained
+    games would be scored against an untrained embedding row instead of
+    the one the model actually learned to use."""
     online.eval()
     predictor.eval()
     totals = {"pred": 0.0, "identity": 0.0, "pred_changed": 0.0, "identity_changed": 0.0}
@@ -342,6 +377,8 @@ def evaluate(online, predictor, loader, device: torch.device | None = None) -> d
         if device is not None:
             cur, action_id, xy = cur.to(device), action_id.to(device), xy.to(device)
             nxt, patch_mask, game_idx = nxt.to(device), patch_mask.to(device), game_idx.to(device)
+        if ablate_game_id:
+            game_idx = torch.zeros_like(game_idx)
         cur_feat = online(cur)
         pred_feat, _gate_weights = predictor(cur_feat, action_id, xy, game_idx)
         next_feat = online(nxt)
@@ -459,6 +496,23 @@ if __name__ == "__main__":
             "a shared/contended GPU can cost."
         ),
     )
+    parser.add_argument(
+        "--ablate-game-id",
+        action="store_true",
+        help=(
+            "Force every transition's game_idx to a constant 0 throughout "
+            "training AND validation (stage6-gameid-ablation addition) -- "
+            "fully ablates per-game embedding conditioning rather than "
+            "changing num_games/vocab size (keeps the checkpoint's "
+            "game_embed table the same shape as a normal MoE checkpoint, "
+            "so existing loading code elsewhere doesn't need special-"
+            "casing; only row 0 of that table ever gets a real gradient). "
+            "Built to test whether the held-out-game generalization gap "
+            "documented in experiments/stage6_game_holdout.md is caused by "
+            "per-game conditioning falling back to an untrained index 0 on "
+            "any unseen game_id -- see experiments/stage6_gameid_ablation.md."
+        ),
+    )
     args = parser.parse_args()
     train(
         args.epochs,
@@ -473,4 +527,5 @@ if __name__ == "__main__":
         exclude_games=args.exclude_games.split(",") if args.exclude_games else None,
         recording_substrings=args.recording_substrings.split(",") if args.recording_substrings else None,
         checkpoint_every=args.checkpoint_every,
+        ablate_game_id=args.ablate_game_id,
     )

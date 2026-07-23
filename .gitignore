@@ -14,6 +14,7 @@ dist/
 /checkpoints_ablation/
 /checkpoints_holdout_baseline/
 /checkpoints_holdout_objid/
+/checkpoints_holdout_nogameid/
 /checkpoints_smoke_test/
 /runs/
 *.log
