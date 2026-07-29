@@ -16,6 +16,16 @@ dist/
 /checkpoints_holdout_objid/
 /checkpoints_holdout_nogameid/
 /checkpoints_smoke_test/
+/checkpoints_fold1_baseline/
+/checkpoints_fold1_nogameid/
+/checkpoints_fold2_baseline/
+/checkpoints_fold2_nogameid/
+/checkpoints_fold3_baseline/
+/checkpoints_fold3_nogameid/
+/checkpoints_fold4_baseline/
+/checkpoints_fold4_nogameid/
+/checkpoints_fold5_baseline/
+/checkpoints_fold5_nogameid/
 /runs/
 *.log
 recordings/
