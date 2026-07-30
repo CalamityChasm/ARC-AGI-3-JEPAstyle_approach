@@ -1391,6 +1391,110 @@ attributable to any one mechanism. Worth remembering as a general
 debugging strategy: when two things being compared diverge on a specific
 subset, trace *that subset specifically*, not the full population.
 
+## Stage 6 addendum -- held-out-game generalization: a real, robust, unfixed gap
+
+**Finding: the world model has no measurable edge over "predict no change" on
+any local game it wasn't trained on, and this is now confirmed across all
+25 games via 5-fold cross-validation, not one arbitrary split.** This
+started from a methodology audit prompted by the object-identity
+checkpoint's real `0.00` Kaggle score (see below): every `changed-patches`
+number and backtest result in this project's entire history, from Stage 1
+onward, was validated via `torch.utils.data.random_split` over individual
+*transitions* -- never a held-out *game*. Every local eval has measured
+"how well does this generalize to a shuffled-out subset of the same 25
+games," never "how well does this generalize to a game it has never seen"
+-- which is exactly the axis Kaggle's real evaluation (~110 largely-novel
+hidden games) stresses.
+
+**Leave-N-games-out test** (branch `stage6-game-holdout`): held out 5
+local games (`r11l`, `bp35`, `m0r0`, `tr87`, `ka59`) entirely from
+training, trained baseline and object-identity-recipe checkpoints on the
+other 20. `changed-patches` improvement over identity collapsed to ~0% on
+the 5 held-out games for *both* checkpoints, despite real improvement
+(+2% to +8%) on the 20 trained games. The object-identity checkpoint's
+diagnostic-B object-identity gap also collapsed/reversed on held-out
+games (+1.18 trained -> -0.02 held-out), confirming its contrastive loss
+was learning the *local* games' own color statistics, not a transferable
+notion of object identity -- a real, verified contributor to (though not
+sole proof of) that checkpoint's `0.00` real score.
+
+**Root-cause elimination, four independent negative results:**
+1. **Game-id embedding conditioning** (`stage6-gameid-ablation`): the
+   obvious suspect -- any unseen game falls back to a fixed, undertrained
+   embedding index. Ablating it entirely (`--ablate-game-id` on
+   `jepa/train_moe_predictor.py`) did **not** close the held-out gap
+   (stayed at ~0%/-0.2%). A large apparent trained-game win from this
+   ablation (+64.9% vs +8.0%, single run each) **did not reproduce** under
+   reseeding (`stage6-gameid-reseed`, n=3 each): with-game-id averaged
+   +53.5% (std 4.6), no-game-id averaged +42.3% (std 14.7, noisier and
+   lower) -- the original +8.0% with-game-id run was a ~10-std outlier,
+   not a real effect. **Verdict: keep game-id conditioning on for
+   production; this ablation is not an improvement.**
+2. **Encoder change-sensitivity** (`stage6-encoder-holdout-diag`): directly
+   measured feature-space delta at changed vs. unchanged patches,
+   restricted to the 5 held-out games. The encoder is **not** the
+   bottleneck -- its change-sensitivity ratio is actually *higher* on
+   held-out games (80.2x/48.1x) than on trained games (6.5x/30.3x),
+   consistent across all 5 games individually, with feature-norm and
+   pixel-magnitude confounds both ruled out. The encoder correctly
+   registers that something changed on a game it's never seen.
+3. **Predictor residual-commitment** (same agent, follow-up diagnostic):
+   the actual localized failure -- the predictor's residual-branch output
+   magnitude (pre-skip-connection) collapses to **~0.000** on held-out
+   games (vs. 0.235 baseline / 0.010 object-identity on trained games).
+   It's coasting entirely on the identity skip-connection specifically
+   when conditioned on an unfamiliar game, despite the encoder handing it
+   a clear, correctly-detected change signal. Structurally the same
+   failure shape as Stage 1's original "predictor learns to approximate
+   identity" bug (see Stage 1 item 8 above), reappearing at the
+   unseen-game boundary.
+4. **Direct fix attempt** (`stage6-residual-commitment-fix`): added an
+   explicit anti-collapse hinge loss on residual magnitude at changed
+   patches, plus 20% game-id-dropout during training (simulating
+   "conditioning is uninformative" on already-familiar games). **Did not
+   help**: held-out changed-patches went to -0.1% (statistically the same
+   as the unfixed ~0.0%), the residual-commitment ratio was still ~0.000
+   on held-out games post-fix, and it cost real accuracy on trained games
+   (+1.4% vs. the untouched +8.0% baseline). Likely explanation: game-id
+   dropout still shows the model visually-*familiar* content with its id
+   zeroed -- a different kind of "unfamiliar" than a truly novel game's
+   unseen visual/mechanic content, so there's nothing to transfer from.
+
+**Multi-fold cross-validation** (`stage6-multifold-cv`, run specifically
+because relying on one arbitrary 5-game split risked confusing "this
+split happened to be hard" with "the model can't generalize" --
+partitioned all 25 local games into 5 disjoint folds of 5, covering every
+game as a held-out target exactly once): the collapse holds up in
+**every single fold**, for both game-id-conditioned and ablated variants
+(fold means -0.30% and -0.40% respectively, folds ranging -1.8% to
++0.11%, no fold showing a real edge). This is not an artifact of one
+unlucky split.
+
+**Working conclusion:** four independent, well-targeted interventions
+(game-id ablation, confirming the encoder is fine, an anti-collapse loss,
+simulated training-time unfamiliarity) all converged on the same negative
+result, now confirmed robust across 5-fold coverage of all 25 games. Per
+this project's own repeated lesson (see the Stage 1 "CRITICAL" gotcha and
+Stage 4's MoE gate history): when several different fixes all land on the
+same negative outcome, that consistency points at a genuine data-bound
+limit, not an unturned architectural knob. **The world model most likely
+needs real training-game diversity to generalize zero-shot to a novel
+game at all -- the same lesson Stage 4 learned adding MiniGrid pretraining
+(more of the *same* ARC-3 data didn't help there either; genuinely
+different mechanics did).** This also reframes every real Kaggle score
+this project has gotten so far: the likely explanation isn't "checkpoint
+X is worse than checkpoint Y," it's that *no* checkpoint trained purely
+on these 25 ARC-3 games (± MiniGrid/Sokoban pretraining, which itself
+still collapsed to near-uniform gating on ARC-3 specifically) currently
+has real signal to offer on a genuinely novel game -- independent of
+which one gets submitted. Next steps worth prioritizing over further
+loss-shaping on the current corpus: substantially more diverse
+pretraining sources (beyond MiniGrid/Sokoban, which were already tried
+and only partially helped -- see Stage 4), or a fundamentally different
+approach to novel-game adaptation (e.g. test-time few-shot adaptation
+from a new game's opening RESET/probe frames, rather than expecting a
+frozen zero-shot forward pass to work at all).
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
