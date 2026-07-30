@@ -1,4 +1,4 @@
-from .context_encoder import FrameContextEncoder
+from .context_encoder import EpisodeContextEncoder, FrameContextEncoder
 from .encoder import CNNEncoder, make_ema_target, update_ema_target
 from .moe_predictor import MoEPredictor, load_balance_loss
 from .predictor import ActionConditionedPredictor
@@ -15,4 +15,5 @@ __all__ = [
     "load_balance_loss",
     "ValueHead",
     "FrameContextEncoder",
+    "EpisodeContextEncoder",
 ]

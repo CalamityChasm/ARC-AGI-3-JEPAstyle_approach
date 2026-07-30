@@ -345,5 +345,149 @@ script), following this project's existing module conventions:
   the scenario this whole investigation's context-encoder hypothesis is
   meant to help with.
 
-(Training run and results to follow -- see the next entry in this file
-once the fold-1 comparison completes.)
+### Results (fold 1 only -- see scope note above)
+
+Trained cleanly, 25/25 epochs (reduced from an initial 60-epoch attempt --
+killed after observing ~2-3 min/epoch, ~5x slower per epoch than Phase
+2B(a)'s fully-matched recipe, since each training example requires
+encoding `context_window + 1 = 9` frame-pairs through the online encoder
+instead of 1; 25 epochs was enough for both `val_pred_mse` and the
+changed-patches numbers to clearly plateau -- epochs 20-25 move by <10%
+relative on both metrics, unlike the steep early-epoch drops, so this
+isn't a stopped-too-early undertraining artifact). **Trained-games (val
+split) result at epoch 25: pred=0.03613 vs identity=0.03603 -- essentially
+exact parity, not a real edge either direction** (consistent with Phase
+1's fold-2 recurrent predictor also failing to clear identity on its own
+trained games under a similarly-reduced local-only recipe -- weaker
+recipes across this whole investigation tend to land at parity rather
+than a clean win, unsurprising given how much data/pretraining Phase
+2B(a)'s fully-matched recipe needed to reach its own +0.079 to +1.20-ish
+range of wins in earlier Stage 6 work).
+
+**Held-out games (fold 1, `r11l`/`bp35`/`m0r0`/`tr87`/`ka59`, context
+built from each held-out episode's own real preceding transitions --
+never a trained game): -0.6% changed-patches improvement (n=1689).**
+Per-game: `r11l` -2.7%, `bp35` -0.3%, `m0r0` -0.7%, `tr87` -2.7%, `ka59`
+-7.3% -- every single held-out game lands negative, all within a few
+percentage points of parity, the same shape as every other held-out
+result in this entire investigation.
+
+### Verdict: Phase 2B(b) is a third consecutive negative result
+
+A materially richer context source -- 8 *other*, real, same-episode
+transitions, encoded through the same online encoder with gradients
+flowing back through it, combined via a permutation-invariant Deep-Sets
+pooling into a genuinely multi-transition descriptor -- performs no
+better than a single content-derived frame (Phase 2B(a)) or a category
+lookup (the original design). All three land in the same -0.0% to -7.3%
+per-game band this whole Stage 6 line of work keeps landing in,
+regardless of which axis is varied: richer information source (Phase 1
+vs. original), different representation of the same information (Phase
+2B(a) vs. original), or richer information source combined with a
+purpose-built aggregation mechanism (Phase 2B(b)).
+
+**This is now a one-fold result, not two, and should be read with that
+caveat held firmly in mind** -- it was scoped that way deliberately (see
+above), not because a second fold wasn't worth running, but because the
+prior evidence (2 mechanisms x 2 folds each, all null, on top of
+`stage6-multifold-cv`'s own 5-fold confirmation for the categorical
+baseline) already made a fourth confirmation of the same shape a lower-
+value use of the remaining session budget than writing up the pattern
+honestly. A future session wanting full rigor on this specific number
+should run fold 2 (and ideally 3+) before treating -0.6% as more than a
+single, consistent-with-everything-else data point.
+
+## Overall conclusion
+
+**Across three independently-designed conditioning mechanisms tested
+this session -- Stage 3's recurrent hidden state (Phase 1, 2 folds),
+single-frame content-derived embedding (Phase 2B(a), 2 folds), and a
+multi-transition episode-context encoder (Phase 2B(b), 1 fold) -- none
+closes the held-out-game generalization gap.** Every one lands within
+roughly -2% to +1% pooled, indistinguishable from the categorical
+baseline's own already-established -1.8% to +0.11% range across 5 folds
+(`stage6-multifold-cv`). Combined with CLAUDE.md's Stage 6 addendum's
+four earlier negative results (game-id ablation, encoder-sensitivity
+check, anti-collapse loss, simulated training-time unfamiliarity), that
+is **seven independent, well-targeted interventions across two separate
+investigation sessions, all converging on the same negative outcome.**
+
+Per this project's own repeated methodological lesson (restated in the
+Stage 6 addendum itself, and originally learned from the Stage 1
+action-input bug): when many different fixes land on the same negative
+result, that consistency is usually a sign of a genuine data-bound
+limit, not an exhausted list of architectural knobs still worth turning.
+**The working conclusion from this session is the same one the Stage 6
+addendum already reached, now with three more, more targeted data
+points supporting it rather than contradicting it: the world model most
+likely needs real training-game diversity to generalize zero-shot to a
+novel game, regardless of *how* it's asked to condition on "which game
+is this."** No conditioning mechanism -- categorical, content-derived,
+or history-derived -- can manufacture information about a genuinely
+novel game's mechanics that was never present in the training
+distribution to begin with. This reframes the original motivating
+hypothesis (PEARL/VariBAD-style context inference) usefully: those
+methods work because their *meta-training* distribution spans many
+distinct tasks with shared underlying structure for the context encoder
+to learn to extract -- this project's meta-training distribution is 20
+ARC-3 games (or 25, minus whichever fold is held out), which per Stage
+4's own MiniGrid-pretraining finding is not diverse enough on its own
+even for a much simpler generalization target (in-distribution routing
+specialization). A context encoder can only be as good at inferring
+novel-game structure as the diversity of games it was trained to infer
+structure *from* -- and swapping *which* module does the inferring
+doesn't change that.
+
+**What to prioritize instead, per the Stage 6 addendum's own
+still-unactioned recommendation, now reinforced rather than
+superseded:** substantially more diverse pretraining sources beyond
+MiniGrid/Sokoban (both already tried, partially helped, but didn't
+touch the held-out-game axis specifically since it was never tested
+against it before this session), or a fundamentally different approach
+to novel-game adaptation such as test-time few-shot adaptation from a
+new game's opening RESET/probe frames -- notably, Phase 2B(b)'s
+episode-context machinery built this session (`jepa/data/
+episode_context.py`, `EpisodeContextEncoder`) is *reusable
+infrastructure* for exactly that kind of future experiment (e.g. a
+context encoder trained across many more, more diverse tasks, or one
+that gets a genuine few-shot adaptation signal at test time rather than
+being asked to infer everything from 8 within-distribution transitions),
+even though this session's specific instantiation of it didn't clear the
+bar.
+
+## What is built vs. what remains open
+
+**Built, tested, and merged into this branch (`stage6-context-embedding`):**
+- `jepa/data/sequences.py`: `--exclude-games`/`--ablate-game-id` support
+  on the recurrent-predictor training path (Phase 1).
+- `scripts/eval_recurrent_holdout.py`: full-episode, real-hidden-state
+  held-out-game eval for the recurrent predictor.
+- `jepa/models/context_encoder.py`: `FrameContextEncoder` (Phase 2B(a))
+  and `EpisodeContextEncoder` (Phase 2B(b)), both real, reusable model
+  classes, not throwaway scripts.
+- `jepa/models/moe_predictor.py`: `context_mode` (`"categorical"`/
+  `"frame"`/`"external"`) on `MoEPredictor`, with a clean `context_embed`
+  override path -- no other call site in the codebase needed to change
+  for `"frame"` mode; `"external"` mode is ready for reuse by any future
+  context-encoder experiment without further `MoEPredictor` changes.
+- `jepa/train_moe_predictor.py`: `--context-mode` CLI flag.
+- `jepa/data/episode_context.py`, `jepa/train_context_moe_predictor.py`,
+  `scripts/eval_episode_context_holdout.py`: the full Phase 2B(b)
+  pipeline, real and reusable, not a one-off.
+
+**Validated:** Phase 1 (2 folds), Phase 2B(a) (2 folds) -- both clean,
+corroborated negative results. Phase 2B(b) (1 fold) -- consistent with
+the other two, but formally a single data point; folds 2+ are the
+concrete, well-scoped next step if this line of investigation continues.
+
+**Not attempted this session, left as open next steps (not because they
+were ruled out, but because the evidence increasingly pointed toward a
+data-bound limit that no conditioning mechanism would fix):** a top-k or
+otherwise-sparser variant of any of the three context mechanisms; scaling
+`context_window` up or down for Phase 2B(b); combining Phase 2B(a)/(b)
+with MiniGrid pretraining (Phase 2B(b)'s local-only limitation, same
+deviation as Phase 1); and, most importantly per the "what to prioritize
+instead" section above, genuinely new pretraining data sources beyond
+MiniGrid/Sokoban, or a test-time few-shot adaptation approach that
+doesn't depend on the meta-training distribution already containing
+enough diversity to generalize from.

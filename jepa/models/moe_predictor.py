@@ -30,7 +30,7 @@ import torch.nn.functional as F
 from .context_encoder import FrameContextEncoder
 from .predictor import NUM_ACTIONS
 
-CONTEXT_MODES = ("categorical", "frame")
+CONTEXT_MODES = ("categorical", "frame", "external")
 
 
 class MoEPredictor(nn.Module):
@@ -72,6 +72,14 @@ class MoEPredictor(nn.Module):
             stage6_continuous_game_embedding.md for the motivating
             investigation. In "frame" mode, `game_idx` is accepted (for
             call-site compatibility with "categorical" mode) but ignored.
+            "external" (Phase 2B(b)) builds neither `game_embed` nor an
+            internal context encoder -- the caller must supply a
+            precomputed `context_embed` tensor directly to `forward`/
+            `predict_all_experts` (e.g. from
+            `jepa/models/context_encoder.py: EpisodeContextEncoder`,
+            which needs a whole episode's worth of other transitions to
+            compute its embedding -- more than a single `feat` this
+            module receives can provide, unlike "frame" mode).
         """
         super().__init__()
         if context_mode not in CONTEXT_MODES:
@@ -86,10 +94,12 @@ class MoEPredictor(nn.Module):
         )
         if context_mode == "categorical":
             self.game_embed = nn.Embedding(num_games, game_embed_dim)
-        else:
+        elif context_mode == "frame":
             self.context_encoder = FrameContextEncoder(
                 feature_channels=feature_channels, embed_dim=game_embed_dim
             )
+        # "external": no submodule here -- g_embed always comes from the
+        # caller-supplied context_embed argument (see _condition below).
         cond_dim = action_embed_dim * 2 + game_embed_dim
 
         # Each expert is a small pointwise (1x1-conv) MLP over
@@ -136,31 +146,45 @@ class MoEPredictor(nn.Module):
             nn.init.zeros_(self.noise_gate.bias)
 
     def _condition(
-        self, feat: torch.Tensor, action_id: torch.Tensor, xy: torch.Tensor, game_idx: torch.Tensor | None
+        self,
+        feat: torch.Tensor,
+        action_id: torch.Tensor,
+        xy: torch.Tensor,
+        game_idx: torch.Tensor | None,
+        context_embed: torch.Tensor | None = None,
     ) -> tuple:
         """Shared conditioning-vector setup used by both `forward` and
         `predict_all_experts`. Returns (cond, cond_spatial, expert_input).
 
-        The game/context embedding (`g_embed`) is computed one of two ways
-        depending on `self.context_mode` (see __init__'s docstring):
-        "categorical" looks `game_idx` up in `self.game_embed` (falling
-        back to index 0 if `game_idx` is omitted or the id was never seen
-        in training); "frame" ignores `game_idx` entirely and instead runs
-        `self.context_encoder` over this call's own pooled `feat` -- a
-        function of content, not category, so there's no fallback case at
-        all: the same computation applies whether or not the game is
-        familiar.
+        The game/context embedding (`g_embed`) is computed one of three
+        ways: if `context_embed` is given directly, it's used as-is
+        (required for `context_mode="external"`; also accepted regardless
+        of `context_mode` as an explicit override -- rare, but there's no
+        reason to disallow it). Otherwise, depending on `self.context_mode`
+        (see __init__'s docstring): "categorical" looks `game_idx` up in
+        `self.game_embed` (falling back to index 0 if `game_idx` is
+        omitted or the id was never seen in training); "frame" ignores
+        `game_idx` entirely and instead runs `self.context_encoder` over
+        this call's own pooled `feat` -- a function of content, not
+        category, so there's no fallback case at all.
         """
         b, _c, h, w = feat.shape
         a_embed = self.action_embed(action_id)
         xy_embed = self.coord_mlp(xy)
-        if self.context_mode == "categorical":
+        if context_embed is not None:
+            g_embed = context_embed
+        elif self.context_mode == "categorical":
             if game_idx is None:
                 game_idx = torch.zeros(b, dtype=torch.long, device=feat.device)
             g_embed = self.game_embed(game_idx)
-        else:
+        elif self.context_mode == "frame":
             pooled_feat = feat.mean(dim=(2, 3))  # (B, C)
             g_embed = self.context_encoder(pooled_feat)
+        else:  # "external"
+            raise ValueError(
+                "context_mode='external' requires a context_embed tensor to be passed "
+                "to forward()/predict_all_experts() -- there is no fallback in this mode."
+            )
         cond = torch.cat([a_embed, xy_embed, g_embed], dim=-1)  # (B, cond_dim)
         cond_spatial = cond.view(b, -1, 1, 1).expand(-1, -1, h, w)
         expert_input = torch.cat([feat, cond_spatial], dim=1)
@@ -172,19 +196,23 @@ class MoEPredictor(nn.Module):
         action_id: torch.Tensor,
         xy: torch.Tensor,
         game_idx: torch.Tensor | None = None,
+        context_embed: torch.Tensor | None = None,
     ) -> tuple:
         """
         feat: (B, C, H, W) current feature map
         action_id: (B,) long, action ids 0-7
         xy: (B, 2) float, normalized (x, y) in [0, 1]
         game_idx: (B,) long, index into the game vocabulary (0 if omitted)
+        context_embed: (B, game_embed_dim) float, precomputed context
+            embedding -- required when `context_mode="external"`, optional
+            override otherwise (see _condition's docstring)
 
         Returns (predicted_next_feat, gate_weights) -- gate_weights (B, K)
         is exposed for the load-balancing loss and for inspecting whether
         experts actually specialize (see jepa/train_moe_predictor.py).
         """
         b = feat.shape[0]
-        cond, _cond_spatial, x = self._condition(feat, action_id, xy, game_idx)
+        cond, _cond_spatial, x = self._condition(feat, action_id, xy, game_idx, context_embed)
 
         pooled_feat = feat.mean(dim=(2, 3))  # (B, C)
         gate_input = torch.cat([pooled_feat, cond], dim=-1)
@@ -213,6 +241,7 @@ class MoEPredictor(nn.Module):
         action_id: torch.Tensor,
         xy: torch.Tensor,
         game_idx: torch.Tensor | None = None,
+        context_embed: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """Stage 5: the *ungated* per-expert predicted next-features, one
         per expert -- used as the "N parallel hypotheses" for a candidate
@@ -222,7 +251,7 @@ class MoEPredictor(nn.Module):
         eventual observed outcome drives that hypothesis's Bayesian
         confidence weight.
         """
-        _cond, _cond_spatial, x = self._condition(feat, action_id, xy, game_idx)
+        _cond, _cond_spatial, x = self._condition(feat, action_id, xy, game_idx, context_embed)
         expert_outputs = torch.stack([e(x) for e in self.experts], dim=1)  # (B, K, C, H, W)
         return feat.unsqueeze(1) + expert_outputs
 

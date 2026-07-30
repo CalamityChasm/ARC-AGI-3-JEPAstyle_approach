@@ -25,7 +25,10 @@ style) -- a materially bigger build, only worth it once this cheaper
 version is shown insufficient.
 """
 
+import torch
 import torch.nn as nn
+
+from .predictor import NUM_ACTIONS
 
 
 class FrameContextEncoder(nn.Module):
@@ -46,3 +49,56 @@ class FrameContextEncoder(nn.Module):
     def forward(self, pooled_feat):
         """pooled_feat: (B, feature_channels) -> (B, embed_dim)."""
         return self.net(pooled_feat)
+
+
+class EpisodeContextEncoder(nn.Module):
+    """Phase 2B(b): infers a continuous game/context descriptor from a
+    small window of K *other* (feat_t, action, feat_t1) transitions
+    observed earlier in the same episode -- not the transition being
+    predicted -- rather than a single current frame (`FrameContextEncoder`)
+    or a category lookup. Meta-learning-style task inference (PEARL/
+    VariBAD): infer "what kind of game is this" from a handful of
+    observed exemplars.
+
+    Each context transition is summarized as `[pooled_feat_t;
+    action_embed; pooled_feat_t1 - pooled_feat_t]` (what state, what
+    action, what changed), mapped through a small per-transition MLP,
+    then mean-pooled across the K context transitions -- a Deep-Sets-
+    style phi-then-pool, deliberately permutation-invariant since which
+    order the K context transitions happen to be sampled in shouldn't
+    matter.
+
+    This module only *combines* already-encoded, already-pooled
+    per-transition summaries -- it does not run the shared CNNEncoder
+    itself. The caller (see jepa/train_context_moe_predictor.py) is
+    responsible for running each context transition's raw frames through
+    the same online encoder used for the target transition, so context
+    and target share one latent space.
+    """
+
+    def __init__(
+        self,
+        feature_channels: int = 64,
+        action_embed_dim: int = 16,
+        embed_dim: int = 16,
+        hidden: int = 64,
+    ):
+        super().__init__()
+        self.action_embed = nn.Embedding(NUM_ACTIONS, action_embed_dim)
+        summary_dim = feature_channels * 2 + action_embed_dim
+        self.net = nn.Sequential(
+            nn.Linear(summary_dim, hidden),
+            nn.GELU(),
+            nn.Linear(hidden, embed_dim),
+        )
+
+    def forward(
+        self, pooled_feat_t: torch.Tensor, action_id: torch.Tensor, pooled_feat_t1: torch.Tensor
+    ) -> torch.Tensor:
+        """pooled_feat_t, pooled_feat_t1: (B, K, feature_channels);
+        action_id: (B, K) long. Returns (B, embed_dim)."""
+        a_embed = self.action_embed(action_id)  # (B, K, action_embed_dim)
+        delta = pooled_feat_t1 - pooled_feat_t  # (B, K, feature_channels)
+        summary = torch.cat([pooled_feat_t, a_embed, delta], dim=-1)  # (B, K, summary_dim)
+        per_transition_embed = self.net(summary)  # (B, K, embed_dim)
+        return per_transition_embed.mean(dim=1)  # (B, embed_dim)
