@@ -1495,6 +1495,47 @@ approach to novel-game adaptation (e.g. test-time few-shot adaptation
 from a new game's opening RESET/probe frames, rather than expecting a
 frozen zero-shot forward pass to work at all).
 
+**Follow-up: does Stage 5's InfoGain exploration signal collapse too?**
+Given InfoGain (`jepa/hypothesis_bundle.py`) is variance across the 8 MoE
+experts' *raw, ungated* predictions (`MoEPredictor.predict_all_experts`),
+and the *gated* prediction was just shown to collapse to identity on
+held-out games, the natural worry: does the Hypothesis agent's whole
+exploration signal go dead on exactly the games where it matters most?
+Directly measured (`scripts/diagnose_infogain_holdout.py`, reusing
+`stage6-game-holdout`'s baseline checkpoint, no retraining needed) mean
+InfoGain across 500 held-out-game states x 4 candidate actions vs. the
+same on 500 trained-game states: **held-out 3.24e-2 vs. trained 3.24e-2 --
+ratio 0.999, no collapse.** The individual experts still genuinely
+disagree with each other on unseen games, just as much as on trained
+ones. This seemingly contradicts the residual-commitment finding above
+(which collapses to ~0.000) but doesn't, once the math is separated: that
+number measures the *gated* residual (`(expert_outputs * gate_weights)
+.sum(dim=1)`), a weighted blend across experts, while InfoGain measures
+*raw per-expert* disagreement before any blending. The most likely
+reconciliation: the gate stays close to uniform (Stage 4's own "gate
+specialization is a minority behavior" finding), and averaging several
+experts whose individual residuals are real and differentiated but
+pointing in different directions nets out close to zero -- collapsed
+*prediction accuracy*, but not collapsed *underlying disagreement*.
+Practical upshot: Stage 5's exploration mechanism (InfoGain-driven action
+selection) may retain real signal on genuinely novel Kaggle games even
+where the world model's raw *predictive accuracy* doesn't -- an
+encouraging, narrower finding than "the whole hypothesis bundle is
+useless there," though not yet cross-validated across multiple folds the
+way the main finding was, and not yet tested at the *agent* level (does
+this signal actually translate into better real exploration on unseen
+games, vs. just existing in the numbers).
+
+Separately flagged, not yet tested: whether the entropy-driven adaptive
+`beta` (Bayesian confidence -> explore/exploit blend) earns its
+complexity over a simple fixed constant. The existing ablation
+(`FORCE_BETA`, see Stage 5 follow-up 2) only tested the two *extremes*
+(beta=0, beta=1) against the real entropy-driven version -- it's never
+been compared against, say, a fixed `beta=0.37` (roughly the observed
+mean under `decay=0.8`). If a constant performs just as well, the whole
+per-step Bayesian confidence-tracking machinery isn't earning its keep
+over a much simpler design.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
