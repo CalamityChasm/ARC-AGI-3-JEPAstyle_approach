@@ -1536,6 +1536,53 @@ mean under `decay=0.8`). If a constant performs just as well, the whole
 per-step Bayesian confidence-tracking machinery isn't earning its keep
 over a much simpler design.
 
+**Continuous game-embedding investigation (`stage6-context-embedding`):
+three more conditioning mechanisms tried, all negative -- 7 independent
+interventions now agree.** Given the categorical `game_id -> embedding`
+lookup was suspected as the root cause, tested whether replacing it with
+a *continuous, observation-derived* representation would close the gap
+(the user's own instinct on where to go next):
+1. **Stage 3's existing recurrent predictor** (`GRUCell` hidden state
+   accumulated from real in-episode transitions, not a category lookup)
+   -- extended with `--exclude-games`, evaluated on folds 1-2 with a real
+   accumulated hidden state (not zeroed): **-1.7%** and **+0.5%**, both in
+   the same near-zero noise band as the MoE predictor. Whether the hidden
+   state was "warmed up" or fresh made no difference.
+2. **Single-frame content conditioning** (`FrameContextEncoder`, a
+   `context_mode="frame"` option on `MoEPredictor` deriving the
+   conditioning vector from the current frame's own pooled features
+   instead of a game_id lookup): folds 1-2, **-0.1%/-0.0%** vs. the
+   categorical baseline's **-0.5%/-0.0%** -- statistically indistinguishable.
+3. **Multi-transition episode context** (`EpisodeContextEncoder`,
+   Deep-Sets-style pooling over 8 other same-episode transitions --
+   architecturally the closest to a real meta-learning/context-inference
+   approach): fold 1, **-0.6%**, every one of the 5 held-out games
+   negative individually.
+
+**Combined with the 4 negative results earlier in this section (game-id
+ablation, encoder audit, anti-collapse residual loss, simulated
+unfamiliarity), that's 7 independently-designed interventions --
+including three genuinely different continuous-conditioning mechanisms,
+not just variations on one idea -- all converging on the same null
+result.** This is stronger evidence than before that the ceiling is
+data-bound, not a fixable conditioning architecture: no way of
+*representing* which game this is, categorical or continuous, helps when
+the training corpus itself only contains 20-25 games' worth of mechanics
+to learn from. The natural reading: this reframes "replace the game
+embedding" as very unlikely to be the fix on its own, regardless of how
+cleverly the embedding is built -- the two directions worth prioritizing
+next are (a) genuinely more diverse pretraining sources (the one lever
+that *did* work before, for Stage 4's MoE gate specialization via
+MiniGrid), or (b) test-time adaptation -- actually updating on a hidden
+game's own observed opening frames *during play*, rather than expecting
+any frozen zero-shot forward pass, however conditioned, to already
+generalize. All three new mechanisms and their eval infrastructure are
+implemented and committed on `stage6-context-embedding` (not merged) if a
+future session wants to revisit with substantially more diverse training
+data behind them -- the code is real and reusable even though this
+round's conclusion was negative. Full numbers and per-game breakdown in
+`experiments/stage6_continuous_game_embedding.md`.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
