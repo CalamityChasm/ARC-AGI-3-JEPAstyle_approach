@@ -42,12 +42,22 @@ def build_models(encoder_path: Path | None, num_games: int, device: torch.device
 
 
 def _run_sequence(
-    online, predictor, cur, action_id, xy, nxt, patch_mask, game_idx, device, target=None
+    online, predictor, cur, action_id, xy, nxt, patch_mask, game_idx, device, target=None,
+    ablate_game_id: bool = False,
 ) -> list:
     """Runs one (B, T, ...) batch of sequence chunks through the encoder +
     recurrent predictor with truncated BPTT across the T steps. Returns a
     list of per-step (cur_feat, pred_feat, target_feat, patch_mask) tuples
-    so callers can compute loss or eval metrics identically."""
+    so callers can compute loss or eval metrics identically.
+
+    ablate_game_id (stage6-context-embedding addition, mirrors
+    train_moe_predictor.py's flag of the same name): if True, force
+    game_idx to a constant 0 for the whole chunk before it ever reaches
+    the predictor -- same rationale as the MoE ablation (isolates whether
+    the categorical per-game embedding is doing any work, independent of
+    the recurrent hidden state's own conditioning)."""
+    if ablate_game_id and game_idx is not None:
+        game_idx = torch.zeros_like(game_idx)
     b, t = cur.shape[0], cur.shape[1]
     hidden = predictor.init_hidden(b, device)
     outputs = []
@@ -70,10 +80,14 @@ def train(
     batch_size: int = 8,
     lr: float = 3e-4,
     seq_len: int = SEQ_LEN,
+    exclude_games: list | None = None,
+    ablate_game_id: bool = False,
 ) -> None:
     device = get_device()
     print(f"training on {device}")
-    episodes = load_all_episodes(REPO_ROOT)
+    if exclude_games:
+        print(f"excluding games from local recordings: {exclude_games}")
+    episodes = load_all_episodes(REPO_ROOT, exclude_games=exclude_games)
     print(f"loaded {len(episodes)} episodes")
     game_vocab = build_game_vocab(episodes)
     print(f"{len(game_vocab)} distinct games")
@@ -108,7 +122,8 @@ def train(
             nxt, patch_mask, game_idx = nxt.to(device), patch_mask.to(device), game_idx.to(device)
 
             outputs = _run_sequence(
-                online, predictor, cur, action_id, xy, nxt, patch_mask, game_idx, device, target=target
+                online, predictor, cur, action_id, xy, nxt, patch_mask, game_idx, device, target=target,
+                ablate_game_id=ablate_game_id,
             )
             loss = 0.0
             for cur_feat, pred_feat, target_feat, mask in outputs:
@@ -125,7 +140,7 @@ def train(
             total_loss += loss.item()
             n_batches += 1
 
-        stats = evaluate(online, predictor, val_loader, device=device)
+        stats = evaluate(online, predictor, val_loader, device=device, ablate_game_id=ablate_game_id)
         print(
             f"epoch {epoch + 1}/{epochs}  train_loss={total_loss / n_batches:.4f}  "
             f"val_pred_mse={stats['pred']:.5f}  val_identity_mse={stats['identity']:.5f}  |  "
@@ -138,11 +153,28 @@ def train(
         {k: v.cpu() for k, v in predictor.state_dict().items()}, out_dir / "recurrent_predictor.pt"
     )
     (out_dir / "game_vocab_recurrent.json").write_text(json.dumps(game_vocab, indent=2))
+    (out_dir / "recurrent_training_meta.json").write_text(
+        json.dumps(
+            {
+                "epochs": epochs,
+                "seq_len": seq_len,
+                "batch_size": batch_size,
+                "lr": lr,
+                "device": str(device),
+                "n_episodes": len(episodes),
+                "n_chunks": len(dataset),
+                "n_games": len(game_vocab),
+                "exclude_games": exclude_games,
+                "ablate_game_id": ablate_game_id,
+            },
+            indent=2,
+        )
+    )
     print(f"saved encoder + recurrent predictor + game vocab to {out_dir}")
 
 
 @torch.no_grad()
-def evaluate(online, predictor, loader, device: torch.device) -> dict:
+def evaluate(online, predictor, loader, device: torch.device, ablate_game_id: bool = False) -> dict:
     """Same fair same-encoder-on-both-sides comparison as Stage 1's
     train_predictor.evaluate (see CLAUDE.md iteration #1 for why that
     matters), extended across a whole sequence chunk."""
@@ -155,7 +187,8 @@ def evaluate(online, predictor, loader, device: torch.device) -> dict:
         cur, action_id, xy = cur.to(device), action_id.to(device), xy.to(device)
         nxt, patch_mask, game_idx = nxt.to(device), patch_mask.to(device), game_idx.to(device)
         outputs = _run_sequence(
-            online, predictor, cur, action_id, xy, nxt, patch_mask, game_idx, device, target=None
+            online, predictor, cur, action_id, xy, nxt, patch_mask, game_idx, device, target=None,
+            ablate_game_id=ablate_game_id,
         )
         for cur_feat, pred_feat, next_feat, mask in outputs:
             totals["pred"] += prediction_loss(pred_feat, next_feat).item()
@@ -187,5 +220,35 @@ if __name__ == "__main__":
     )
     parser.add_argument("--out", type=Path, default=REPO_ROOT / "checkpoints")
     parser.add_argument("--seq-len", type=int, default=SEQ_LEN)
+    parser.add_argument(
+        "--exclude-games",
+        type=str,
+        default=None,
+        help=(
+            "Comma-separated short game codes (e.g. 'r11l,bp35,m0r0,tr87,ka59') -- "
+            "skip these games entirely from the local recordings corpus "
+            "(stage6-context-embedding addition, mirrors train_moe_predictor.py's "
+            "flag of the same name). Built for leave-some-games-out generalization "
+            "tests -- see experiments/stage6_game_holdout.md."
+        ),
+    )
+    parser.add_argument(
+        "--ablate-game-id",
+        action="store_true",
+        help=(
+            "Force every transition's game_idx to a constant 0 throughout training "
+            "and eval (stage6-context-embedding addition, mirrors "
+            "train_moe_predictor.py's flag of the same name) -- isolates whether the "
+            "categorical per-game embedding is doing any work, independent of the "
+            "recurrent hidden state's own conditioning."
+        ),
+    )
     args = parser.parse_args()
-    train(args.epochs, args.encoder, args.out, seq_len=args.seq_len)
+    train(
+        args.epochs,
+        args.encoder,
+        args.out,
+        seq_len=args.seq_len,
+        exclude_games=args.exclude_games.split(",") if args.exclude_games else None,
+        ablate_game_id=args.ablate_game_id,
+    )

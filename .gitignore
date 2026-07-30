@@ -26,6 +26,13 @@ dist/
 /checkpoints_fold4_nogameid/
 /checkpoints_fold5_baseline/
 /checkpoints_fold5_nogameid/
+# stage6-context-embedding: any checkpoints_fold<N>_<variant> dir this
+# branch's own training runs create (recurrent predictor fold checkpoints,
+# no-gameid ablation variants, context-encoder variants) -- wildcarded
+# rather than listed one-by-one like the folders above, since this branch
+# doesn't know in advance how many variants it'll end up training.
+/checkpoints_fold*_recurrent*/
+/checkpoints_fold*_context*/
 /runs/
 *.log
 recordings/

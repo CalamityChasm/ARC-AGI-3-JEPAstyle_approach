@@ -22,13 +22,37 @@ from ..grid import arc3_frame_to_tensor, patch_change_mask
 from .trajectories import RECORDINGS_DIR, _load_frame_lines
 
 
-def load_all_episodes(repo_root: Path) -> list:
+def load_all_episodes(
+    repo_root: Path, exclude_games: list | None = None, name_substrings: list | None = None
+) -> list:
     """Returns a list of episodes; each episode is a list of
     (frame_t, action_id, x, y, frame_t1, changed, game_id) tuples in
-    original temporal order, one list per recording file."""
+    original temporal order, one list per recording file.
+
+    `exclude_games` (stage6-context-embedding addition, mirrors
+    `trajectories.load_all_transitions`'s flag of the same name): skip any
+    recording file whose name starts with one of these short game codes
+    followed by a hyphen (see `trajectories.py`'s own docstring for the
+    exact filename-prefix convention this relies on). Built for the same
+    leave-some-games-out generalization tests as `trajectories.py`'s
+    flag -- reuse this directly rather than re-implementing the filter.
+
+    `name_substrings` (stage6-context-embedding addition, mirrors
+    `trajectories.load_all_transitions`'s flag of the same name): if
+    given, only recording files whose name contains at least one of these
+    substrings are loaded -- reused as an include-list by
+    `scripts/eval_recurrent_holdout.py` to load ONLY a fold's held-out
+    games' episodes (each held-out game's recording files all start with
+    `"<game>-"`, so passing e.g. `["r11l-", "bp35-"]` selects exactly and
+    only those episodes).
+    """
     recordings_dir = repo_root / RECORDINGS_DIR
     episodes = []
     for path in sorted(recordings_dir.glob("*.recording.jsonl")):
+        if exclude_games is not None and any(path.name.startswith(f"{g}-") for g in exclude_games):
+            continue
+        if name_substrings is not None and not any(s in path.name for s in name_substrings):
+            continue
         frames = _load_frame_lines(path)
         transitions = []
         for i in range(len(frames) - 1):
