@@ -16,6 +16,7 @@ dist/
 /checkpoints_holdout_objid/
 /checkpoints_holdout_nogameid/
 /checkpoints_smoke_test/
+/checkpoints_reseed/
 /runs/
 *.log
 recordings/

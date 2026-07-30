@@ -28,8 +28,10 @@ Usage:
 import argparse
 import json
 import os
+import random
 from pathlib import Path
 
+import numpy as np
 import torch
 from torch.utils.data import DataLoader, WeightedRandomSampler, random_split
 
@@ -225,8 +227,27 @@ def train(
     recording_substrings: list | None = None,
     checkpoint_every: int = 0,
     ablate_game_id: bool = False,
+    seed: int | None = None,
 ) -> None:
     device = get_device()
+    if seed is not None:
+        # stage6-gameid-reseed addition: without this, model init (CNNEncoder
+        # + MoEPredictor weights) and the WeightedRandomSampler's train-batch
+        # order both ride on whatever the process's global RNG state happens
+        # to be -- torch seeds that from OS entropy per-process by default,
+        # so separate invocations already differ, but that's implicit and
+        # undocumented. An explicit --seed makes "vary only the seed between
+        # runs" an actual, checkable claim rather than an assumption about
+        # default entropy sourcing. Only this training script's global RNG
+        # state is touched -- MiniGrid data generation has its own
+        # independent seed=0 default (jepa/data/minigrid_data.py), left
+        # alone here (identical synthetic pretrain corpus across seeds is
+        # intentional, isolating the variable under test to model init +
+        # data order, not also the pretrain corpus itself).
+        torch.manual_seed(seed)
+        random.seed(seed)
+        np.random.seed(seed)
+        print(f"seed={seed} (torch/random/numpy all seeded)")
     gating = f"top-{top_k} noisy" if top_k is not None else "dense softmax"
     print(f"training on {device}, {num_experts} experts, {gating} gate, contrast_weight={contrast_weight}")
     if exclude_games:
@@ -325,6 +346,7 @@ def train(
                     "contrast_weight": contrast_weight,
                     "exclude_games": exclude_games,
                     "ablate_game_id": ablate_game_id,
+                    "seed": seed,
                     "checkpoint_tag": tag,
                 },
                 indent=2,
@@ -513,6 +535,21 @@ if __name__ == "__main__":
             "any unseen game_id -- see experiments/stage6_gameid_ablation.md."
         ),
     )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help=(
+            "Seed torch/random/numpy's global RNGs before model init and "
+            "data loading (stage6-gameid-reseed addition). Omit to use "
+            "whatever per-process entropy torch defaults to (still "
+            "genuinely random across separate invocations, just "
+            "undocumented/unreproducible). Does not affect MiniGrid's own "
+            "independently-seeded (seed=0 default) synthetic data "
+            "generation -- only model init + ARC/MiniGrid DataLoader "
+            "sampling order."
+        ),
+    )
     args = parser.parse_args()
     train(
         args.epochs,
@@ -528,4 +565,5 @@ if __name__ == "__main__":
         recording_substrings=args.recording_substrings.split(",") if args.recording_substrings else None,
         checkpoint_every=args.checkpoint_every,
         ablate_game_id=args.ablate_game_id,
+        seed=args.seed,
     )
