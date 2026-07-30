@@ -27,7 +27,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from .context_encoder import FrameContextEncoder
 from .predictor import NUM_ACTIONS
+
+CONTEXT_MODES = ("categorical", "frame")
 
 
 class MoEPredictor(nn.Module):
@@ -40,6 +43,7 @@ class MoEPredictor(nn.Module):
         num_experts: int = 8,
         expert_hidden: int = 64,
         top_k: int | None = None,
+        context_mode: str = "categorical",
     ):
         """
         top_k: if set (Shazeer et al.-style "noisy top-k gating"), the gate
@@ -55,16 +59,37 @@ class MoEPredictor(nn.Module):
             experts early on); at eval time the raw logits are used
             directly. None (the default) reproduces the original dense
             softmax gate.
+        context_mode (stage6-context-embedding, Phase 2B addition):
+            "categorical" (default) reproduces the original behavior --
+            `game_idx` looked up in a `game_embed` table, falling back to
+            a fixed, undertrained index 0 for any game_id never seen in
+            training. "frame" replaces that lookup with
+            `FrameContextEncoder`: a small MLP that maps the *current
+            frame's* pooled encoder features into a continuous embedding
+            of the same dimension, applied identically regardless of
+            whether the game is familiar -- see jepa/models/
+            context_encoder.py's docstring and experiments/
+            stage6_continuous_game_embedding.md for the motivating
+            investigation. In "frame" mode, `game_idx` is accepted (for
+            call-site compatibility with "categorical" mode) but ignored.
         """
         super().__init__()
+        if context_mode not in CONTEXT_MODES:
+            raise ValueError(f"context_mode must be one of {CONTEXT_MODES}, got {context_mode!r}")
         self.num_experts = num_experts
         self.top_k = top_k
+        self.context_mode = context_mode
         self.action_embed = nn.Embedding(NUM_ACTIONS, action_embed_dim)
         self.coord_mlp = nn.Sequential(
             nn.Linear(2, action_embed_dim),
             nn.GELU(),
         )
-        self.game_embed = nn.Embedding(num_games, game_embed_dim)
+        if context_mode == "categorical":
+            self.game_embed = nn.Embedding(num_games, game_embed_dim)
+        else:
+            self.context_encoder = FrameContextEncoder(
+                feature_channels=feature_channels, embed_dim=game_embed_dim
+            )
         cond_dim = action_embed_dim * 2 + game_embed_dim
 
         # Each expert is a small pointwise (1x1-conv) MLP over
@@ -114,13 +139,28 @@ class MoEPredictor(nn.Module):
         self, feat: torch.Tensor, action_id: torch.Tensor, xy: torch.Tensor, game_idx: torch.Tensor | None
     ) -> tuple:
         """Shared conditioning-vector setup used by both `forward` and
-        `predict_all_experts`. Returns (cond, cond_spatial, expert_input)."""
+        `predict_all_experts`. Returns (cond, cond_spatial, expert_input).
+
+        The game/context embedding (`g_embed`) is computed one of two ways
+        depending on `self.context_mode` (see __init__'s docstring):
+        "categorical" looks `game_idx` up in `self.game_embed` (falling
+        back to index 0 if `game_idx` is omitted or the id was never seen
+        in training); "frame" ignores `game_idx` entirely and instead runs
+        `self.context_encoder` over this call's own pooled `feat` -- a
+        function of content, not category, so there's no fallback case at
+        all: the same computation applies whether or not the game is
+        familiar.
+        """
         b, _c, h, w = feat.shape
         a_embed = self.action_embed(action_id)
         xy_embed = self.coord_mlp(xy)
-        if game_idx is None:
-            game_idx = torch.zeros(b, dtype=torch.long, device=feat.device)
-        g_embed = self.game_embed(game_idx)
+        if self.context_mode == "categorical":
+            if game_idx is None:
+                game_idx = torch.zeros(b, dtype=torch.long, device=feat.device)
+            g_embed = self.game_embed(game_idx)
+        else:
+            pooled_feat = feat.mean(dim=(2, 3))  # (B, C)
+            g_embed = self.context_encoder(pooled_feat)
         cond = torch.cat([a_embed, xy_embed, g_embed], dim=-1)  # (B, cond_dim)
         cond_spatial = cond.view(b, -1, 1, 1).expand(-1, -1, h, w)
         expert_input = torch.cat([feat, cond_spatial], dim=1)

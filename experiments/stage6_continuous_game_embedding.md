@@ -200,6 +200,150 @@ from this: reduce output dimensions, encode from something inherently
 different from what already failed here, and consider Phase 2B's
 subsections below.
 
-## Phase 2B: purpose-built context encoder for the MoE predictor
+## Phase 2B(a): single-frame content-derived context (MoE predictor)
 
-(In progress -- see below for what's built and validated so far.)
+Built `jepa/models/context_encoder.py: FrameContextEncoder` -- a small
+MLP (`Linear(feature_channels, hidden) -> GELU -> Linear(hidden,
+embed_dim)`) mapping the *current frame's* pooled encoder features
+directly into a continuous embedding of the same dimension the
+categorical `game_embed` table produces. Wired into `MoEPredictor` via a
+new `context_mode` constructor argument (`"categorical"` reproduces the
+original behavior exactly; `"frame"` swaps `self.game_embed(game_idx)`
+for `self.context_encoder(feat.mean(dim=(2,3)))` inside `_condition`,
+which both `forward` and `predict_all_experts` already call -- no other
+call site anywhere in the codebase needed to change, since `_condition`
+already receives `feat`). `jepa/train_moe_predictor.py` gained a
+`--context-mode {categorical,frame}` CLI flag and records it in
+`moe_training_meta.json`; `scripts/eval_context_holdout.py` (new, mirrors
+`scripts/eval_multifold.py`'s structure) loads a checkpoint's
+`context_mode` from that meta file and constructs the matching
+`MoEPredictor` automatically.
+
+**Unlike Phase 1, this recipe is fully matched to the MoE baseline's
+own** (`--pretrain-epochs 20 --epochs 60 --num-experts 8 --external-per-game
+2000`, MiniGrid pretrain + external `arc-3-logs` augmentation) --
+`_condition` only needed to know how to compute `g_embed` from `feat`,
+which is available at every call site the categorical version already
+had, so there was no architectural reason to drop MiniGrid/external data
+support the way Phase 1's recurrent predictor had to. Two checkpoints
+per fold (`categorical` and `frame`) were trained fresh, from the same
+warm-started encoder, on identical data, differing only in
+`--context-mode`.
+
+### Results (folds 1-2, same fold definitions as Phase 1 and `stage6-multifold-cv`)
+
+| fold | held-out games | categorical | frame |
+|---|---|---|---|
+| 1 | r11l, bp35, m0r0, tr87, ka59 | -0.5% (n=1881) | -0.1% (n=1881) |
+| 2 | ar25, cd82, cn04, dc22, ft09 | -0.0% (n=1917) | -0.0% (n=1917) |
+
+Both variants land at essentially identical, near-zero improvement in
+both folds -- consistent with (not better or worse than) every prior
+categorical-conditioning result in this project's Stage 6 line of
+investigation (`stage6-multifold-cv`'s own 5-fold mean was -0.30%
+baseline / -0.40% no-gameid). Frame-mode's fold-1 number (-0.1%) is
+marginally less negative than categorical's (-0.5%), but this is well
+within the noise band `stage6-multifold-cv` already established (its
+5 folds ranged -1.8% to +0.11%) -- not a real effect, and fold 2 shows
+no difference at all between the two conditioning schemes (both -0.0%
+to one decimal place).
+
+**Verdict: Phase 2B(a) is a clean negative result, corroborated across
+both folds tested.** A content-derived, per-frame context embedding --
+with no categorical fallback, no undertrained index-0 issue, applied
+identically whether or not the game is familiar -- performs no better
+than the categorical lookup it was built to replace. This rules out
+"the categorical lookup's fallback-to-index-0 discontinuity" as the
+mechanism behind the held-out-game gap just as cleanly as
+`stage6-gameid-ablation` already ruled out "categorical conditioning
+being present at all" (ablating it outright didn't help either -- see
+CLAUDE.md's Stage 6 addendum). Combined with Phase 1's finding that
+*episode-history* hidden state doesn't help either, both the "different
+representation of the same information" (Phase 2B(a)) and "richer
+information source, same single-frame content" (Phase 1) axes have now
+failed. Per the investigation's decision tree, this routes to Phase
+2B(b): a multi-transition, meta-learning-style context encoder that
+draws its descriptor from *several other* transitions observed earlier
+in the same episode, not just the one frame being predicted from.
+
+## Phase 2B(b): multi-transition episode-context encoder (scoped, single-fold, preliminary)
+
+**Scope decided upfront, given the pattern established by Phase 1 and
+2B(a):** two independent conditioning mechanisms (recurrent hidden
+state, single-frame content) already failed cleanly and consistently on
+2 folds each, on top of `stage6-multifold-cv`'s own 5-fold confirmation
+that categorical conditioning (with or without ablation) never closes
+this gap. Per this project's own repeated methodological lesson (see
+CLAUDE.md's "CRITICAL" gotcha and the Stage 6 addendum's "working
+conclusion"), three-for-three convergence on the same negative result is
+*more* consistent with a genuine data-bound limit (the model needs real
+training-game diversity, not a better way to condition on the same 25
+games' worth of signal) than with "the right conditioning mechanism just
+hasn't been tried yet." Given that prior, Phase 2B(b) is scoped as a
+single-fold, clearly-flagged-preliminary test -- enough to check whether
+a materially richer context source changes the picture at all, without
+over-investing compute in a fourth confirmation of the same pattern this
+investigation's own evidence increasingly points toward.
+
+**Design:** built as new, reusable infrastructure (not a one-off
+script), following this project's existing module conventions:
+
+- `jepa/models/context_encoder.py: EpisodeContextEncoder` (added
+  alongside `FrameContextEncoder` in the same module) -- takes K
+  *other* transitions' already-encoded, pooled features from earlier in
+  the same episode (`pooled_feat_t`, `action_id`, `pooled_feat_t1`, each
+  `(B, K, ...)`), summarizes each one as `[pooled_feat_t; action_embed;
+  pooled_feat_t1 - pooled_feat_t]` (what state, what action, what
+  changed), maps each summary through a small MLP, then mean-pools
+  across the K context transitions (permutation-invariant -- a Deep
+  Sets-style phi-then-pool, since which order the context transitions
+  happen to be sampled in shouldn't matter). This is meta-learning-style
+  task inference (PEARL/VariBAD): infer "what kind of game is this" from
+  a handful of observed exemplars, not a category lookup.
+- `jepa/models/moe_predictor.py: MoEPredictor` -- added a third
+  `context_mode="external"` plus an optional `context_embed` parameter
+  threaded through `forward`/`predict_all_experts`/`_condition`. In this
+  mode, `MoEPredictor` builds neither `game_embed` nor an internal
+  `context_encoder` -- `g_embed` must be supplied by the caller (raises
+  if `context_embed` is `None`), since a genuinely multi-transition
+  context can't be derived from `feat` alone the way Phase 2B(a)'s did;
+  it requires external orchestration by whatever has access to the full
+  episode.
+- `jepa/data/episode_context.py` (new) -- `EpisodeContextDataset` wraps
+  `jepa/data/sequences.py`'s existing per-episode transition lists (no
+  changes needed there) and, for every transition at episode-position
+  `i >= CONTEXT_WINDOW`, returns the target transition plus its
+  `CONTEXT_WINDOW` immediately-preceding same-episode transitions'
+  frames/actions (raw, to be encoded by the shared online encoder at
+  train/eval time, not precomputed -- so gradients can flow back through
+  the encoder from context frames too, same as the target transition).
+  `CONTEXT_WINDOW = 8`.
+- `jepa/train_context_moe_predictor.py` (new training script) --
+  co-trains the online encoder, `MoEPredictor(context_mode="external")`,
+  and `EpisodeContextEncoder` together; encodes both the target and all
+  K context frames through the same online encoder each step, computes
+  `context_embed` from the pooled context features, and calls
+  `predictor(cur_feat, action_id, xy, context_embed=context_embed)`
+  before applying the same `weighted_prediction_loss` /
+  `variance_regularizer` Stage 1 established. Saves all three components
+  (`encoder_context.pt`, `context_moe_predictor.pt`,
+  `episode_context_encoder.pt`) plus a training-meta sidecar.
+  **Deviation from the fully-matched Phase 2B(a) recipe, same rationale
+  as Phase 1's:** episode-context construction depends on
+  `jepa/data/sequences.py`'s per-episode ordering, which (like Stage 3)
+  only exists for local recordings -- no external `arc-3-logs` or
+  MiniGrid-pretrain support for this data shape without materially more
+  new plumbing than this scoped test's budget allows. Local-only,
+  warm-started from `checkpoints/encoder.pt`, documented explicitly
+  rather than silently absorbed, exactly as Phase 1 did.
+- `scripts/eval_episode_context_holdout.py` (new) -- for each held-out
+  game's full episode, walks forward through it, and at every position
+  `i >= CONTEXT_WINDOW` builds context from that *same held-out
+  episode's own* preceding transitions (never from a trained game) --
+  the direct local proxy for "an agent accumulating real experience
+  within one episode of a genuinely novel Kaggle game," which is exactly
+  the scenario this whole investigation's context-encoder hypothesis is
+  meant to help with.
+
+(Training run and results to follow -- see the next entry in this file
+once the fold-1 comparison completes.)

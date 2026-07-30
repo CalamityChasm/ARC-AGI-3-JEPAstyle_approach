@@ -80,13 +80,16 @@ def build_models(
     num_experts: int,
     device: torch.device,
     top_k: int | None = None,
+    context_mode: str = "categorical",
 ) -> tuple:
     online = CNNEncoder().to(device)
     if encoder_path and encoder_path.exists():
         online.load_state_dict(torch.load(encoder_path, map_location=device))
         print(f"warm-started encoder from {encoder_path}")
     target = make_ema_target(online)
-    predictor = MoEPredictor(num_games=num_games, num_experts=num_experts, top_k=top_k).to(device)
+    predictor = MoEPredictor(
+        num_games=num_games, num_experts=num_experts, top_k=top_k, context_mode=context_mode
+    ).to(device)
     return online, target, predictor
 
 
@@ -225,19 +228,31 @@ def train(
     recording_substrings: list | None = None,
     checkpoint_every: int = 0,
     ablate_game_id: bool = False,
+    context_mode: str = "categorical",
 ) -> None:
     device = get_device()
     gating = f"top-{top_k} noisy" if top_k is not None else "dense softmax"
-    print(f"training on {device}, {num_experts} experts, {gating} gate, contrast_weight={contrast_weight}")
+    print(
+        f"training on {device}, {num_experts} experts, {gating} gate, "
+        f"contrast_weight={contrast_weight}, context_mode={context_mode}"
+    )
     if exclude_games:
         print(f"excluding games from all local/external corpora: {exclude_games}")
     if ablate_game_id:
-        print(
-            "--ablate-game-id set: every transition's game_idx will be forced to 0 "
-            "(regardless of its real game) in both training and validation -- the "
-            "game_embed table's rows 1+ never receive a real gradient, equivalent "
-            "to num_games=1 conditioning-wise (stage6-gameid-ablation)"
-        )
+        if context_mode == "frame":
+            print(
+                "--ablate-game-id set but context_mode='frame' -- game_idx is already "
+                "ignored entirely in this mode (context comes from frame content, not "
+                "a category lookup), so this flag is a no-op here. Not an error, just "
+                "flagging so it isn't mistaken for having any effect."
+            )
+        else:
+            print(
+                "--ablate-game-id set: every transition's game_idx will be forced to 0 "
+                "(regardless of its real game) in both training and validation -- the "
+                "game_embed table's rows 1+ never receive a real gradient, equivalent "
+                "to num_games=1 conditioning-wise (stage6-gameid-ablation)"
+            )
 
     arc_transitions = load_all_transitions(
         REPO_ROOT, name_substrings=recording_substrings, exclude_games=exclude_games
@@ -297,7 +312,8 @@ def train(
     print(f"{len(game_vocab)} distinct games in the shared vocab")
 
     online, target, predictor = build_models(
-        encoder_path, num_games=len(game_vocab), num_experts=num_experts, device=device, top_k=top_k
+        encoder_path, num_games=len(game_vocab), num_experts=num_experts, device=device, top_k=top_k,
+        context_mode=context_mode,
     )
     opt = torch.optim.AdamW(list(online.parameters()) + list(predictor.parameters()), lr=lr)
 
@@ -325,6 +341,7 @@ def train(
                     "contrast_weight": contrast_weight,
                     "exclude_games": exclude_games,
                     "ablate_game_id": ablate_game_id,
+                    "context_mode": context_mode,
                     "checkpoint_tag": tag,
                 },
                 indent=2,
@@ -513,6 +530,22 @@ if __name__ == "__main__":
             "any unseen game_id -- see experiments/stage6_gameid_ablation.md."
         ),
     )
+    parser.add_argument(
+        "--context-mode",
+        type=str,
+        default="categorical",
+        choices=["categorical", "frame"],
+        help=(
+            "How MoEPredictor conditions on 'which game is this' (stage6-"
+            "context-embedding, Phase 2B addition). 'categorical' (default) "
+            "is the original game_id -> embedding-table lookup. 'frame' "
+            "replaces it with FrameContextEncoder: a small MLP mapping the "
+            "current frame's pooled encoder features into a continuous "
+            "embedding, applied identically whether or not the game is "
+            "familiar -- see jepa/models/context_encoder.py and "
+            "experiments/stage6_continuous_game_embedding.md."
+        ),
+    )
     args = parser.parse_args()
     train(
         args.epochs,
@@ -528,4 +561,5 @@ if __name__ == "__main__":
         recording_substrings=args.recording_substrings.split(",") if args.recording_substrings else None,
         checkpoint_every=args.checkpoint_every,
         ablate_game_id=args.ablate_game_id,
+        context_mode=args.context_mode,
     )
