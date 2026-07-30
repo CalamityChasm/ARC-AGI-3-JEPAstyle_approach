@@ -45,6 +45,7 @@ from .device import get_device
 from .losses import (
     per_region_error,
     prediction_loss,
+    residual_commitment_loss,
     same_color_contrastive_loss,
     variance_regularizer,
     weighted_prediction_loss,
@@ -72,6 +73,33 @@ LOAD_BALANCE_WEIGHT = 0.001
 # constant, so one script can produce both the "production-style" and
 # "object-identity-style" checkpoints needed for a clean ablation).
 CONTRAST_WEIGHT_DEFAULT = 0.0
+# stage6-residual-commitment-fix: residual_commitment_loss (jepa/losses.py)
+# lives on the same per-patch "energy" scale as weighted_prediction_loss's
+# own per_region_error terms (both ~1e-3 to 1e-2 on this corpus, per
+# stage6-encoder-holdout-diag's diagnostic-C measurements), so start at a
+# comparable weight (1.0) rather than LOAD_BALANCE_WEIGHT-style extreme
+# down-scaling -- the epoch log prints this loss component and the
+# residual-commitment ratio every epoch specifically so a future run can
+# see directly if it's dominating training (analogous to how the gate
+# collapsed to uniform at LOAD_BALANCE_WEIGHT=0.01, Stage 4 item 1) rather
+# than discovering that only after a full run. Default 0.0 (off) so this
+# script reproduces the exact prior recipe unless explicitly requested.
+RESIDUAL_COMMIT_WEIGHT_DEFAULT = 0.0
+# stage6-residual-commitment-fix: fraction of TRAINING examples (not
+# batches -- per-example bernoulli, for finer-grained coverage than a
+# per-batch toggle) whose game_idx is forced to the fallback index 0
+# during training, simulating the exact "conditioning is uninformative"
+# situation the model faces at test time on any hidden/held-out game.
+# Deliberately NOT the same thing as --ablate-game-id (which forces EVERY
+# example to index 0, in both train and eval, for the whole run) --
+# stage6-gameid-ablation already showed that full removal doesn't close
+# the held-out gap. This is a partial exposure: game-id conditioning stays
+# available and useful on the (1 - dropout) majority of training examples,
+# while the residual-commitment loss above still has to survive under the
+# "uninformative conditioning" condition on the dropout fraction, so it
+# can't just rely on real game-id signal being present. Only ever applied
+# during training (never during validation/eval -- see _run_epochs).
+GAME_ID_DROPOUT_DEFAULT = 0.0
 
 
 def build_models(
@@ -137,6 +165,8 @@ def _make_loaders(transitions: list, game_vocab: dict, batch_size: int, device: 
 def _run_epochs(
     online, target, predictor, opt, train_loader, val_loader, device, epochs: int, phase: str,
     contrast_weight: float = CONTRAST_WEIGHT_DEFAULT, checkpoint_cb=None, checkpoint_every: int = 0,
+    residual_commit_weight: float = RESIDUAL_COMMIT_WEIGHT_DEFAULT,
+    game_id_dropout: float = GAME_ID_DROPOUT_DEFAULT,
 ) -> None:
     """checkpoint_cb(epoch_1_indexed, phase), if given, is called every
     `checkpoint_every` epochs (ported from stage6-selfplay-bootstrap /
@@ -149,10 +179,25 @@ def _run_epochs(
         total_loss = 0.0
         total_lb_loss = 0.0
         total_contrast_loss = 0.0
+        total_rescommit_loss = 0.0
+        residual_energy_sum = 0.0
+        true_delta_energy_sum = 0.0
+        n_changed_batches = 0
         n_batches = 0
         for cur, action_id, xy, nxt, patch_mask, game_idx in train_loader:
             cur, action_id, xy = cur.to(device), action_id.to(device), xy.to(device)
             nxt, patch_mask, game_idx = nxt.to(device), patch_mask.to(device), game_idx.to(device)
+
+            if game_id_dropout > 0.0:
+                # stage6-residual-commitment-fix: simulate the "conditioning
+                # is uninformative" situation a genuinely unfamiliar game
+                # produces (game_vocab.get(game_id, 0) falling back to the
+                # untrained-but-not-unused index-0 row) on a random fraction
+                # of TRAINING examples only -- never at validation/eval time,
+                # so val metrics stay a faithful readout of the real recipe.
+                drop_mask = torch.rand(game_idx.shape[0], device=device) < game_id_dropout
+                game_idx = torch.where(drop_mask, torch.zeros_like(game_idx), game_idx)
+
             cur_feat = online(cur)
             pred_feat, gate_weights = predictor(cur_feat, action_id, xy, game_idx)
             with torch.no_grad():
@@ -169,6 +214,21 @@ def _run_epochs(
                 loss = loss + contrast_weight * contrast_loss
                 total_contrast_loss += contrast_loss.item()
 
+            if residual_commit_weight > 0.0:
+                residual = pred_feat - cur_feat
+                rescommit_loss = residual_commitment_loss(residual, cur_feat, target_feat, patch_mask)
+                loss = loss + residual_commit_weight * rescommit_loss
+                total_rescommit_loss += rescommit_loss.item()
+                if patch_mask.any():
+                    with torch.no_grad():
+                        residual_energy_sum += per_region_error(
+                            residual, torch.zeros_like(residual)
+                        )[patch_mask].mean().item()
+                        true_delta_energy_sum += per_region_error(
+                            target_feat, cur_feat
+                        )[patch_mask].mean().item()
+                    n_changed_batches += 1
+
             opt.zero_grad()
             loss.backward()
             opt.step()
@@ -179,12 +239,21 @@ def _run_epochs(
             n_batches += 1
 
         stats = evaluate(online, predictor, val_loader, device=device)
+        commit_str = ""
+        if residual_commit_weight > 0.0:
+            train_commitment_ratio = residual_energy_sum / max(true_delta_energy_sum, 1e-12)
+            commit_str = (
+                f"rescommit_loss={total_rescommit_loss / n_batches:.5f}  "
+                f"train_commitment_ratio={train_commitment_ratio:.3f}  "
+            )
         print(
             f"[{phase}] epoch {epoch + 1}/{epochs}  train_loss={total_loss / n_batches:.4f}  "
             f"lb_loss={total_lb_loss / n_batches:.3f}  "
             + (f"contrast_loss={total_contrast_loss / n_batches:.4f}  " if contrast_weight > 0.0 else "")
+            + commit_str
             + f"val_pred_mse={stats['pred']:.5f}  val_identity_mse={stats['identity']:.5f}  |  "
-            f"changed-patches: pred={stats['pred_changed']:.5f} identity={stats['identity_changed']:.5f}"
+            f"changed-patches: pred={stats['pred_changed']:.5f} identity={stats['identity_changed']:.5f}  |  "
+            f"val_commitment_ratio={stats['commitment_ratio']:.3f}"
         )
         if checkpoint_cb is not None and checkpoint_every > 0 and (epoch + 1) % checkpoint_every == 0:
             checkpoint_cb(epoch + 1, phase)
@@ -208,10 +277,15 @@ def train(
     exclude_games: list | None = None,
     recording_substrings: list | None = None,
     checkpoint_every: int = 0,
+    residual_commit_weight: float = RESIDUAL_COMMIT_WEIGHT_DEFAULT,
+    game_id_dropout: float = GAME_ID_DROPOUT_DEFAULT,
 ) -> None:
     device = get_device()
     gating = f"top-{top_k} noisy" if top_k is not None else "dense softmax"
-    print(f"training on {device}, {num_experts} experts, {gating} gate, contrast_weight={contrast_weight}")
+    print(
+        f"training on {device}, {num_experts} experts, {gating} gate, contrast_weight={contrast_weight}, "
+        f"residual_commit_weight={residual_commit_weight}, game_id_dropout={game_id_dropout}"
+    )
     if exclude_games:
         print(f"excluding games from all local/external corpora: {exclude_games}")
 
@@ -299,6 +373,8 @@ def train(
                     "external_per_game": external_per_game,
                     "n_games": len(game_vocab),
                     "contrast_weight": contrast_weight,
+                    "residual_commit_weight": residual_commit_weight,
+                    "game_id_dropout": game_id_dropout,
                     "exclude_games": exclude_games,
                     "checkpoint_tag": tag,
                 },
@@ -321,10 +397,20 @@ def train(
         if checkpoint_every > 0:
             _save(f"{phase_name}-complete")  # cheap insurance at the phase boundary regardless of the interval
 
+    # residual_commit_weight / game_id_dropout are ARC-finetune-phase-only
+    # (stage6-residual-commitment-fix): the held-out-game generalization
+    # problem this targets is specifically about ARC games falling back to
+    # game_idx=0 at test time; MiniGrid pretraining shares one game_id
+    # ("minigrid") across all its transitions already, so dropping to
+    # index 0 there wouldn't simulate the same "unfamiliar game" situation
+    # (index 0 is just whichever id sorts first across the combined
+    # vocab, not a meaningful fallback in that phase) -- left at this
+    # script's original recipe for the pretrain phase either way.
     arc_train_loader, arc_val_loader = _make_loaders(arc_transitions, game_vocab, batch_size, device)
     _run_epochs(
         online, target, predictor, opt, arc_train_loader, arc_val_loader, device, epochs, "arc-finetune",
         contrast_weight=contrast_weight, checkpoint_cb=_checkpoint_cb, checkpoint_every=checkpoint_every,
+        residual_commit_weight=residual_commit_weight, game_id_dropout=game_id_dropout,
     )
 
     _save("final")
@@ -332,10 +418,25 @@ def train(
 
 @torch.no_grad()
 def evaluate(online, predictor, loader, device: torch.device | None = None) -> dict:
-    """Same fair same-encoder comparison as Stage 1's train_predictor.evaluate."""
+    """Same fair same-encoder comparison as Stage 1's train_predictor.evaluate.
+
+    Also reports `commitment_ratio` (stage6-residual-commitment-fix): mean
+    residual "energy" (pred_feat - cur_feat, squared, channel-mean) divided
+    by mean true-delta energy (next_feat - cur_feat), both restricted to
+    changed patches -- the exact same diagnostic-C metric
+    scripts/diagnose_encoder_holdout_predictor_check.py computes standalone
+    on held-out games (there: ~0.000 on held-out vs 0.235/0.010 on trained
+    games for the pre-fix checkpoints). Reporting it here every epoch, on
+    whatever `loader` is passed (the ARC val split, which never includes
+    the 5 held-out games in this experiment's corpus), gives a live
+    in-training readout of whether the residual-commitment loss is
+    actually taking hold, without needing a separate diagnostic pass.
+    """
     online.eval()
     predictor.eval()
     totals = {"pred": 0.0, "identity": 0.0, "pred_changed": 0.0, "identity_changed": 0.0}
+    residual_energy_sum = 0.0
+    true_delta_energy_sum = 0.0
     n_batches = 0
     n_changed_batches = 0
     for cur, action_id, xy, nxt, patch_mask, game_idx in loader:
@@ -355,6 +456,12 @@ def evaluate(online, predictor, loader, device: torch.device | None = None) -> d
             identity_err = per_region_error(cur_feat, next_feat)[patch_mask]
             totals["pred_changed"] += pred_err.mean().item()
             totals["identity_changed"] += identity_err.mean().item()
+
+            residual = pred_feat - cur_feat
+            residual_energy = per_region_error(residual, torch.zeros_like(residual))[patch_mask]
+            true_delta_energy = per_region_error(next_feat, cur_feat)[patch_mask]
+            residual_energy_sum += residual_energy.mean().item()
+            true_delta_energy_sum += true_delta_energy.mean().item()
             n_changed_batches += 1
 
     online.train()
@@ -365,6 +472,7 @@ def evaluate(online, predictor, loader, device: torch.device | None = None) -> d
         "identity": totals["identity"] / n_batches,
         "pred_changed": totals["pred_changed"] / n_changed_batches,
         "identity_changed": totals["identity_changed"] / n_changed_batches,
+        "commitment_ratio": (residual_energy_sum / n_changed_batches) / max(true_delta_energy_sum / n_changed_batches, 1e-12),
     }
 
 
@@ -459,6 +567,44 @@ if __name__ == "__main__":
             "a shared/contended GPU can cost."
         ),
     )
+    parser.add_argument(
+        "--residual-commit-weight",
+        type=float,
+        default=RESIDUAL_COMMIT_WEIGHT_DEFAULT,
+        help=(
+            "Weight on residual_commitment_loss (stage6-residual-commitment-"
+            "fix, jepa/losses.py: residual_commitment_loss). A one-sided "
+            "hinge penalizing the predictor's residual (pred_feat - "
+            "cur_feat, before the identity skip-add) for being SMALLER in "
+            "magnitude than the true observed feature-space delta, at "
+            "patches that actually changed -- direct anti-'coast on "
+            "identity' pressure, distinct from weighted_prediction_loss's "
+            "existing per-patch reconstruction upweighting. 0.0 (default) "
+            "reproduces the original recipe with no such term. ARC-"
+            "finetune-phase-only (see train())."
+        ),
+    )
+    parser.add_argument(
+        "--game-id-dropout",
+        type=float,
+        default=GAME_ID_DROPOUT_DEFAULT,
+        help=(
+            "Fraction (0.0-1.0) of TRAINING examples per batch whose "
+            "game_idx is randomly forced to the fallback index 0 during "
+            "the ARC-finetune phase only (stage6-residual-commitment-fix) "
+            "-- simulates the 'conditioning is uninformative' situation a "
+            "genuinely unfamiliar/hidden game produces at test time, "
+            "without removing game-id conditioning altogether the way "
+            "--ablate-game-id (stage6-gameid-ablation) does; that full-"
+            "removal experiment did NOT close the held-out-game gap on its "
+            "own, so this keeps conditioning available/useful on the "
+            "(1 - dropout) majority of examples while still exposing the "
+            "model (and the residual-commitment loss above) to the "
+            "fallback condition during training, not just at eval time on "
+            "games never seen at all. Never applied during validation. "
+            "0.0 (default) reproduces the original recipe."
+        ),
+    )
     args = parser.parse_args()
     train(
         args.epochs,
@@ -473,4 +619,6 @@ if __name__ == "__main__":
         exclude_games=args.exclude_games.split(",") if args.exclude_games else None,
         recording_substrings=args.recording_substrings.split(",") if args.recording_substrings else None,
         checkpoint_every=args.checkpoint_every,
+        residual_commit_weight=args.residual_commit_weight,
+        game_id_dropout=args.game_id_dropout,
     )

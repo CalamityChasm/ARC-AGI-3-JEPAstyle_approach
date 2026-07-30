@@ -135,3 +135,50 @@ def same_color_contrastive_loss(
     pos_loss = (1.0 - sim)[pos_mask].mean() if pos_mask.any() else feat.new_zeros(())
     neg_loss = F.relu(sim - margin)[neg_mask].mean() if neg_mask.any() else feat.new_zeros(())
     return pos_loss + neg_loss
+
+
+# --- Stage 6 "residual commitment" auxiliary loss ------------------------
+#
+# stage6-residual-commitment-fix: stage6-encoder-holdout-diag's diagnostic C
+# found the MoE predictor's residual output (pred_feat - cur_feat, before
+# the "feat +" skip-add) collapses to ~0.000 commitment ratio specifically
+# on held-out games -- the residual is near-zero even at patches where the
+# encoder clearly registers a real, large change (that diagnostic's own
+# diagnostic-A result: the encoder's changed/unchanged feature-delta ratio
+# is actually LARGER on held-out games, 48-80x vs 6-30x on trained games).
+# weighted_prediction_loss (Stage 1 item 3) already upweights the
+# RECONSTRUCTION loss at changed patches, but that alone doesn't stop the
+# collapse at this boundary -- reconstruction loss is satisfied just as
+# well (arguably better, under a genuinely noisy/ambiguous target
+# distribution) by predicting a small, safe residual as by committing to a
+# specific, possibly-wrong direction. This term targets residual
+# MAGNITUDE directly, independent of whether the direction is right:
+# penalize the residual being SMALLER than the true observed change at
+# patches that actually changed, without penalizing overshoot (a one-sided
+# hinge) -- pure "commit to something with real magnitude" pressure that
+# doesn't fight against weighted_prediction_loss's own job of getting the
+# direction/magnitude right once the model does commit.
+def residual_commitment_loss(
+    residual: torch.Tensor, cur_feat: torch.Tensor, target_feat: torch.Tensor, patch_changed: torch.Tensor
+) -> torch.Tensor:
+    """residual: (B, C, H, W), the predictor's raw residual output BEFORE
+    the identity skip-add (i.e. pred_feat - cur_feat, not pred_feat
+    itself). cur_feat, target_feat: (B, C, H, W) same-encoder features at
+    t and t+1 (target_feat should be the online encoder's own output, not
+    the lagging EMA target -- see CLAUDE.md's EMA-asymmetry gotcha, the
+    exact bug that would bias this comparison the same way it once biased
+    the identity-baseline comparison in Stage 1 item 1). patch_changed:
+    (B, H, W) bool, same convention as weighted_prediction_loss.
+
+    Uses the same per-patch "energy" (channel-mean squared magnitude,
+    per_region_error's own convention) for both sides so this loss lives
+    on the same natural scale as prediction_loss/weighted_prediction_loss
+    -- no separate normalization needed to make the two losses
+    comparable.
+    """
+    residual_energy = per_region_error(residual, torch.zeros_like(residual))  # (B, H, W)
+    true_delta_energy = per_region_error(target_feat, cur_feat)  # (B, H, W)
+    gap = F.relu(true_delta_energy - residual_energy)
+    if not patch_changed.any():
+        return residual.new_zeros(())
+    return gap[patch_changed].mean()
