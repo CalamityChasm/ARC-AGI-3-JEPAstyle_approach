@@ -36,3 +36,11 @@ minigrid==3.1.0
 # gymnasium/minigrid above since sokoban_data.py instantiates SokobanEnv
 # directly rather than going through gym's environment registry.
 gym-sokoban==0.0.6
+
+# jepa/ (Stage 6: MoE predictor's MinAtar pretraining data source, see
+# jepa/data/minatar_data.py). A clean-room, no-ROM reimplementation of 5
+# Atari-style games as small multi-channel binary grids -- no copyrighted
+# ROM data involved. Pulls in pandas/scipy/seaborn (its own plotting/
+# analysis extras, unused by this project's data pipeline, which only
+# touches minatar.Environment directly).
+MinAtar==1.0.15

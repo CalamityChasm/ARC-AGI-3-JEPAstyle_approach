@@ -34,6 +34,11 @@ import torch
 from torch.utils.data import DataLoader, WeightedRandomSampler, random_split
 
 from .data.external_logs import load_external_transitions
+from .data.minatar_data import (
+    DEFAULT_GAMES as MINATAR_DEFAULT_GAMES,
+    GAME_ID as MINATAR_GAME_ID,
+    generate_transitions as generate_minatar_transitions,
+)
 from .data.minigrid_data import DEFAULT_ENV_NAMES, GAME_ID as MINIGRID_GAME_ID, generate_transitions
 from .data.sokoban_data import (
     DEFAULT_CONFIGS as SOKOBAN_DEFAULT_CONFIGS,
@@ -219,6 +224,8 @@ def train(
     minigrid_steps_per_episode: int = 80,
     sokoban_episodes_per_config: int = 0,
     sokoban_steps_per_episode: int = 80,
+    minatar_episodes_per_game: int = 0,
+    minatar_steps_per_episode: int = 80,
     top_k: int | None = None,
     contrast_weight: float = CONTRAST_WEIGHT_DEFAULT,
     exclude_games: list | None = None,
@@ -265,6 +272,7 @@ def train(
 
     minigrid_transitions = []
     sokoban_transitions = []
+    minatar_transitions = []
     if pretrain_epochs > 0:
         minigrid_transitions = generate_transitions(
             env_names=DEFAULT_ENV_NAMES,
@@ -285,7 +293,17 @@ def train(
                 f"generated {len(sokoban_transitions)} Sokoban transitions "
                 f"across {len(SOKOBAN_DEFAULT_CONFIGS)} room configs"
             )
-    synthetic_transitions = minigrid_transitions + sokoban_transitions
+        if minatar_episodes_per_game > 0:
+            minatar_transitions = generate_minatar_transitions(
+                games=MINATAR_DEFAULT_GAMES,
+                episodes_per_game=minatar_episodes_per_game,
+                steps_per_episode=minatar_steps_per_episode,
+            )
+            print(
+                f"generated {len(minatar_transitions)} MinAtar transitions "
+                f"across {len(MINATAR_DEFAULT_GAMES)} games"
+            )
+    synthetic_transitions = minigrid_transitions + sokoban_transitions + minatar_transitions
 
     # One shared vocabulary across both phases -- built from the union of
     # ARC game_ids and (if pretraining) whichever synthetic-source
@@ -313,6 +331,7 @@ def train(
                     "pretrain_epochs": pretrain_epochs,
                     "n_minigrid_transitions": len(minigrid_transitions),
                     "n_sokoban_transitions": len(sokoban_transitions),
+                    "n_minatar_transitions": len(minatar_transitions),
                     "num_experts": num_experts,
                     "top_k": top_k,
                     "batch_size": batch_size,
@@ -446,6 +465,20 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument(
+        "--minatar-episodes-per-game",
+        type=int,
+        default=0,
+        help=(
+            "Episodes per MinAtar game to add to the synthetic pretrain "
+            "phase (0 = skip -- see jepa/data/minatar_data.py). Only used "
+            "when --pretrain-epochs > 0. stage6-diverse-pretraining "
+            "addition: a third synthetic source alongside MiniGrid/"
+            "Sokoban, added specifically to test whether more diverse "
+            "pretraining data closes the held-out-ARC-games generalization "
+            "gap documented in CLAUDE.md's Stage 6 addendum."
+        ),
+    )
+    parser.add_argument(
         "--contrast-weight",
         type=float,
         default=CONTRAST_WEIGHT_DEFAULT,
@@ -522,6 +555,7 @@ if __name__ == "__main__":
         external_per_game=args.external_per_game,
         pretrain_epochs=args.pretrain_epochs,
         sokoban_episodes_per_config=args.sokoban_episodes_per_config,
+        minatar_episodes_per_game=args.minatar_episodes_per_game,
         top_k=args.top_k,
         contrast_weight=args.contrast_weight,
         exclude_games=args.exclude_games.split(",") if args.exclude_games else None,

@@ -1781,6 +1781,41 @@ public score `0.06`), the bug is confirmed to be in this notebook/agent
 specifically -- use the free unconditional-diagnostic-cell trick described
 above to narrow it down without spending more of the daily quota.
 
+## Stage 6 (branch `stage6-diverse-pretraining`): does MinAtar pretraining close the held-out-ARC-games generalization gap? Negative result.
+
+Sibling `stage6-*` branches (not all merged here) established via 7
+independent interventions that the world model shows ~0% changed-patches
+improvement over identity on any local ARC game it wasn't trained on
+(confirmed via 5-fold cross-validation), and that no way of
+*conditioning* on game identity -- categorical or continuous -- fixes it.
+This branch tried the first genuinely different lever: more/more-diverse
+*pretraining data*, specifically **MinAtar** (`pip install MinAtar`, a
+clean-room, no-ROM reimplementation of 5 Atari-style games as small
+multi-channel binary grids -- see `jepa/data/minatar_data.py`, added
+alongside the existing `jepa/data/minigrid_data.py`/`sokoban_data.py`,
+wired into `jepa/train_moe_predictor.py` via
+`--minatar-episodes-per-game N`).
+
+Controlled ablation (byte-identical MiniGrid+ARC corpora, differing only
+in MinAtar's presence, exactly mirroring Stage 4's own Sokoban-ablation
+methodology) trained on fold 1's 20-game corpus
+(`r11l, bp35, m0r0, tr87, ka59` held out, reusing that fold's exact
+recipe from the multifold cross-validation experiment). Result:
+**MinAtar does not close the held-out-games gap** -- baseline (MiniGrid
+only) scored -0.1% on the 5 held-out games (closely reproducing the
+previously-published fold-1 number of +0.01%), MiniGrid+MinAtar scored
+-1.4% on the same held-out games in the same run -- directionally
+*worse*, not better, though the gap is only modestly larger than this
+metric's own established fold-to-fold noise band. MinAtar was also
+directionally worse (not better) on the standard trained-games
+sanity-check metric (+4.0% -> +2.1%, 10-epoch trailing mean). This is
+the 8th independent intervention against this specific gap, and the 8th
+to fail to close it -- see `experiments/stage6_diverse_pretraining.md`
+for full numbers, per-game breakdown, and the one-fold-only limitation
+of this result. Procgen (the task's secondary/optional data source) was
+not attempted, since it was explicitly scoped to "if MinAtar shows real
+promise" and MinAtar did not.
+
 ## Gotchas learned the hard way (don't re-discover these)
 
 - **`ARC-AGI-3-Agents/recordings/` (gitignored, fully regenerable) grows

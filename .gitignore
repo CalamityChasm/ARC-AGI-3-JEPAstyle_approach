@@ -26,6 +26,8 @@ dist/
 /checkpoints_fold4_nogameid/
 /checkpoints_fold5_baseline/
 /checkpoints_fold5_nogameid/
+/checkpoints_diverse_baseline/
+/checkpoints_diverse_minatar/
 /runs/
 *.log
 recordings/
