@@ -1583,6 +1583,44 @@ data behind them -- the code is real and reusable even though this
 round's conclusion was negative. Full numbers and per-game breakdown in
 `experiments/stage6_continuous_game_embedding.md`.
 
+**First data-diversity attempt against this specific gap: MinAtar
+pretraining, also negative (`stage6-diverse-pretraining`).** Given all 7
+interventions above targeted conditioning/architecture, not data volume,
+tried the other lever that actually worked once before (Stage 4's
+MiniGrid win): added MinAtar (`jepa/data/minatar_data.py`, a clean-room,
+no-ROM reimplementation of 5 classic Atari-style games -- `breakout`,
+`asterix`, `freeway`, `seaquest`, `space_invaders` -- as small grid-based
+multi-channel environments, much closer to this project's own
+representation than real Atari's raw RGB frames would be; all 5 share one
+`game_id="minatar"`, mirroring MiniGrid's own reasoning) to the
+pretraining curriculum. Controlled ablation on fold 1's exact recipe
+(byte-identical MiniGrid+ARC corpora, differing only in MinAtar's
+presence): **worse on both metrics** -- standard trained-games
+changed-patches +2.1% vs. baseline's +4.0%, and held-out fold-1
+generalization **-1.4%** vs. baseline's -0.1% (`r11l` individually dropped
+to -10.5% with MinAtar added). Procgen (the other originally-planned
+source, still untested) was skipped this round since the task was
+explicitly gated on MinAtar showing promise first.
+
+**Open question, not yet investigated:** MinAtar's 5 sub-games (paddle
+physics, maze-chasing, lane-crossing, submarine survival, shooting) don't
+share nearly as much underlying structure with each other as MiniGrid's
+21 navigation-themed environments did -- pooling them under one shared
+`game_id` may be forcing the model to fit several mutually-inconsistent
+action->effect mappings at once, exactly the confound Stage 1 originally
+worried about (and found *not* to be the dominant issue) for the 25 ARC-3
+games themselves. Untested whether per-sub-game MinAtar ids, or a
+genuinely closer-shaped source (Procgen's more puzzle/maze-like
+environments, e.g. `maze`/`heist`, rather than reflex-heavy arcade games),
+would fare differently -- this round only tested one specific choice
+(shared id, MinAtar specifically), not the full space of "diverse data"
+options. Combined with Sokoban's own earlier negative result (Stage 4
+item 8, a different diagnosed cause -- deadlock-polluted data), the
+working pattern so far is that *borrowed game-engine* diversity doesn't
+reliably transfer to ARC-3's puzzle-logic mechanics merely by being
+"another grid game" -- shape/genre match may matter as much as diversity
+itself.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
