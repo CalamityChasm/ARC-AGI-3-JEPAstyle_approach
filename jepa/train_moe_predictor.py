@@ -40,6 +40,7 @@ from .data.minatar_data import (
     generate_transitions as generate_minatar_transitions,
 )
 from .data.minigrid_data import DEFAULT_ENV_NAMES, GAME_ID as MINIGRID_GAME_ID, generate_transitions
+from .data.procgen_data import load_cached_transitions as load_procgen_transitions
 from .data.sokoban_data import (
     DEFAULT_CONFIGS as SOKOBAN_DEFAULT_CONFIGS,
     GAME_ID as SOKOBAN_GAME_ID,
@@ -226,6 +227,7 @@ def train(
     sokoban_steps_per_episode: int = 80,
     minatar_episodes_per_game: int = 0,
     minatar_steps_per_episode: int = 80,
+    procgen_cache: Path | None = None,
     top_k: int | None = None,
     contrast_weight: float = CONTRAST_WEIGHT_DEFAULT,
     exclude_games: list | None = None,
@@ -273,6 +275,7 @@ def train(
     minigrid_transitions = []
     sokoban_transitions = []
     minatar_transitions = []
+    procgen_transitions = []
     if pretrain_epochs > 0:
         minigrid_transitions = generate_transitions(
             env_names=DEFAULT_ENV_NAMES,
@@ -303,7 +306,16 @@ def train(
                 f"generated {len(minatar_transitions)} MinAtar transitions "
                 f"across {len(MINATAR_DEFAULT_GAMES)} games"
             )
-    synthetic_transitions = minigrid_transitions + sokoban_transitions + minatar_transitions
+        if procgen_cache is not None:
+            procgen_transitions = load_procgen_transitions(procgen_cache)
+            procgen_game_ids = sorted({t[6] for t in procgen_transitions})
+            print(
+                f"loaded {len(procgen_transitions)} pre-generated Procgen transitions "
+                f"from {procgen_cache} (game_ids: {procgen_game_ids}) -- see "
+                f"jepa/data/procgen_data.py for why this is a pre-generated cache "
+                f"rather than a live call, unlike MiniGrid/Sokoban/MinAtar above"
+            )
+    synthetic_transitions = minigrid_transitions + sokoban_transitions + minatar_transitions + procgen_transitions
 
     # One shared vocabulary across both phases -- built from the union of
     # ARC game_ids and (if pretraining) whichever synthetic-source
@@ -332,6 +344,8 @@ def train(
                     "n_minigrid_transitions": len(minigrid_transitions),
                     "n_sokoban_transitions": len(sokoban_transitions),
                     "n_minatar_transitions": len(minatar_transitions),
+                    "n_procgen_transitions": len(procgen_transitions),
+                    "procgen_cache": str(procgen_cache) if procgen_cache is not None else None,
                     "num_experts": num_experts,
                     "top_k": top_k,
                     "batch_size": batch_size,
@@ -479,6 +493,25 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument(
+        "--procgen-cache",
+        type=Path,
+        default=None,
+        help=(
+            "Path to a pre-generated Procgen transitions cache (0 = skip -- "
+            "see jepa/data/procgen_data.py and scripts/generate_procgen_corpus.py). "
+            "Only used when --pretrain-epochs > 0. stage6-procgen-pretraining "
+            "addition: a fourth synthetic source alongside MiniGrid/Sokoban/"
+            "MinAtar, testing whether genre-matched (maze/puzzle-navigation, "
+            "not reflex-arcade) diverse pretraining data closes the "
+            "held-out-ARC-games generalization gap where MinAtar did not. "
+            "Loaded from a pre-generated cache rather than generated live "
+            "like the other three sources: Procgen has no PyPI wheel for "
+            "this project's main Python version, so generation happens "
+            "once, out of band, in a dedicated venv -- see "
+            "jepa/data/procgen_data.py's module docstring."
+        ),
+    )
+    parser.add_argument(
         "--contrast-weight",
         type=float,
         default=CONTRAST_WEIGHT_DEFAULT,
@@ -556,6 +589,7 @@ if __name__ == "__main__":
         pretrain_epochs=args.pretrain_epochs,
         sokoban_episodes_per_config=args.sokoban_episodes_per_config,
         minatar_episodes_per_game=args.minatar_episodes_per_game,
+        procgen_cache=args.procgen_cache,
         top_k=args.top_k,
         contrast_weight=args.contrast_weight,
         exclude_games=args.exclude_games.split(",") if args.exclude_games else None,
