@@ -1621,6 +1621,52 @@ reliably transfer to ARC-3's puzzle-logic mechanics merely by being
 "another grid game" -- shape/genre match may matter as much as diversity
 itself.
 
+**First genuinely positive (if modest) result of the whole investigation:
+test-time adaptation (`stage6-test-time-adaptation`).** Every fix tried
+above -- 8 interventions, all negative -- was still a *frozen, zero-shot
+forward pass* at evaluation time. Tested a mechanistically different
+question: if the model takes a few real gradient steps using a hidden
+game's own observed transitions, *as they're seen during play*, does its
+prediction quality on that game actually improve? Used the
+`stage6-game-holdout` fold-1 baseline checkpoint, streamed a held-out
+game's recorded transitions in order, and every K transitions ran a few
+AdamW steps on a deliberately restricted, ANIL-style subset of the MoE
+predictor (each expert's last `Conv2d` + the gate's last `Linear`, ~33.8K
+params -- encoder and embeddings frozen, chosen specifically to avoid
+retesting the already-failed continuous-embedding mechanisms under a
+different name).
+
+**Result: real, monotonic improvement in 4/5 held-out games as adaptation
+data accumulates** (K=10, 3 steps, lr=5e-5; changed-patches at 0 -> 200
+adaptation transitions): `r11l` -1.2% -> +0.5%, `ka59` -1.4% -> +0.2%,
+`bp35` +0.0% -> +0.3%, `m0r0` -0.3% -> -0.1%, `tr87` flat. A step-count
+sweep (1/3/5 steps) on `r11l` showed a clean monotonic dial -- more
+adaptation steps produce more held-out improvement *and* proportionally
+more trained-game interference -- exactly the pattern you'd expect from
+real learning, not noise (noise wouldn't dial linearly with an
+intervention's magnitude in both directions at once).
+
+**Real, honest limits, not swept under the rug:** the magnitude is small
+(roughly 1-2 percentage points over 200 transitions / ~60 gradient
+steps), nowhere near production's own +8% to +30% improvement on trained
+games -- this is not a standalone fix. It also isn't free: re-evaluating
+the same adapted checkpoints on an 8-game trained-games probe showed real
+(non-catastrophic) interference, pooled improvement dropping from +9.8%
+to +6.6%-10.0% depending on adaptation intensity, scaling with how much
+adaptation was applied. Practical integration would need per-game resets
+(don't carry adapted weights across different games/episodes) and a
+larger adaptation budget than a single realistic Kaggle episode likely
+provides at `MAX_ACTIONS=300`.
+
+**Working read:** unlike every conditioning/architecture fix and the
+first data-diversity attempt, this is a real, mechanistically distinct
+lever -- the model demonstrably *can* extract signal from a novel game's
+own data given real gradient access, which nothing else today could
+show. At its current small magnitude it's best framed as a complementary
+tool to layer on top of better pretraining data (still being tested in
+parallel), not a replacement for it. Full methodology, per-game tables,
+and integration notes in `experiments/stage6_test_time_adaptation.md`.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
