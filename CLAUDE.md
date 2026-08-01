@@ -1723,6 +1723,37 @@ ARC-3-*shaped* synthetic puzzle generation (rather than borrowed game
 engines from other genres) might be a better-matched data source than
 anything tried so far.
 
+**Curriculum-balanced Procgen rerun (`stage6-procgen-rebalanced`): the
+imbalance hypothesis didn't hold up either.** Subsampled MiniGrid and
+Procgen to ~33,600 transitions each (67,200 total, matching the original
+MiniGrid-only baseline's corpus size, pretrain epochs unchanged at 20) to
+isolate diversity from volume. Standard-corpus changed-patches was still
+a regression (**+67.6% baseline -> -0.3%**, an ~811x absolute-MSE
+collapse -- worse than the original unbalanced attempt's ~150x), and
+held-out fold-1 stayed flat (**-0.2% -> -0.1%**, no improvement).
+Rebalancing *did* give a measurably better encoder starting point at
+finetune epoch 1 (val_identity_mse 5.7x better than the original run),
+confirming the diagnosed pretrain/epoch imbalance was real -- but the
+collapse reasserted itself and progressed across the entire 60-epoch
+finetune phase regardless, ending at essentially the same terminal
+magnitude as before. **Working read: the curriculum imbalance was a real
+contributing factor but not the dominant cause.** The more likely
+remaining driver, flagged for a future session rather than claimed
+proven: Procgen's RGB->16-color k-means quantization is lossy/noisy in a
+way none of this project's other pretraining sources are (MiniGrid,
+Sokoban, MinAtar are all natively categorical/discrete, no quantization
+step needed) -- the translation layer itself, not the game genre, may be
+the actual problem.
+
+**Running tally, end of today's diverse-pretraining-data investigation:
+10 independent interventions against the held-out-games gap, 9 failures,
+1 genuine (if modest) success.** The 9 failures span conditioning fixes,
+architecture changes, and now three different data-diversity attempts
+(MinAtar shared-id, MinAtar per-game-id, Procgen original, Procgen
+rebalanced -- 4 data attempts, if counted separately, all negative). The
+1 success, test-time adaptation, remains the most promising lever
+identified today and the natural next thing to build out further.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
