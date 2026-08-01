@@ -36,3 +36,11 @@ minigrid==3.1.0
 # gymnasium/minigrid above since sokoban_data.py instantiates SokobanEnv
 # directly rather than going through gym's environment registry.
 gym-sokoban==0.0.6
+
+# jepa/ (Stage 6: scaled world-model pretraining, board/strategy-game data
+# source, see jepa/data/openspiel_data.py). Installed cleanly via a
+# prebuilt win_amd64 wheel on this project's dev box -- no build-from-
+# source friction, unlike OpenSpiel's historically weaker Windows support
+# on some platforms/versions (checked first, before designing the rest of
+# that module around it -- see experiments/stage6_scaled_world_model.md).
+open_spiel==2.0.1
