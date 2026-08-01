@@ -1754,6 +1754,43 @@ rebalanced -- 4 data attempts, if counted separately, all negative). The
 1 success, test-time adaptation, remains the most promising lever
 identified today and the natural next thing to build out further.
 
+**Test-time adaptation built out into the real agent (`stage6-test-time-
+adaptation-agent`): the prediction-quality win did not translate into a
+real gameplay win.** Widened the earlier diagnostic's sweep across all 5
+held-out games (K in {5..200}, steps in {1..12}, LR in {1e-5..4e-4}) and
+confirmed the monotonic tradeoff dial holds up broadly, not just on
+`r11l` -- picked a deliberately conservative operating point (K=5,
+STEPS=8, LR=5e-5: +0.84% mean held-out changed-patches, -1.6pp
+trained-game interference). Built `jepa/test_time_adapter.py`
+(`TestTimeAdapter`): snapshots the ~33.8K-param ANIL-style subset,
+restorable via `reset()`, persists across RESETs of the same game (not
+each RESET -- mirrors `TransitionGraph`'s own persistence choice) and
+only resets on a genuinely new game (already enforced for free -- one
+fresh `Hypothesis` instance per `game_id`). Wired into
+`hypothesis_agent.py` behind `HYPOTHESIS_TEST_TIME_ADAPT=1` (default
+off); per-turn latency measured directly at ~17ms, negligible next to a
+real network round-trip.
+
+**Agent-level backtest -- the test that actually matters, run for the
+first time today:** n=8 on the 5 held-out games, n=4 on a 25-game trained
+sweep. **No detectable benefit on held-out games** (TTA on: 0.375 mean
+levels/3 total; off: 0.500/4 total, both only ever solving `r11l`; the
+raw score gap was driven by two outlier fast completions, not a
+systematic effect) **and no detectable regression on trained games**
+(ON/OFF within noise of each other). A real, independently-verified
+representation-level improvement did not show up in actual play at this
+sample size -- the same "world model got measurably better, agent win
+count didn't move" pattern this project has already hit twice before
+(Stage 2's post-bugfix Curiosity re-test, Stage 5's teacher-policy value
+head) -- not a contradiction, just a reminder that small-sample
+agent-level metrics need much more power to detect a real but modest
+effect than a direct representation-level measurement does. **Verdict:
+not a submission candidate on its own merits yet, but safe to ship
+disabled-by-default** (zero regression, negligible latency, unit-tested
+reset logic) -- worth revisiting with a larger backtest sample or a
+larger adaptation budget if a future session wants a more decisive
+answer, rather than concluding the mechanism doesn't work at all.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
