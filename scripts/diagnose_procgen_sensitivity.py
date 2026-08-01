@@ -27,7 +27,9 @@ device = get_device()
 
 transitions = load_all_transitions(REPO_ROOT, exclude_games=["r11l", "bp35", "m0r0", "tr87", "ka59"])
 
-for name, ckpt_dir in [("baseline", "checkpoints_diverse_baseline"), ("procgen", "checkpoints_diverse_procgen")]:
+_baseline_dir = sys.argv[1] if len(sys.argv) > 1 else "checkpoints_diverse_baseline"
+_procgen_dir = sys.argv[2] if len(sys.argv) > 2 else "checkpoints_diverse_procgen"
+for name, ckpt_dir in [("baseline", _baseline_dir), ("procgen", _procgen_dir)]:
     online = CNNEncoder(out_channels=64).to(device)
     online.load_state_dict(torch.load(REPO_ROOT / ckpt_dir / "encoder_moe.pt", map_location=device))
     online.eval()

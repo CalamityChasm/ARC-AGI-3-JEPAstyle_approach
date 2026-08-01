@@ -29,6 +29,8 @@ dist/
 /checkpoints_diverse_baseline/
 /checkpoints_diverse_minatar/
 /checkpoints_diverse_procgen/
+/checkpoints_diverse_baseline_rebal/
+/checkpoints_diverse_procgen_rebal/
 /runs/
 *.log
 recordings/

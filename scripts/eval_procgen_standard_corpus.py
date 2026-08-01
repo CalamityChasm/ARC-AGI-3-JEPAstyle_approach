@@ -29,7 +29,12 @@ external = load_external_transitions(REPO_ROOT, max_per_game=2000, exclude_games
 arc_transitions += external
 print(f"total ARC-3 transitions (local+external, 20 trained games): {len(arc_transitions)}")
 
-for name, ckpt_dir in [("baseline", "checkpoints_diverse_baseline"), ("procgen", "checkpoints_diverse_procgen")]:
+# stage6-procgen-rebalanced: overridable via argv so this script can be
+# reused against the rebalanced checkpoints without hardcoding a second
+# copy -- `python scripts/eval_procgen_standard_corpus.py <baseline_dir> <procgen_dir>`.
+_baseline_dir = sys.argv[1] if len(sys.argv) > 1 else "checkpoints_diverse_baseline"
+_procgen_dir = sys.argv[2] if len(sys.argv) > 2 else "checkpoints_diverse_procgen"
+for name, ckpt_dir in [("baseline", _baseline_dir), ("procgen", _procgen_dir)]:
     ckpt_dir = REPO_ROOT / ckpt_dir
     game_vocab = json.loads((ckpt_dir / "game_vocab_moe.json").read_text())
     meta = json.loads((ckpt_dir / "moe_training_meta.json").read_text())

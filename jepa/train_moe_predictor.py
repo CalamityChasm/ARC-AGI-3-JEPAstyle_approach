@@ -453,6 +453,28 @@ if __name__ == "__main__":
     )
     parser.add_argument("--out", type=Path, default=REPO_ROOT / "checkpoints")
     parser.add_argument(
+        "--minigrid-episodes-per-env",
+        type=int,
+        default=40,
+        help=(
+            "Episodes per MiniGrid environment to generate for the synthetic "
+            "pretrain phase (default 40 -- the original recipe's value, "
+            "21 envs * 40 episodes * 80 steps = 67,200 transitions). "
+            "stage6-procgen-rebalanced addition: exposed as a CLI flag so a "
+            "second synthetic source (e.g. --procgen-cache) can be added "
+            "while *subsampling* MiniGrid down to keep the total pretrain-"
+            "phase corpus size comparable to the single-source baseline, "
+            "instead of concatenating a second full-size source on top of "
+            "the full MiniGrid corpus (which was diagnosed as the cause of "
+            "the original stage6-procgen-pretraining regression -- see "
+            "experiments/stage6_procgen_pretraining.md's 'Diagnosing the "
+            "mechanism' section: doubling the pretrain corpus at unchanged "
+            "epoch counts left the encoder's temporal-change sensitivity "
+            "unable to recover during ARC-3 finetuning). Only used when "
+            "--pretrain-epochs > 0."
+        ),
+    )
+    parser.add_argument(
         "--external-per-game",
         type=int,
         default=None,
@@ -587,6 +609,7 @@ if __name__ == "__main__":
         num_experts=args.num_experts,
         external_per_game=args.external_per_game,
         pretrain_epochs=args.pretrain_epochs,
+        minigrid_episodes_per_env=args.minigrid_episodes_per_env,
         sokoban_episodes_per_config=args.sokoban_episodes_per_config,
         minatar_episodes_per_game=args.minatar_episodes_per_game,
         procgen_cache=args.procgen_cache,
