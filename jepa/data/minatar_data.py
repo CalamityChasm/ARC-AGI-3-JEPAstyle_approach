@@ -31,20 +31,32 @@ analogue of jepa/data/minigrid_data.py's object_idx->color mapping and
 jepa/data/sokoban_data.py's room_state->color mapping -- same pattern,
 new source.
 
-Design choice, one shared game_id: all 5 MinAtar games share a single
-`game_id="minatar"` (mirroring MiniGrid's own choice and reasoning, see
-minigrid_data.py's module docstring) -- deliberately *not* one game_id
-per sub-game. Two reasons this is the right call here, more so than it
-even was for MiniGrid: (1) the action *interface* is byte-for-byte
-identical across all 5 games (same 6 actions, same meaning per action id
--- 'l'/'u'/'r'/'d'/'f'/'n' -- unlike MiniGrid where "forward" still means
-different displacement depending on current facing), so a shared id lets
-the model learn one consistent action vocabulary across genuinely
-different game mechanics (paddle-and-ball vs. lane-crossing vs.
-shoot-em-up) rather than routing around learning it via 5 separate
-per-game embeddings; (2) per-game embeddings for only 5 sub-games would
-give each one very little data to fit its own embedding well relative to
-what the MiniGrid experiment already found sufficient (21 environments).
+Design choice, revised (2026-07-31, `stage6-minatar-pergame-id` branch):
+**per-game ids, not one shared `game_id="minatar"`.** The original
+design (see git history / CLAUDE.md's Stage 6 addendum for the full
+reasoning) pooled all 5 sub-games under a single shared id, mirroring
+MiniGrid's own choice, on the reasoning that the action *interface* is
+byte-for-byte identical across all 5 games. That shared-id run was a
+negative result (did not close the held-out-ARC-games generalization
+gap, and was directionally worse than a MiniGrid-only baseline on both
+the standard and held-out metrics -- see
+`experiments/stage6_diverse_pretraining.md`). This module now tests
+whether that pooling itself was a confound: MinAtar's 5 sub-games don't
+share nearly as much *underlying mechanic* with each other as MiniGrid's
+21 environments did (paddle-and-ball physics, lane-crossing timing,
+submarine-survival, and shoot-em-up projectiles are mutually distinct
+causal structures, not variations on one theme the way MiniGrid's
+navigation tasks are) -- pooling them under one id may force the shared
+encoder/predictor to fit several mutually-inconsistent action->effect
+mappings at once, exactly the kind of confound Stage 1 originally
+worried about (and found *not* to be the dominant issue) for the 25
+ARC-3 games, but never tested for a *synthetic* pretraining source
+before. Each game now gets its own id (`minatar_breakout`,
+`minatar_asterix`, `minatar_freeway`, `minatar_seaquest`,
+`minatar_space_invaders`) via `GAME_ID_PREFIX + game_name`. `GAME_ID`
+(the old shared constant) is kept for backward compatibility with any
+code that still imports it, but `generate_transitions` no longer uses it
+by default.
 """
 
 import random
@@ -61,7 +73,8 @@ except ImportError as e:
 
 from ..grid import NUM_COLORS
 
-GAME_ID = "minatar"
+GAME_ID = "minatar"  # kept for backward compat; no longer used as the default per-transition id
+GAME_ID_PREFIX = "minatar_"
 
 DEFAULT_GAMES = ["breakout", "asterix", "freeway", "seaquest", "space_invaders"]
 
@@ -97,12 +110,23 @@ def generate_transitions(
     episodes_per_game: int = 160,
     steps_per_episode: int = 80,
     seed: int = 0,
+    per_game_ids: bool = True,
 ) -> list:
     """Random-policy rollouts across `games`, returned as
     `(frame_t, action_id, x, y, frame_t1, changed, game_id)` tuples -- the
     same shape `jepa/data/trajectories.py`'s `TransitionDataset` expects.
-    `x, y` are always 0 (MinAtar has no coordinate-based action); all
-    transitions share `game_id="minatar"` (see module docstring for why).
+    `x, y` are always 0 (MinAtar has no coordinate-based action).
+
+    `per_game_ids=True` (the new default, see module docstring): each
+    sub-game gets its own `game_id` (`GAME_ID_PREFIX + game_name`, e.g.
+    `"minatar_breakout"`) instead of one shared `"minatar"` id. Pass
+    `per_game_ids=False` to reproduce the original shared-id behavior
+    (kept for reproducing the earlier negative result if needed, not used
+    by default anymore).
+    `jepa/train_moe_predictor.py`'s game-vocabulary construction reads
+    `game_id` generically off each transition tuple (`t[6]`), so no
+    changes were needed there -- it automatically picks up 5 distinct
+    entries instead of 1 when `per_game_ids=True`.
 
     `episodes_per_game=160` (vs. minigrid_data.py's `episodes_per_env=40`
     across 21 environments) is chosen so the *total* transition volume
@@ -125,6 +149,7 @@ def generate_transitions(
     rng = random.Random(seed)
     transitions = []
     for game_name in games:
+        game_id = f"{GAME_ID_PREFIX}{game_name}" if per_game_ids else GAME_ID
         env = Environment(game_name)
         for episode in range(episodes_per_game):
             ep_seed = seed * 1_000_000 + (hash(game_name) % 10_000) * 100 + episode
@@ -136,7 +161,7 @@ def generate_transitions(
                 _reward, terminal = env.act(action)
                 next_frame = _translate_frame(env)
                 changed = frame != next_frame
-                transitions.append((frame, action, 0, 0, next_frame, changed, GAME_ID))
+                transitions.append((frame, action, 0, 0, next_frame, changed, game_id))
                 frame = next_frame
                 if terminal:
                     env.seed(ep_seed + 500_000)
