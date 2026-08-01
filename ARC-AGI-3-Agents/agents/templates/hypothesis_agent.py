@@ -56,6 +56,7 @@ from jepa.grid import CANVAS, PATCH, arc3_frame_to_tensor  # noqa: E402
 from jepa.hypothesis_bundle import HypothesisBundle, info_gain  # noqa: E402
 from jepa.memory import TransitionGraph  # noqa: E402
 from jepa.models import CNNEncoder, MoEPredictor, ValueHead  # noqa: E402
+from jepa.test_time_adapter import TestTimeAdapter  # noqa: E402
 
 _CHECKPOINT_DIR = _REPO_ROOT / "checkpoints"
 _PATCHES_PER_SIDE = CANVAS // PATCH  # 8
@@ -105,6 +106,31 @@ class Hypothesis(Agent):
     # no other diagnostic signal available. Off by default.
     DIAG_MODE = os.getenv("HYPOTHESIS_DIAG_MODE") == "1"
 
+    # Test-time adaptation (stage6-test-time-adaptation-agent, see
+    # jepa/test_time_adapter.py and experiments/
+    # stage6_test_time_adaptation_agent.md for the full sweep this operating
+    # point was chosen from). Off by default -- a clean on/off flag so this
+    # can be A/B tested against the un-adapted baseline and disabled
+    # instantly if it ever causes a problem in a real scored run.
+    TEST_TIME_ADAPT = os.getenv("HYPOTHESIS_TEST_TIME_ADAPT") == "1"
+    # Adapt every TTA_K observed (non-RESET) transitions, TTA_STEPS AdamW
+    # steps each, at TTA_LR -- see jepa/test_time_adapter.py's module
+    # docstring for which parameter subset this actually touches (~33.8K
+    # params, never the encoder or embeddings). Defaults are the winning
+    # point of the coordinate-descent sweep in
+    # experiments/stage6_test_time_adaptation_agent.md
+    # (scripts/sweep_test_time_adaptation.py, K in {5..200} x STEPS in
+    # {1..12} x LR in {1e-5..4e-4}, scored on mean held-out-game gain minus
+    # a mild penalty on trained-game interference): K=5/STEPS=8/LR=5e-5
+    # gave +0.84% mean held-out changed-patches improvement (4 of 5 held-
+    # out games positive) at a mild ~1.6pp trained-games cost (+58.7% ->
+    # +57.3% pooled) -- comfortably short of the much larger interference
+    # seen at higher LRs (e.g. LR=4e-4 nearly triples the held-out gain but
+    # costs 21pp of trained-game accuracy, a bad trade).
+    TTA_K = int(os.getenv("HYPOTHESIS_TTA_K", "5"))
+    TTA_STEPS = int(os.getenv("HYPOTHESIS_TTA_STEPS", "8"))
+    TTA_LR = float(os.getenv("HYPOTHESIS_TTA_LR", "5e-5"))
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         # self._rng must exist unconditionally -- it's what _safe_fallback_action
@@ -140,6 +166,7 @@ class Hypothesis(Agent):
         self._prev_action_id: int | None = None
         self._prev_xy: tuple[int, int] | None = None
         self._prev_state_key: str | None = None
+        self._prev_raw_frame: list | None = None
 
     def _init_models(self) -> None:
         self.device = get_device()
@@ -177,6 +204,18 @@ class Hypothesis(Agent):
 
         self.graph = TransitionGraph()
         self.hypotheses = HypothesisBundle(num_hypotheses=self.num_experts, tau=self.TAU)
+
+        self.adapter: TestTimeAdapter | None = None
+        if self.TEST_TIME_ADAPT:
+            self.adapter = TestTimeAdapter(
+                self.predictor,
+                self.encoder,
+                self.device,
+                game_idx=self.game_idx,
+                k=self.TTA_K,
+                n_steps=self.TTA_STEPS,
+                lr=self.TTA_LR,
+            )
 
     def is_done(self, frames: list[FrameData], latest_frame: FrameData) -> bool:
         try:
@@ -265,6 +304,22 @@ class Hypothesis(Agent):
             expert_preds = self._predict_experts(self._prev_feat, self._prev_action_id, self._prev_xy)
             errors = (expert_preds - feat[0].unsqueeze(0)).pow(2).mean(dim=(1, 2, 3)).cpu()  # (K,)
         self.hypotheses.update(errors)
+
+        if self.adapter is not None and self._prev_raw_frame is not None:
+            # Isolated in its own try/except (separate from choose_action's
+            # outer heartbeat) so a training-step hiccup degrades to
+            # "skip this turn's adaptation" rather than "fall back to a
+            # fully random action for this turn" -- adaptation is a bonus
+            # signal on top of the real Q-scoring path, not a dependency
+            # of it.
+            try:
+                self.adapter.observe(
+                    self._prev_raw_frame, self._prev_action_id, self._prev_xy, latest_frame.frame
+                )
+            except Exception:
+                logger.exception(
+                    f"{self.game_id} - hypothesis agent: test-time adaptation step raised, skipping it"
+                )
 
     def _score_action(
         self, feat: torch.Tensor, action_id: int, beta: float
@@ -358,6 +413,7 @@ class Hypothesis(Agent):
             self._prev_action_id = None
             self._prev_xy = None
             self._prev_state_key = None
+            self._prev_raw_frame = None
             # Experiment-designer opening probe: try every simple action
             # once before trusting the hypothesis bundle's own confidence
             # weights, matching PressOnce's "press each action once" idea.
@@ -436,4 +492,5 @@ class Hypothesis(Agent):
         self._prev_action_id = action_id
         self._prev_xy = xy
         self._prev_state_key = state_key
+        self._prev_raw_frame = latest_frame.frame
         return action
