@@ -1667,6 +1667,62 @@ tool to layer on top of better pretraining data (still being tested in
 parallel), not a replacement for it. Full methodology, per-game tables,
 and integration notes in `experiments/stage6_test_time_adaptation.md`.
 
+**Two more parallel follow-ups: a real methodological fix that still
+doesn't close the gap, and a genre-matched retry undermined by its own
+confound.**
+
+*MinAtar retry with per-sub-game ids* (`stage6-minatar-pergame-id`):
+tested whether pooling MinAtar's 5 mechanically-dissimilar games under
+one shared `game_id` (mirroring MiniGrid's successful pattern) was the
+cause of MinAtar's original failure. Splitting into 5 separate ids
+(`minatar_breakout`, etc., no other changes) swung standard trained-games
+changed-patches from **+2.1% to +55.8%** -- confirming the pooling
+confound was real and large, a genuinely useful lesson for any future
+synthetic-source integration (default to per-sub-environment ids unless
+there's a MiniGrid-style shared-semantics reason to pool). **But held-out
+fold-1 generalization stayed at ~0.0%, unchanged** -- structurally
+unsurprising in hindsight, since a never-seen ARC-3 game still falls back
+to the same untrained embedding index regardless of how MinAtar's own
+internal games are identified. This fix targeted the wrong axis for the
+held-out-games question specifically.
+
+*Procgen* (`stage6-procgen-pretraining`, `maze`+`heist` -- chosen
+specifically as a better genre match to ARC-3's puzzle-logic character
+than MinAtar's reflex-arcade games, with a real RGB->16-color k-means
+quantization layer since Procgen renders raw pixels): standard-corpus
+changed-patches **regressed** (+48.2% baseline -> -2.0%), and held-out
+fold-1 stayed near-collapsed (-1.5% -> -0.2%). **Diagnosed the actual
+mechanism, not just the symptom, before accepting the result at face
+value**: encoder batch-level feature variance is fine (Procgen's is
+*higher* than baseline's), but frame-to-frame temporal-change
+sensitivity collapses ~150x during pretrain and -- unlike the MiniGrid
+baseline, which recovers within 1 finetune epoch -- never recovers across
+60 ARC-3 finetune epochs. Traced to doubling the pretrain-phase corpus
+size (67,200 -> 134,400 transitions) at unchanged epoch counts -- a
+curriculum-balance confound, not clean evidence against genre-matched
+data itself. **This result is honestly inconclusive on the genre-matching
+hypothesis specifically** -- it tests "more pretrain data without
+adjusting the schedule" more than it tests "does puzzle-genre-matched
+data help," and a properly rebalanced rerun (matched pretrain epochs to
+corpus size, or fewer Procgen episodes) would be needed before drawing a
+clean conclusion either way.
+
+**Running tally: 9 independent interventions against the held-out-games
+gap today, 9 failures to close it** (7 conditioning/architecture fixes,
+MinAtar shared-id, MinAtar per-game-id, Procgen) **plus 1 genuinely
+positive but modest result (test-time adaptation) using a mechanistically
+different approach (real gradient updates, not a frozen forward pass).**
+Recommended next steps, in order: (1) a properly curriculum-balanced
+Procgen rerun, since the current negative result doesn't cleanly test
+what it was meant to; (2) build out test-time adaptation further (larger
+adaptation budgets, per-game weight resets) since it's the only lever
+that's shown any real, positive, dialable signal all day; (3) treat
+"more of the same kind of external grid-game data" with real skepticism
+going forward given the accumulating pattern, and consider whether
+ARC-3-*shaped* synthetic puzzle generation (rather than borrowed game
+engines from other genres) might be a better-matched data source than
+anything tried so far.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
