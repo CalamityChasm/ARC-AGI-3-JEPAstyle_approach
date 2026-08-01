@@ -1391,6 +1391,369 @@ attributable to any one mechanism. Worth remembering as a general
 debugging strategy: when two things being compared diverge on a specific
 subset, trace *that subset specifically*, not the full population.
 
+## Stage 6 addendum -- held-out-game generalization: a real, robust, unfixed gap
+
+**Finding: the world model has no measurable edge over "predict no change" on
+any local game it wasn't trained on, and this is now confirmed across all
+25 games via 5-fold cross-validation, not one arbitrary split.** This
+started from a methodology audit prompted by the object-identity
+checkpoint's real `0.00` Kaggle score (see below): every `changed-patches`
+number and backtest result in this project's entire history, from Stage 1
+onward, was validated via `torch.utils.data.random_split` over individual
+*transitions* -- never a held-out *game*. Every local eval has measured
+"how well does this generalize to a shuffled-out subset of the same 25
+games," never "how well does this generalize to a game it has never seen"
+-- which is exactly the axis Kaggle's real evaluation (~110 largely-novel
+hidden games) stresses.
+
+**Leave-N-games-out test** (branch `stage6-game-holdout`): held out 5
+local games (`r11l`, `bp35`, `m0r0`, `tr87`, `ka59`) entirely from
+training, trained baseline and object-identity-recipe checkpoints on the
+other 20. `changed-patches` improvement over identity collapsed to ~0% on
+the 5 held-out games for *both* checkpoints, despite real improvement
+(+2% to +8%) on the 20 trained games. The object-identity checkpoint's
+diagnostic-B object-identity gap also collapsed/reversed on held-out
+games (+1.18 trained -> -0.02 held-out), confirming its contrastive loss
+was learning the *local* games' own color statistics, not a transferable
+notion of object identity -- a real, verified contributor to (though not
+sole proof of) that checkpoint's `0.00` real score.
+
+**Root-cause elimination, four independent negative results:**
+1. **Game-id embedding conditioning** (`stage6-gameid-ablation`): the
+   obvious suspect -- any unseen game falls back to a fixed, undertrained
+   embedding index. Ablating it entirely (`--ablate-game-id` on
+   `jepa/train_moe_predictor.py`) did **not** close the held-out gap
+   (stayed at ~0%/-0.2%). A large apparent trained-game win from this
+   ablation (+64.9% vs +8.0%, single run each) **did not reproduce** under
+   reseeding (`stage6-gameid-reseed`, n=3 each): with-game-id averaged
+   +53.5% (std 4.6), no-game-id averaged +42.3% (std 14.7, noisier and
+   lower) -- the original +8.0% with-game-id run was a ~10-std outlier,
+   not a real effect. **Verdict: keep game-id conditioning on for
+   production; this ablation is not an improvement.**
+2. **Encoder change-sensitivity** (`stage6-encoder-holdout-diag`): directly
+   measured feature-space delta at changed vs. unchanged patches,
+   restricted to the 5 held-out games. The encoder is **not** the
+   bottleneck -- its change-sensitivity ratio is actually *higher* on
+   held-out games (80.2x/48.1x) than on trained games (6.5x/30.3x),
+   consistent across all 5 games individually, with feature-norm and
+   pixel-magnitude confounds both ruled out. The encoder correctly
+   registers that something changed on a game it's never seen.
+3. **Predictor residual-commitment** (same agent, follow-up diagnostic):
+   the actual localized failure -- the predictor's residual-branch output
+   magnitude (pre-skip-connection) collapses to **~0.000** on held-out
+   games (vs. 0.235 baseline / 0.010 object-identity on trained games).
+   It's coasting entirely on the identity skip-connection specifically
+   when conditioned on an unfamiliar game, despite the encoder handing it
+   a clear, correctly-detected change signal. Structurally the same
+   failure shape as Stage 1's original "predictor learns to approximate
+   identity" bug (see Stage 1 item 8 above), reappearing at the
+   unseen-game boundary.
+4. **Direct fix attempt** (`stage6-residual-commitment-fix`): added an
+   explicit anti-collapse hinge loss on residual magnitude at changed
+   patches, plus 20% game-id-dropout during training (simulating
+   "conditioning is uninformative" on already-familiar games). **Did not
+   help**: held-out changed-patches went to -0.1% (statistically the same
+   as the unfixed ~0.0%), the residual-commitment ratio was still ~0.000
+   on held-out games post-fix, and it cost real accuracy on trained games
+   (+1.4% vs. the untouched +8.0% baseline). Likely explanation: game-id
+   dropout still shows the model visually-*familiar* content with its id
+   zeroed -- a different kind of "unfamiliar" than a truly novel game's
+   unseen visual/mechanic content, so there's nothing to transfer from.
+
+**Multi-fold cross-validation** (`stage6-multifold-cv`, run specifically
+because relying on one arbitrary 5-game split risked confusing "this
+split happened to be hard" with "the model can't generalize" --
+partitioned all 25 local games into 5 disjoint folds of 5, covering every
+game as a held-out target exactly once): the collapse holds up in
+**every single fold**, for both game-id-conditioned and ablated variants
+(fold means -0.30% and -0.40% respectively, folds ranging -1.8% to
++0.11%, no fold showing a real edge). This is not an artifact of one
+unlucky split.
+
+**Working conclusion:** four independent, well-targeted interventions
+(game-id ablation, confirming the encoder is fine, an anti-collapse loss,
+simulated training-time unfamiliarity) all converged on the same negative
+result, now confirmed robust across 5-fold coverage of all 25 games. Per
+this project's own repeated lesson (see the Stage 1 "CRITICAL" gotcha and
+Stage 4's MoE gate history): when several different fixes all land on the
+same negative outcome, that consistency points at a genuine data-bound
+limit, not an unturned architectural knob. **The world model most likely
+needs real training-game diversity to generalize zero-shot to a novel
+game at all -- the same lesson Stage 4 learned adding MiniGrid pretraining
+(more of the *same* ARC-3 data didn't help there either; genuinely
+different mechanics did).** This also reframes every real Kaggle score
+this project has gotten so far: the likely explanation isn't "checkpoint
+X is worse than checkpoint Y," it's that *no* checkpoint trained purely
+on these 25 ARC-3 games (± MiniGrid/Sokoban pretraining, which itself
+still collapsed to near-uniform gating on ARC-3 specifically) currently
+has real signal to offer on a genuinely novel game -- independent of
+which one gets submitted. Next steps worth prioritizing over further
+loss-shaping on the current corpus: substantially more diverse
+pretraining sources (beyond MiniGrid/Sokoban, which were already tried
+and only partially helped -- see Stage 4), or a fundamentally different
+approach to novel-game adaptation (e.g. test-time few-shot adaptation
+from a new game's opening RESET/probe frames, rather than expecting a
+frozen zero-shot forward pass to work at all).
+
+**Follow-up: does Stage 5's InfoGain exploration signal collapse too?**
+Given InfoGain (`jepa/hypothesis_bundle.py`) is variance across the 8 MoE
+experts' *raw, ungated* predictions (`MoEPredictor.predict_all_experts`),
+and the *gated* prediction was just shown to collapse to identity on
+held-out games, the natural worry: does the Hypothesis agent's whole
+exploration signal go dead on exactly the games where it matters most?
+Directly measured (`scripts/diagnose_infogain_holdout.py`, reusing
+`stage6-game-holdout`'s baseline checkpoint, no retraining needed) mean
+InfoGain across 500 held-out-game states x 4 candidate actions vs. the
+same on 500 trained-game states: **held-out 3.24e-2 vs. trained 3.24e-2 --
+ratio 0.999, no collapse.** The individual experts still genuinely
+disagree with each other on unseen games, just as much as on trained
+ones. This seemingly contradicts the residual-commitment finding above
+(which collapses to ~0.000) but doesn't, once the math is separated: that
+number measures the *gated* residual (`(expert_outputs * gate_weights)
+.sum(dim=1)`), a weighted blend across experts, while InfoGain measures
+*raw per-expert* disagreement before any blending. The most likely
+reconciliation: the gate stays close to uniform (Stage 4's own "gate
+specialization is a minority behavior" finding), and averaging several
+experts whose individual residuals are real and differentiated but
+pointing in different directions nets out close to zero -- collapsed
+*prediction accuracy*, but not collapsed *underlying disagreement*.
+Practical upshot: Stage 5's exploration mechanism (InfoGain-driven action
+selection) may retain real signal on genuinely novel Kaggle games even
+where the world model's raw *predictive accuracy* doesn't -- an
+encouraging, narrower finding than "the whole hypothesis bundle is
+useless there," though not yet cross-validated across multiple folds the
+way the main finding was, and not yet tested at the *agent* level (does
+this signal actually translate into better real exploration on unseen
+games, vs. just existing in the numbers).
+
+Separately flagged, not yet tested: whether the entropy-driven adaptive
+`beta` (Bayesian confidence -> explore/exploit blend) earns its
+complexity over a simple fixed constant. The existing ablation
+(`FORCE_BETA`, see Stage 5 follow-up 2) only tested the two *extremes*
+(beta=0, beta=1) against the real entropy-driven version -- it's never
+been compared against, say, a fixed `beta=0.37` (roughly the observed
+mean under `decay=0.8`). If a constant performs just as well, the whole
+per-step Bayesian confidence-tracking machinery isn't earning its keep
+over a much simpler design.
+
+**Continuous game-embedding investigation (`stage6-context-embedding`):
+three more conditioning mechanisms tried, all negative -- 7 independent
+interventions now agree.** Given the categorical `game_id -> embedding`
+lookup was suspected as the root cause, tested whether replacing it with
+a *continuous, observation-derived* representation would close the gap
+(the user's own instinct on where to go next):
+1. **Stage 3's existing recurrent predictor** (`GRUCell` hidden state
+   accumulated from real in-episode transitions, not a category lookup)
+   -- extended with `--exclude-games`, evaluated on folds 1-2 with a real
+   accumulated hidden state (not zeroed): **-1.7%** and **+0.5%**, both in
+   the same near-zero noise band as the MoE predictor. Whether the hidden
+   state was "warmed up" or fresh made no difference.
+2. **Single-frame content conditioning** (`FrameContextEncoder`, a
+   `context_mode="frame"` option on `MoEPredictor` deriving the
+   conditioning vector from the current frame's own pooled features
+   instead of a game_id lookup): folds 1-2, **-0.1%/-0.0%** vs. the
+   categorical baseline's **-0.5%/-0.0%** -- statistically indistinguishable.
+3. **Multi-transition episode context** (`EpisodeContextEncoder`,
+   Deep-Sets-style pooling over 8 other same-episode transitions --
+   architecturally the closest to a real meta-learning/context-inference
+   approach): fold 1, **-0.6%**, every one of the 5 held-out games
+   negative individually.
+
+**Combined with the 4 negative results earlier in this section (game-id
+ablation, encoder audit, anti-collapse residual loss, simulated
+unfamiliarity), that's 7 independently-designed interventions --
+including three genuinely different continuous-conditioning mechanisms,
+not just variations on one idea -- all converging on the same null
+result.** This is stronger evidence than before that the ceiling is
+data-bound, not a fixable conditioning architecture: no way of
+*representing* which game this is, categorical or continuous, helps when
+the training corpus itself only contains 20-25 games' worth of mechanics
+to learn from. The natural reading: this reframes "replace the game
+embedding" as very unlikely to be the fix on its own, regardless of how
+cleverly the embedding is built -- the two directions worth prioritizing
+next are (a) genuinely more diverse pretraining sources (the one lever
+that *did* work before, for Stage 4's MoE gate specialization via
+MiniGrid), or (b) test-time adaptation -- actually updating on a hidden
+game's own observed opening frames *during play*, rather than expecting
+any frozen zero-shot forward pass, however conditioned, to already
+generalize. All three new mechanisms and their eval infrastructure are
+implemented and committed on `stage6-context-embedding` (not merged) if a
+future session wants to revisit with substantially more diverse training
+data behind them -- the code is real and reusable even though this
+round's conclusion was negative. Full numbers and per-game breakdown in
+`experiments/stage6_continuous_game_embedding.md`.
+
+**First data-diversity attempt against this specific gap: MinAtar
+pretraining, also negative (`stage6-diverse-pretraining`).** Given all 7
+interventions above targeted conditioning/architecture, not data volume,
+tried the other lever that actually worked once before (Stage 4's
+MiniGrid win): added MinAtar (`jepa/data/minatar_data.py`, a clean-room,
+no-ROM reimplementation of 5 classic Atari-style games -- `breakout`,
+`asterix`, `freeway`, `seaquest`, `space_invaders` -- as small grid-based
+multi-channel environments, much closer to this project's own
+representation than real Atari's raw RGB frames would be; all 5 share one
+`game_id="minatar"`, mirroring MiniGrid's own reasoning) to the
+pretraining curriculum. Controlled ablation on fold 1's exact recipe
+(byte-identical MiniGrid+ARC corpora, differing only in MinAtar's
+presence): **worse on both metrics** -- standard trained-games
+changed-patches +2.1% vs. baseline's +4.0%, and held-out fold-1
+generalization **-1.4%** vs. baseline's -0.1% (`r11l` individually dropped
+to -10.5% with MinAtar added). Procgen (the other originally-planned
+source, still untested) was skipped this round since the task was
+explicitly gated on MinAtar showing promise first.
+
+**Open question, not yet investigated:** MinAtar's 5 sub-games (paddle
+physics, maze-chasing, lane-crossing, submarine survival, shooting) don't
+share nearly as much underlying structure with each other as MiniGrid's
+21 navigation-themed environments did -- pooling them under one shared
+`game_id` may be forcing the model to fit several mutually-inconsistent
+action->effect mappings at once, exactly the confound Stage 1 originally
+worried about (and found *not* to be the dominant issue) for the 25 ARC-3
+games themselves. Untested whether per-sub-game MinAtar ids, or a
+genuinely closer-shaped source (Procgen's more puzzle/maze-like
+environments, e.g. `maze`/`heist`, rather than reflex-heavy arcade games),
+would fare differently -- this round only tested one specific choice
+(shared id, MinAtar specifically), not the full space of "diverse data"
+options. Combined with Sokoban's own earlier negative result (Stage 4
+item 8, a different diagnosed cause -- deadlock-polluted data), the
+working pattern so far is that *borrowed game-engine* diversity doesn't
+reliably transfer to ARC-3's puzzle-logic mechanics merely by being
+"another grid game" -- shape/genre match may matter as much as diversity
+itself.
+
+**First genuinely positive (if modest) result of the whole investigation:
+test-time adaptation (`stage6-test-time-adaptation`).** Every fix tried
+above -- 8 interventions, all negative -- was still a *frozen, zero-shot
+forward pass* at evaluation time. Tested a mechanistically different
+question: if the model takes a few real gradient steps using a hidden
+game's own observed transitions, *as they're seen during play*, does its
+prediction quality on that game actually improve? Used the
+`stage6-game-holdout` fold-1 baseline checkpoint, streamed a held-out
+game's recorded transitions in order, and every K transitions ran a few
+AdamW steps on a deliberately restricted, ANIL-style subset of the MoE
+predictor (each expert's last `Conv2d` + the gate's last `Linear`, ~33.8K
+params -- encoder and embeddings frozen, chosen specifically to avoid
+retesting the already-failed continuous-embedding mechanisms under a
+different name).
+
+**Result: real, monotonic improvement in 4/5 held-out games as adaptation
+data accumulates** (K=10, 3 steps, lr=5e-5; changed-patches at 0 -> 200
+adaptation transitions): `r11l` -1.2% -> +0.5%, `ka59` -1.4% -> +0.2%,
+`bp35` +0.0% -> +0.3%, `m0r0` -0.3% -> -0.1%, `tr87` flat. A step-count
+sweep (1/3/5 steps) on `r11l` showed a clean monotonic dial -- more
+adaptation steps produce more held-out improvement *and* proportionally
+more trained-game interference -- exactly the pattern you'd expect from
+real learning, not noise (noise wouldn't dial linearly with an
+intervention's magnitude in both directions at once).
+
+**Real, honest limits, not swept under the rug:** the magnitude is small
+(roughly 1-2 percentage points over 200 transitions / ~60 gradient
+steps), nowhere near production's own +8% to +30% improvement on trained
+games -- this is not a standalone fix. It also isn't free: re-evaluating
+the same adapted checkpoints on an 8-game trained-games probe showed real
+(non-catastrophic) interference, pooled improvement dropping from +9.8%
+to +6.6%-10.0% depending on adaptation intensity, scaling with how much
+adaptation was applied. Practical integration would need per-game resets
+(don't carry adapted weights across different games/episodes) and a
+larger adaptation budget than a single realistic Kaggle episode likely
+provides at `MAX_ACTIONS=300`.
+
+**Working read:** unlike every conditioning/architecture fix and the
+first data-diversity attempt, this is a real, mechanistically distinct
+lever -- the model demonstrably *can* extract signal from a novel game's
+own data given real gradient access, which nothing else today could
+show. At its current small magnitude it's best framed as a complementary
+tool to layer on top of better pretraining data (still being tested in
+parallel), not a replacement for it. Full methodology, per-game tables,
+and integration notes in `experiments/stage6_test_time_adaptation.md`.
+
+**Two more parallel follow-ups: a real methodological fix that still
+doesn't close the gap, and a genre-matched retry undermined by its own
+confound.**
+
+*MinAtar retry with per-sub-game ids* (`stage6-minatar-pergame-id`):
+tested whether pooling MinAtar's 5 mechanically-dissimilar games under
+one shared `game_id` (mirroring MiniGrid's successful pattern) was the
+cause of MinAtar's original failure. Splitting into 5 separate ids
+(`minatar_breakout`, etc., no other changes) swung standard trained-games
+changed-patches from **+2.1% to +55.8%** -- confirming the pooling
+confound was real and large, a genuinely useful lesson for any future
+synthetic-source integration (default to per-sub-environment ids unless
+there's a MiniGrid-style shared-semantics reason to pool). **But held-out
+fold-1 generalization stayed at ~0.0%, unchanged** -- structurally
+unsurprising in hindsight, since a never-seen ARC-3 game still falls back
+to the same untrained embedding index regardless of how MinAtar's own
+internal games are identified. This fix targeted the wrong axis for the
+held-out-games question specifically.
+
+*Procgen* (`stage6-procgen-pretraining`, `maze`+`heist` -- chosen
+specifically as a better genre match to ARC-3's puzzle-logic character
+than MinAtar's reflex-arcade games, with a real RGB->16-color k-means
+quantization layer since Procgen renders raw pixels): standard-corpus
+changed-patches **regressed** (+48.2% baseline -> -2.0%), and held-out
+fold-1 stayed near-collapsed (-1.5% -> -0.2%). **Diagnosed the actual
+mechanism, not just the symptom, before accepting the result at face
+value**: encoder batch-level feature variance is fine (Procgen's is
+*higher* than baseline's), but frame-to-frame temporal-change
+sensitivity collapses ~150x during pretrain and -- unlike the MiniGrid
+baseline, which recovers within 1 finetune epoch -- never recovers across
+60 ARC-3 finetune epochs. Traced to doubling the pretrain-phase corpus
+size (67,200 -> 134,400 transitions) at unchanged epoch counts -- a
+curriculum-balance confound, not clean evidence against genre-matched
+data itself. **This result is honestly inconclusive on the genre-matching
+hypothesis specifically** -- it tests "more pretrain data without
+adjusting the schedule" more than it tests "does puzzle-genre-matched
+data help," and a properly rebalanced rerun (matched pretrain epochs to
+corpus size, or fewer Procgen episodes) would be needed before drawing a
+clean conclusion either way.
+
+**Running tally: 9 independent interventions against the held-out-games
+gap today, 9 failures to close it** (7 conditioning/architecture fixes,
+MinAtar shared-id, MinAtar per-game-id, Procgen) **plus 1 genuinely
+positive but modest result (test-time adaptation) using a mechanistically
+different approach (real gradient updates, not a frozen forward pass).**
+Recommended next steps, in order: (1) a properly curriculum-balanced
+Procgen rerun, since the current negative result doesn't cleanly test
+what it was meant to; (2) build out test-time adaptation further (larger
+adaptation budgets, per-game weight resets) since it's the only lever
+that's shown any real, positive, dialable signal all day; (3) treat
+"more of the same kind of external grid-game data" with real skepticism
+going forward given the accumulating pattern, and consider whether
+ARC-3-*shaped* synthetic puzzle generation (rather than borrowed game
+engines from other genres) might be a better-matched data source than
+anything tried so far.
+
+**Curriculum-balanced Procgen rerun (`stage6-procgen-rebalanced`): the
+imbalance hypothesis didn't hold up either.** Subsampled MiniGrid and
+Procgen to ~33,600 transitions each (67,200 total, matching the original
+MiniGrid-only baseline's corpus size, pretrain epochs unchanged at 20) to
+isolate diversity from volume. Standard-corpus changed-patches was still
+a regression (**+67.6% baseline -> -0.3%**, an ~811x absolute-MSE
+collapse -- worse than the original unbalanced attempt's ~150x), and
+held-out fold-1 stayed flat (**-0.2% -> -0.1%**, no improvement).
+Rebalancing *did* give a measurably better encoder starting point at
+finetune epoch 1 (val_identity_mse 5.7x better than the original run),
+confirming the diagnosed pretrain/epoch imbalance was real -- but the
+collapse reasserted itself and progressed across the entire 60-epoch
+finetune phase regardless, ending at essentially the same terminal
+magnitude as before. **Working read: the curriculum imbalance was a real
+contributing factor but not the dominant cause.** The more likely
+remaining driver, flagged for a future session rather than claimed
+proven: Procgen's RGB->16-color k-means quantization is lossy/noisy in a
+way none of this project's other pretraining sources are (MiniGrid,
+Sokoban, MinAtar are all natively categorical/discrete, no quantization
+step needed) -- the translation layer itself, not the game genre, may be
+the actual problem.
+
+**Running tally, end of today's diverse-pretraining-data investigation:
+10 independent interventions against the held-out-games gap, 9 failures,
+1 genuine (if modest) success.** The 9 failures span conditioning fixes,
+architecture changes, and now three different data-diversity attempts
+(MinAtar shared-id, MinAtar per-game-id, Procgen original, Procgen
+rebalanced -- 4 data attempts, if counted separately, all negative). The
+1 success, test-time adaptation, remains the most promising lever
+identified today and the natural next thing to build out further.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
