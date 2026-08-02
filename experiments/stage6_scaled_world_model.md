@@ -213,4 +213,98 @@ explicit, separate `--out` directory, never the bare `checkpoints/`
 default, so nothing here risks clobbering the production checkpoint
 `checkpoints/moe_predictor.pt` actually used by the Kaggle submission.
 
-(Phase 2, 3, and 4 sections to follow as this experiment progresses.)
+## Phase 2 + 3: capacity x diverse data, fold 1
+
+Trained via `jepa/train_moe_predictor.py`, fold 1's exact held-out games
+(`r11l,bp35,m0r0,tr87,ka59`, matching `stage6-multifold-cv`'s partition)
+and exact ARC-finetune-phase settings as the established baseline recipe
+(`--epochs 60 --external-per-game 2000`, warm-started from
+`checkpoints/encoder.pt`) -- the only two things that differ from that
+baseline are (a) the pretrain phase now uses the full diverse corpus from
+Phase 1 (MiniGrid + 6 OpenSpiel games + Snake/Pong, ~358k transitions,
+Sokoban deliberately excluded -- see Phase 1 section) instead of MiniGrid
+alone, and (b) capacity, tested at two widths:
+
+```
+python -m jepa.train_moe_predictor --pretrain-epochs 4 --epochs 60 --num-experts 8 \
+  --external-per-game 2000 --exclude-games r11l,bp35,m0r0,tr87,ka59 \
+  --openspiel-episodes-per-game 600 --openspiel-steps-per-episode 60 \
+  --arcade-episodes-per-game 450 --checkpoint-every 5 \
+  --out checkpoints_scaled_fold1_w<1|2> --width-mult <1.0|2.0>
+```
+
+**`--pretrain-epochs 4`, not 20:** the established recipe's 20 epochs on
+67,200 MiniGrid-only transitions is ~1.34M pretrain samples-seen. This
+run's pretrain corpus is ~358k transitions (~5.3x bigger) -- keeping the
+epoch count at 20 would mean ~5.3x more total pretrain gradient updates
+than the proven-good recipe, which is exactly the kind of curriculum
+imbalance the Procgen rerun (CLAUDE.md's Stage 6 addendum) showed causes
+an unrecovered encoder collapse. 4 epochs on the new corpus (~1.43M
+samples-seen) keeps total pretrain compute roughly matched to the known-
+good recipe instead. The finetune phase is left unchanged (60 epochs) --
+that's the phase that does the recovering in Procgen's own diagnosis, so
+it wasn't reduced.
+
+**Deliberately excluded Sokoban** (and MinAtar/Procgen, which aren't part
+of this branch's scope) from the pretrain mix -- all three had negative
+or mixed held-out-games results in earlier testing (see CLAUDE.md), and
+including them here would confound whether any effect is attributable to
+the *new* diversity under test (OpenSpiel + arcade) versus re-surfacing
+an already-known-negative source.
+
+### Width 1.0 result: real run, no collapse, held-out gap NOT closed
+
+Ran to completion (checked via a real blocking wait, not assumed) --
+pretrain phase (4 epochs): val_pred_mse and val_identity_mse both shrink
+together toward ~0.00001-0.00002 (expected on synthetic data this
+different from ARC-3, not evaluated further since the pretrain phase's
+own val split isn't the number that matters here). Finetune phase (60
+epochs) shows a real, maintained gap the whole way through -- not a
+Procgen-style collapse where pred and identity converge to equal, near-
+zero, uninformative values: epoch 1 pred=0.08335/identity=0.07774 (pred
+briefly worse, expected early), epoch 30 pred=0.00094/identity=0.00122,
+epoch 60 pred=0.00032/identity=0.00043 -- pred consistently, increasingly
+beats identity as training progresses, ending at a real ~26% gap on the
+standard (trained-corpus) validation split. This is the recovery check
+Phase 3 asked for, and it passes: no sign of the Procgen collapse
+pattern.
+
+**Held-out-games result (fold 1, `scripts/eval_scaled_world_model.py`,
+2,400 held-out transitions across the 5 held-out games):**
+
+| game | pred_changed_mse | identity_changed_mse | improvement |
+|---|---|---|---|
+| r11l | 0.001322 | 0.001320 | -0.14% |
+| bp35 | 0.069121 | 0.069193 | +0.11% |
+| m0r0 | 0.020702 | 0.020727 | +0.12% |
+| tr87 | 0.004358 | 0.004356 | -0.04% |
+| ka59 | 0.000906 | 0.000904 | -0.16% |
+| **overall** | **0.022492** | **0.022514** | **+0.10%** |
+
+**+0.10% overall -- essentially unchanged from fold 1's established
+baseline (+0.01%, `stage6-multifold-cv`), and squarely inside the -0.30%
++/- 0.66% mean/std band across all 5 folds' worth of prior interventions
+documented in CLAUDE.md.** ~5.3x more pretraining data, spanning 8 newly-
+added, genuinely different game mechanics (turn-based board games,
+push-your-luck chance, growth/collision, bounce physics -- none of them
+"more grid navigation," unlike every earlier attempt), at unchanged
+(1.0x) model capacity, does not move this number in any meaningful way.
+
+**Trained-games sanity check** (9,600 transitions across the fold's other
+20 games): pred=0.000115, identity=0.000133, **+13.33% improvement** --
+healthy, positive, comparable to prior production-style recipes' own
+trained-games numbers (see CLAUDE.md's various "trained-games" results in
+the +8% to +44% range depending on recipe) -- confirms the model learned
+real, non-degenerate dynamics on data it *was* trained on. The gap
+specifically fails to transfer to genuinely unseen games; it isn't that
+the model failed to learn anything at all.
+
+Full checkpoint metadata (`moe_training_meta.json`), per-game numbers,
+and raw eval output saved to `logs/stage6_scaled_world_model_eval.json`
+(label `scaled-w1-fold1`) and `checkpoints_scaled_fold1_w1/` (gitignored,
+main checkout only, not in this worktree's git history).
+
+### Width 2.0 result
+
+(training in progress -- see next update)
+
