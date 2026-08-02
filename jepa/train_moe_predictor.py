@@ -90,17 +90,39 @@ def build_models(
     return online, target, predictor
 
 
-def _make_loaders(transitions: list, game_vocab: dict, batch_size: int, device: torch.device) -> tuple:
-    dataset = TransitionDataset(transitions, game_vocab)
-    n_val = max(1, int(len(dataset) * VAL_FRACTION))
-    n_train = len(dataset) - n_val
-    train_ds, val_ds = random_split(
-        dataset, [n_train, n_val], generator=torch.Generator().manual_seed(0)
+def _make_loaders(
+    transitions: list, game_vocab: dict, batch_size: int, device: torch.device, color_augment: bool = False
+) -> tuple:
+    """`color_augment` (stage6-augmentation addition): applies ONLY to the
+    training split, never to validation -- the internal val metrics this
+    script prints every epoch should keep reflecting the real, unaugmented
+    input distribution actual gameplay produces (the same standard this
+    project has always held eval to, e.g. never training the identity
+    baseline itself). Implemented by splitting indices first via
+    `random_split` on an unaugmented base dataset (identical seed/logic to
+    before, so the train/val partition itself is unchanged), then building
+    a *separate* `TransitionDataset` for the train split with
+    `color_augment` set -- `WeightedRandomSampler`'s per-sample weights
+    still line up 1:1 with this new dataset's own index order, since a
+    list built via `[transitions[i] for i in train_split.indices]`
+    preserves `Subset`'s own ordering convention exactly."""
+    base_dataset = TransitionDataset(transitions, game_vocab, color_augment=False)
+    n_val = max(1, int(len(base_dataset) * VAL_FRACTION))
+    n_train = len(base_dataset) - n_val
+    train_split, val_ds = random_split(
+        base_dataset, [n_train, n_val], generator=torch.Generator().manual_seed(0)
     )
 
-    all_weights = dataset.sample_weights()
-    train_weights = [all_weights[i] for i in train_ds.indices]
+    all_weights = base_dataset.sample_weights()
+    train_weights = [all_weights[i] for i in train_split.indices]
     sampler = WeightedRandomSampler(train_weights, num_samples=len(train_weights), replacement=True)
+
+    if color_augment:
+        train_ds = TransitionDataset(
+            [transitions[i] for i in train_split.indices], game_vocab, color_augment=True
+        )
+    else:
+        train_ds = train_split
     # JEPA_NUM_WORKERS env var override (ported from stage6-object-identity/
     # stage6-selfplay-bootstrap): CLAUDE.md documents a MemoryError-inside-
     # a-DataLoader-worker's-pickle.load gotcha on Windows spawn-based
@@ -225,12 +247,20 @@ def train(
     recording_substrings: list | None = None,
     checkpoint_every: int = 0,
     ablate_game_id: bool = False,
+    color_augment: bool = False,
 ) -> None:
     device = get_device()
     gating = f"top-{top_k} noisy" if top_k is not None else "dense softmax"
     print(f"training on {device}, {num_experts} experts, {gating} gate, contrast_weight={contrast_weight}")
     if exclude_games:
         print(f"excluding games from all local/external corpora: {exclude_games}")
+    if color_augment:
+        print(
+            "--color-augment set: every ARC-3 fine-tuning training example gets a fresh "
+            "random full-palette (16-color) permutation applied identically to frame_t "
+            "and frame_t1 (stage6-augmentation). Validation and the MiniGrid pretrain "
+            "phase are NOT augmented."
+        )
     if ablate_game_id:
         print(
             "--ablate-game-id set: every transition's game_idx will be forced to 0 "
@@ -325,6 +355,7 @@ def train(
                     "contrast_weight": contrast_weight,
                     "exclude_games": exclude_games,
                     "ablate_game_id": ablate_game_id,
+                    "color_augment": color_augment,
                     "checkpoint_tag": tag,
                 },
                 indent=2,
@@ -347,7 +378,9 @@ def train(
         if checkpoint_every > 0:
             _save(f"{phase_name}-complete")  # cheap insurance at the phase boundary regardless of the interval
 
-    arc_train_loader, arc_val_loader = _make_loaders(arc_transitions, game_vocab, batch_size, device)
+    arc_train_loader, arc_val_loader = _make_loaders(
+        arc_transitions, game_vocab, batch_size, device, color_augment=color_augment
+    )
     _run_epochs(
         online, target, predictor, opt, arc_train_loader, arc_val_loader, device, epochs, "arc-finetune",
         contrast_weight=contrast_weight, checkpoint_cb=_checkpoint_cb, checkpoint_every=checkpoint_every,
@@ -513,6 +546,23 @@ if __name__ == "__main__":
             "any unseen game_id -- see experiments/stage6_gameid_ablation.md."
         ),
     )
+    parser.add_argument(
+        "--color-augment",
+        action="store_true",
+        help=(
+            "Data augmentation (stage6-augmentation addition): every ARC-3 "
+            "fine-tuning training example (local + external, NOT the "
+            "MiniGrid pretrain phase, NOT validation) gets a fresh random "
+            "permutation of all 16 ARC colors applied identically to "
+            "frame_t and frame_t1 before encoding, so the model can't rely "
+            "on which specific color id means what -- targets the "
+            "held-out-game generalization gap documented in CLAUDE.md's "
+            "Stage 6 addendum (the object-identity checkpoint's contrastive "
+            "loss was shown to be learning the local 25 games' own color "
+            "statistics rather than a transferable notion of color/object "
+            "identity). See experiments/stage6_augmentation.md."
+        ),
+    )
     args = parser.parse_args()
     train(
         args.epochs,
@@ -528,4 +578,5 @@ if __name__ == "__main__":
         recording_substrings=args.recording_substrings.split(",") if args.recording_substrings else None,
         checkpoint_every=args.checkpoint_every,
         ablate_game_id=args.ablate_game_id,
+        color_augment=args.color_augment,
     )

@@ -26,6 +26,9 @@ dist/
 /checkpoints_fold4_nogameid/
 /checkpoints_fold5_baseline/
 /checkpoints_fold5_nogameid/
+/checkpoints_fold1_augment/
+/checkpoints_fold2_augment/
+/checkpoints_smoke_test_augment/
 /runs/
 *.log
 recordings/

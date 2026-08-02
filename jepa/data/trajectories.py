@@ -14,7 +14,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from ..grid import arc3_frame_to_tensor, patch_change_mask
+from ..grid import NUM_COLORS, arc3_frame_to_tensor, patch_change_mask
 
 RECORDINGS_DIR = "ARC-AGI-3-Agents/recordings"
 
@@ -96,10 +96,63 @@ def build_game_vocab(transitions: list) -> dict:
     return {g: i for i, g in enumerate(game_ids)}
 
 
+def _permute_frame_colors(frame: list, perm: np.ndarray) -> list:
+    """Apply an already-chosen color permutation to one ARC-3 frame (a
+    list containing one (H, W) int grid, colors in [0, NUM_COLORS)).
+
+    `perm` is a length-NUM_COLORS array such that the pixel currently
+    holding color `c` becomes `perm[c]` -- used by
+    `TransitionDataset`'s `color_augment` option to relabel colors
+    *consistently* across (frame_t, frame_t1) within the same transition
+    (same `perm` passed to both calls), so the causal "this action
+    applied to this permuted-color state produces that permuted-color
+    next-state" relationship stays truthful -- only the arbitrary
+    color-id labels change, not the actual recorded dynamics. Since a
+    color permutation is a bijection applied identically to both frames,
+    it also leaves `patch_change_mask`'s changed/unchanged verdict
+    exactly unchanged (equality between two grids is preserved under any
+    shared bijective relabeling of the values being compared).
+    """
+    layer = np.asarray(frame[0], dtype=np.int64)
+    return [perm[layer]]
+
+
 class TransitionDataset(Dataset):
-    def __init__(self, transitions: list, game_vocab: dict):
+    def __init__(self, transitions: list, game_vocab: dict, color_augment: bool = False):
+        """`color_augment` (stage6-augmentation addition): if True, every
+        `__getitem__` call draws a fresh random permutation of all
+        NUM_COLORS=16 color ids and applies it identically to frame_t and
+        frame_t1 before tensor conversion -- see `_permute_frame_colors`.
+
+        Deliberately permutes all 16 colors, including 0, rather than
+        holding 0 fixed as a "background" color: unlike classic ARC-1/2
+        puzzles, ARC-3 game frames have no documented, cross-game
+        convention that color 0 means "background" or "empty" (each
+        game defines its own visual language over the same 16-color
+        palette -- see rules.md's own "Action semantics are per-game"
+        framing for the same general point about this project's local
+        25 games not being a reliable guide to universal conventions).
+        The specific failure mode this augmentation targets (see
+        experiments/stage6_augmentation.md and CLAUDE.md's Stage 6
+        addendum -- the object-identity checkpoint's contrastive loss
+        learning the local games' own specific color statistics rather
+        than a transferable notion of color/object identity) is a
+        reason to treat *all* 16 ids as equally arbitrary labels, not to
+        privilege one as special without cross-game evidence that it is.
+
+        A fresh `np.random.permutation` per `__getitem__` call (rather
+        than one fixed permutation for the whole dataset) maximizes
+        augmentation diversity across epochs, matching standard
+        practice for this kind of label-invariance augmentation. Uses
+        numpy's global RNG; this project's own standing practice on a
+        shared/contended box is `JEPA_NUM_WORKERS=0` (single-process
+        DataLoader), which sidesteps the usual multi-worker RNG-state-
+        correlation pitfall entirely -- not relied upon for
+        correctness, but noted for anyone bumping num_workers back up.
+        """
         self.transitions = transitions
         self.game_vocab = game_vocab
+        self.color_augment = color_augment
 
     def __len__(self) -> int:
         return len(self.transitions)
@@ -111,6 +164,10 @@ class TransitionDataset(Dataset):
 
     def __getitem__(self, idx: int):
         frame_t, action_id, x, y, frame_t1, _changed, game_id = self.transitions[idx]
+        if self.color_augment:
+            perm = np.random.permutation(NUM_COLORS)
+            frame_t = _permute_frame_colors(frame_t, perm)
+            frame_t1 = _permute_frame_colors(frame_t1, perm)
         cur = arc3_frame_to_tensor(frame_t)
         nxt = arc3_frame_to_tensor(frame_t1)
         xy_norm = np.array([x / 63.0, y / 63.0], dtype=np.float32)
