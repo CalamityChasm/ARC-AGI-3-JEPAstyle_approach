@@ -2043,6 +2043,34 @@ rather than a representation-level win that didn't clearly show up in
 play. Full write-up in `experiments/stage6_novelty_aware_beta.md` on
 branch `stage6-novelty-aware-beta` (not merged to master).
 
+**Correction (`stage6-novelty-beta-largescale`): the n=8 result did not
+replicate at n=30 -- it was noise, and the "most encouraging result"
+framing above is retracted.** Rerunning the identical comparison at n=30
+per condition (60 total runs): levels-completed, the more robust metric,
+came back **exactly tied** (13 vs. 13, an identical 43.3% solve rate on
+`r11l`, the only game either version ever solved across all 60 runs).
+The mean-score gap didn't just shrink, it **reversed direction** (n=8
+favored cap ON 0.060 vs. 0.011; n=30 favors cap OFF 0.094 vs. 0.029),
+fully explained by two high-scoring outlier runs on the cap-OFF side --
+exactly the kind of small-sample artifact this project has hit before
+(see the earlier `+64.9%` game-id-ablation result that also evaporated
+on reseeding). Mann-Whitney U tests found no significant difference in
+per-run score (p=0.86) or solve efficiency (p=0.59). This is the third
+time this session a real, mechanistically well-motivated component-level
+idea (after the teacher-policy value head and test-time adaptation) has
+failed to produce a statistically detectable agent-level effect at
+practical sample sizes on these 5 held-out games -- not necessarily
+because the mechanism is wrong, but because this evaluation protocol
+doesn't have the power to tell a real small effect apart from noise.
+**Recommendation: keep the cap enabled by default** (it's still
+structurally inert on trained games -- zero regression risk -- and there
+is still no evidence it hurts), **but do not treat it as a validated
+improvement.** This retraction is consistent with, not contradicted by,
+the real Kaggle submission below (`0.09`, itself unremarkable against the
+established noise floor) -- two independent tests, the larger local
+backtest and the one real submission, now agree there's no detectable
+benefit, where a single small local sample had briefly suggested one.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
