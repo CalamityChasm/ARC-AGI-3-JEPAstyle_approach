@@ -1791,6 +1791,71 @@ reset logic) -- worth revisiting with a larger backtest sample or a
 larger adaptation budget if a future session wants a more decisive
 answer, rather than concluding the mechanism doesn't work at all.
 
+**The biggest single test of the day: scaling model capacity and
+pretraining diversity together (`stage6-scaled-world-model`) -- a
+real, well-reasoned hypothesis, tested properly, still negative.** Every
+data-diversity attempt above added one modest source (33-67k
+transitions) at unchanged model capacity. A genuinely different, larger
+test: build a real roster of dozens of distinct game mechanics --
+6 OpenSpiel board/strategy games (`connect_four`, `tic_tac_toe`,
+`othello`, `checkers`, `pig`, `mancala` -- board-game moves represented
+as (x,y) click-style transitions, reusing the same mechanism ARC-3's own
+ACTION6 already has xy-conditioning for; `backgammon` was evaluated and
+dropped, its 1,352-action combined-sub-move space wasn't practical to
+decompose in the time available) plus hand-rolled Snake and Pong for
+real-time physics -- each game given its own distinct `game_id`
+(applying the per-sub-game-id lesson from the MinAtar retry above from
+the start, not re-discovering it), totaling **~358k synthetic pretrain
+transitions, a genuine order-of-magnitude step up** from any single prior
+source. Paired this with re-testing model width (1x vs. 2x,
+`--width-mult`) -- the actual untested combination, since the earlier
+`stage6-capacity-sweep` ablation tested capacity alone on the small
+original data and found no benefit there.
+
+**Width=1.0 (diversity alone, no extra capacity): a clean, well-powered
+negative.** Held-out fold-1 changed-patches: **+0.10%**, statistically
+indistinguishable from the established baseline (+0.01%) and well inside
+the existing 5-fold noise band. No Procgen-style curriculum collapse this
+time (pretrain epochs were deliberately sized to hold total
+samples-seen roughly constant relative to the proven recipe, learning
+directly from that earlier mistake) -- a trustworthy null result, not a
+confounded one. ~5.3x more pretraining data spanning genuinely different
+mechanics, by itself, does not move the held-out-games number.
+
+**Width=2.0 (diversity + capacity together): inconsistent, and where it
+moved, it moved the wrong way.** Fold 1: **-88.29%** -- a dramatic
+regression, every one of the 5 held-out games individually worse, paired
+with the *best* trained-games result of the whole day (+69.11%) --
+textbook capacity-enabled overfitting, not generalization. Validated on
+fold 2 before treating fold 1 as conclusive (this project's own standing
+lesson about not trusting one fold): fold 2 came back **-0.03%**, near
+parity with fold 2's own baseline (+0.11%) and the *weakest* trained-fit
+of the three runs (+5.26%) -- fold 1's collapse did not replicate. Both
+folds agree on the answer that actually matters, though: neither shows
+capacity turning this diverse data into better held-out generalization,
+and the inconsistency between folds (severe regression vs. near-neutral)
+is itself a real finding -- capacity scaling on top of this data regime
+is unpredictable, not a reliable lever, with a real downside risk and no
+observed upside.
+
+**Working read:** the reasoning behind this hypothesis was sound and
+targeted the right thing (capacity and data need to scale together;
+today's other diversity attempts genuinely were "light" pretraining at
+unchanged capacity) -- but at the data scale actually achievable on this
+project's hardware (~358k transitions, nowhere near real foundation-model
+scale), adding capacity seems to widen the model's ability to fit its
+*whole* training manifold (including the ARC-finetune games) more
+precisely, which sometimes bleeds into worse generalization rather than
+better -- the classic capacity-without-proportionally-more-data risk,
+not evidence the underlying idea is wrong at a truly large scale, just
+evidence it doesn't close the gap at the scale this project can actually
+reach. **This is the 11th independent intervention against the
+held-out-games gap today, and the 10th failure** -- test-time adaptation
+remains the only lever that showed any real, positive, dialable signal.
+Full roster reasoning, per-fold tables, and methodology in
+`experiments/stage6_scaled_world_model.md` on branch
+`stage6-scaled-world-model` (not merged to master).
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
