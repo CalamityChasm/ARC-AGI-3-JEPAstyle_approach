@@ -283,8 +283,78 @@ either).
 
 ### Fold 1, width=2.0 (diversity + capacity together, the main event)
 
+Same recipe as width=1.0 above, `--width-mult 2.0` (128-channel encoder +
+128-channel MoE expert hidden width, fresh-initialized -- a width-mult
+run always skips the `--encoder` warm-start, confirmed in the log:
+`width_mult=2.0 != 1.0: skipping warm-start ... (state dict shape
+wouldn't match a 128-channel encoder)`). Ran to completion cleanly
+(~80 minutes wall-clock, directly confirmed via a real blocking process-
+exit check, not assumed -- no crash, all 60 finetune epochs completed,
+`tag=final` checkpoint saved to `checkpoints_expanded_fold1_w2/`).
+
+**Held-out-games result (fold 1, same 2,400 held-out transitions as the
+width=1.0 run above):**
+
+| game | pred_changed_mse | identity_changed_mse | improvement |
+|---|---|---|---|
+| r11l | 0.000759 | 0.000756 | -0.37% |
+| bp35 | 0.031102 | 0.031117 | +0.05% |
+| m0r0 | 0.005745 | 0.005744 | -0.03% |
+| tr87 | 0.001992 | 0.001989 | -0.14% |
+| ka59 | 0.007590 | 0.007589 | -0.02% |
+| **overall** | **0.010679** | **0.010681** | **+0.02%** |
+
+**+0.02% overall -- essentially exact parity, no meaningful improvement
+but also, critically, no regression.** Every one of the 5 held-out games
+individually sits within +/-0.4% of identity, none showing anything
+resembling a large swing in either direction.
+
+**This is a materially different, and genuinely important, result
+compared to `stage6-scaled-world-model`'s own fold-1 width=2.0 finding
+(-88.29%, a severe capacity-enabled-overfitting collapse where every
+held-out game got dramatically worse, especially `m0r0` at ~11x its own
+identity baseline).** Same fold, same held-out games, same width
+multiplier and architecture -- the only thing that changed is the
+pretrain corpus: ~6x more transitions (2.15M vs. 358k) spanning 26
+OpenSpiel games instead of 6. **The catastrophic instability is gone.**
+
+**Trained-games sanity check**: pred=0.000284, identity=0.000301,
+**+5.75%** -- clearly positive (the model learned real dynamics) but
+notably *weaker* than this same fold's width=1.0 result (+18.34%) and
+far weaker than `stage6-scaled-world-model`'s own width=2.0 result on the
+smaller corpus (+69.11%). This is the flip side of the stability finding:
+width=2.0 here isn't achieving the dramatic training-distribution overfit
+that drove the old experiment's regression, consistent with -- not
+contradicting -- the "more data limits capacity's ability to memorize the
+training set" interpretation. A model that can't overfit as hard also
+doesn't show the corresponding held-out collapse.
+
+**Read together, fold 1's two results tell a coherent, specific story:**
+more data didn't make width=2.0 *better* than width=1.0 on held-out
+games (+0.02% vs. -1.22% -- both are non-improvements, arguably +0.02%
+looks marginally less bad, but neither is a real positive effect on a
+metric with this much game-to-game noise) -- but it did make width=2.0
+demonstrably *safer*, removing the severe regression risk the smaller-
+corpus experiment found. That's a real, useful finding for anyone
+considering capacity scaling in this project going forward, even though
+it doesn't answer this experiment's headline question (does the gap
+close?) with a "yes."
+
+### Fold 2, width=2.0 (second-fold validation, matching this project's standing multi-fold discipline)
+
+Given `stage6-scaled-world-model`'s own fold-1-vs-fold-2 divergence was
+the whole reason a second fold mattered there (fold 2 showed near-neutral
+results where fold 1 showed catastrophic collapse), and given fold 1's
+result here is the *opposite* of that prior experiment's fold-1 finding,
+a second fold is the direct way to check whether *this* fold-1 result
+(stability, no regression) is itself representative or another
+fold-specific artifact -- exactly the discipline `stage6-multifold-cv`
+established. Same recipe, fold 2's held-out games (`ar25, cd82, cn04,
+dc22, ft09`, matching `stage6-multifold-cv`'s partition), `--width-mult
+2.0`.
+
 (TBD -- launching next.)
 
 ## Overall verdict
 
-(TBD -- pending width=2.0 result(s).)
+(TBD -- pending fold 2 result.)
