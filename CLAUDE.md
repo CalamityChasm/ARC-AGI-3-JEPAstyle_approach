@@ -1997,6 +1997,52 @@ planting subtly incorrect training signal rather than genuine
 augmentation -- correctly judged not worth the risk without a way to
 verify it first.
 
+**Novelty-aware beta override (`stage6-novelty-aware-beta`): the most
+encouraging agent-level result of the whole investigation, though still
+n=8.** Every fix above targeted the world model itself; this instead
+changes the *agent's* strategy to work around a known weakness rather
+than fix it. The agent already has a direct, deterministic signal for
+"this game is genuinely unfamiliar" -- `self.game_id not in game_vocab`,
+the same lookup already used for the fallback embedding index -- which is
+more reliable than the existing Bayesian confidence-entropy `beta`
+signal, since that confidence is built from *observed* per-expert error
+and could look artificially "confident" on a collapsed, unfamiliar-game
+prediction (consistently predicting no-change looks like agreement even
+when it's not informative). Added `NOVELTY_BETA_CAP`
+(`hypothesis_agent.py`): when the current game is outside the trained
+vocabulary, `beta = min(beta, NOVELTY_BETA_CAP)`, biasing the Q-blend
+toward InfoGain (the signal already shown not to collapse on held-out
+games) instead of the value head. Familiar-game behavior is untouched --
+the existing adaptive blend was already validated as the right design
+there (Stage 5 follow-up 2).
+
+**Cap value (0.15) chosen from real evidence**: replaying held-out-game
+episodes through the confidence-tracking logic showed beta sitting in a
+narrow 0.12-0.40 band there (mean 0.245, 99.7% of mass above 0.15) --
+0.15 gives a real, consistent nudge toward InfoGain rather than a
+near-no-op.
+
+**Agent-level backtest (n=8, `MAX_ACTIONS=300`, the 5 held-out games):
+cap ON leads on every metric.** Mean score 0.0603 vs. 0.0113, mean
+levels 0.50 vs. 0.38, total levels 4 vs. 3 (`r11l` solved 4/8 vs. 3/8) --
+unlike test-time adaptation's more mixed agent-level picture, this one
+favors the change across the board, including the outlier-resistant
+levels-completed comparison. A trained-games sanity check initially
+looked alarming (mean score 0.0047 vs. 0.4762) but was traced directly to
+one game's identical fast-solve path landing 3/5 times under the old
+default vs. 0/5 under the cap -- unseeded-RNG variance, not a real
+effect, confirmed by the cap being structurally inert on all 6 trained
+games checked (each present in the training vocabulary, so the override
+never fires there).
+
+**Honest caveat, same standard as every other result today:** n=8 on a
+sparse binary metric is real, encouraging evidence -- not proof. Worth a
+larger backtest before treating this as validated, but it's the first
+result all day that's positive on every agent-level metric at once,
+rather than a representation-level win that didn't clearly show up in
+play. Full write-up in `experiments/stage6_novelty_aware_beta.md` on
+branch `stage6-novelty-aware-beta` (not merged to master).
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
