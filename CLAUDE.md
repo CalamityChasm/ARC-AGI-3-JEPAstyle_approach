@@ -2234,6 +2234,29 @@ also drives a real `main.py --agent hypothesis` run against a local
 mock gateway if one can be improvised) remains the most direct way to
 actually resolve this, not further hypothesis generation.
 
+**Update (2026-08-02): the novelty-aware beta override's first real
+submission scored `0.09`** -- `SubmissionStatus.COMPLETE`, ref
+`55195099`, production checkpoint (the same lineage behind the `0.23`/
+`0.06` pair, not a new checkpoint) with `NOVELTY_BETA_CAP=0.15` added and
+`MAX_ACTIONS=300` deliberately left at default -- the one variable
+isolated, matching every other submission's discipline this session.
+This is the sixth real submission at this exact `MAX_ACTIONS=300`
+config, joining production's own `0.23`/`0.06`, search-harvest's
+`0.16`/`0.08`, and object-identity's `0.00` -- `0.09` sits squarely
+inside that established `0.00`-`0.23` noise band, close to
+search-harvest's own `0.08`. **Same standard as every prior first
+submission: this is n=1 for this specific change, and cannot be told
+apart from ordinary run-to-run variance on a single data point** --
+it neither confirms nor refutes the local backtest's own strong signal
+(n=8, favored the change on every metric: mean score, mean levels, total
+levels, and the outlier-resistant games-completed comparison). A larger
+local backtest (20-30 repeats) was already in progress at the time of
+this submission, independent of it -- that result will sharpen the local
+evidence regardless of what one real score does or doesn't show. Telling
+whether this specific change moves real scores would need more
+same-config submissions, which at 1/day is a multi-day undertaking, not
+something this single data point can resolve on its own.
+
 Everything needed to reproduce the submission from scratch on a new
 machine is in `kaggle_submission/` (checked into git) plus the steps
 below. This section is the reproduction guide; the dated blow-by-blow
