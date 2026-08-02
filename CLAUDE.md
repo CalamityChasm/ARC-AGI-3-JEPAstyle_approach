@@ -1876,6 +1876,60 @@ the same reasons found again today. The from-scratch, diverse-synthetic-
 pretraining approach this project is already running remains the more
 defensible path; no shortcut via an existing checkpoint is available.
 
+**MinAtar retry with per-sub-game ids and Procgen's own scale-up attempts
+weren't the last word on data diversity -- a genuine roster expansion via
+OpenSpiel, still negative (`stage6-expanded-roster`).** OpenSpiel actually
+has **123 registered games**, not the 6 used in `stage6-scaled-world-model`
+-- programmatically categorized all 123 by dynamics/information type
+(not hand-inspected) before deciding anything: 42 are `SEQUENTIAL` +
+`PERFECT_INFORMATION` (the eligible pool, matching how ARC-3's own turns
+work), 20 are simultaneous-move (excluded -- no single well-defined
+"current player's action" to log), 46 are imperfect-information (excluded
+-- can't render an honest fully-observable grid for a state a player
+doesn't fully see), 4 are mean-field/population-level (excluded, wrong
+paradigm entirely), 11 fail to load without extra wrapper params
+(excluded as meta-games, not directly playable). **Went from 6 to 26
+OpenSpiel games** -- a genuine "dozens more" expansion, not a token
+increase -- for **~2.14M total pretrain transitions** (~6x the prior
+attempt's 358k), sized via directly-measured generation throughput
+(4.59M transitions in ~7.2 minutes standalone) rather than a guess, with
+pretrain epochs deliberately kept to 1 to hold total samples-seen in the
+established curriculum-balance band (learning directly from the Procgen
+imbalance mistake, not re-discovering it).
+
+**Real infrastructure lesson found along the way**: Windows' `DataLoader`
+worker-spawn (`num_workers>0`) pickles the *entire* dataset object to
+each spawned subprocess -- fine at the ~55k-transition scale this
+project's `num_workers=4` default was tuned for, but catastrophically
+slow past roughly the hundreds-of-thousands range (a worker burned
+1,200-1,900+ CPU-seconds without completing one batch on the 2.14M
+corpus). Fixed via the existing `JEPA_NUM_WORKERS=0` override (originally
+added for an unrelated memory gotcha) -- worth defaulting to for any
+future corpus at this scale, not reaching for only after something else
+fails first.
+
+**Fold-1, width=1.0 result (real, clean run, ~78 min wall-clock):
+still negative, and if anything very slightly worse than the smaller
+attempt.** Held-out changed-patches: **-1.22% overall, every one of the
+5 held-out games individually negative** (not a mixed picture -- `r11l`'s
+-13.04% is the small-absolute-denominator artifact this doc already
+warns about, checked directly rather than assumed). This sits at or
+slightly below the established 5-fold no-diversity baseline band
+(-0.30% +/- 0.66%), and is *worse* than the prior 6-game/358k attempt's
++0.10% -- **~4.3x more OpenSpiel games and ~6x more total pretrain
+transitions did not move this number in a positive direction.**
+Trained-games sanity check is healthy (+18.34%), confirming real,
+non-degenerate learning happened from the much larger corpus -- it
+simply doesn't transfer to genuinely unseen ARC games, the same pattern
+every one of the 10 prior interventions already established. **This is
+the 11th consistent negative result against the held-out-games gap.**
+A width=2.0 retest on this same expanded corpus (the direct test of
+whether more *proportional* capacity fares differently on genuinely more
+data than `stage6-scaled-world-model`'s smaller corpus did) was in
+progress as of this entry; see that branch's own write-up
+(`experiments/stage6_expanded_roster.md`) for the final number once
+available.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
