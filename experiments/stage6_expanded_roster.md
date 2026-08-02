@@ -353,8 +353,154 @@ established. Same recipe, fold 2's held-out games (`ar25, cd82, cn04,
 dc22, ft09`, matching `stage6-multifold-cv`'s partition), `--width-mult
 2.0`.
 
-(TBD -- launching next.)
+Ran to completion cleanly (~85 minutes wall-clock, confirmed via a real
+blocking process-exit check -- all 60 finetune epochs completed, no
+crash, `tag=final` checkpoint saved to `checkpoints_expanded_fold2_w2/`).
+
+**Held-out-games result (fold 2, 2,400 held-out transitions across
+`ar25, cd82, cn04, dc22, ft09`):**
+
+| game | pred_changed_mse | identity_changed_mse | improvement |
+|---|---|---|---|
+| ar25 | 0.101165 | 0.101080 | -0.08% |
+| cd82 | 0.178417 | 0.178324 | -0.05% |
+| cn04 | 0.243168 | 0.243101 | -0.03% |
+| dc22 | 0.000067 | 0.000062 | -6.68% |
+| ft09 | 0.000171 | 0.000162 | -5.56% |
+| **overall** | **0.104909** | **0.104857** | **-0.05%** |
+
+**-0.05% overall -- essentially exact parity again, the fold-1 stability
+result replicates.** `dc22`'s -6.68% and `ft09`'s -5.56% look like the
+largest swings in the table, but both are the small-absolute-denominator
+artifact CLAUDE.md explicitly warns about (checked directly, per this
+project's standing practice): identity baselines of 0.000062 and 0.000162
+are tiny, and the absolute gaps (0.000005, 0.000009) are correspondingly
+tiny -- not real large-magnitude effects. `ar25`/`cd82`/`cn04` (the three
+games with substantial identity baselines, 0.10-0.24) all sit within
+0.1% of parity, the honest core of this result.
+
+**Trained-games sanity check**: pred=0.000347, identity=0.000346,
+**-0.30%** -- unlike fold 1's positive (if modest, relative to width=1.0)
+trained-games fit, fold 2's is *slightly negative*. This mirrors
+`stage6-scaled-world-model`'s own fold-2 width=2.0 finding almost exactly
+(that experiment's fold 2 trained-games result, +5.26%, was likewise the
+weakest of its three runs) -- fold 2 simply does not show width=2.0
+fitting the training distribution hard in either the old or the new
+corpus, for reasons this experiment doesn't isolate further (plausibly
+just which 20 games happen to be in a given fold's training set, not
+something specific to the expanded roster).
+
+**Both folds agree, without exception, on the two things that actually
+answer this experiment's questions:**
+
+| run | held-out improvement | trained-games improvement |
+|---|---|---|
+| fold 1, width=1.0 (diversity alone) | -1.22% | +18.34% |
+| fold 1, width=2.0 (diversity + capacity) | +0.02% | +5.75% |
+| fold 2, width=2.0 (diversity + capacity) | -0.05% | -0.30% |
+| *(reference)* `stage6-scaled-world-model` fold 1, width=2.0, 358k corpus | **-88.29%** | +69.11% |
+| *(reference)* `stage6-scaled-world-model` fold 2, width=2.0, 358k corpus | -0.03% | +5.26% |
+| *(reference)* established 5-fold no-diversity baseline mean +/- std | -0.30% +/- 0.66% | -- |
+
+1. **Neither fold shows width=2.0 closing the held-out-games gap.** Both
+   land at essentially exact parity with identity (+0.02%, -0.05%),
+   squarely inside the pre-existing 5-fold no-diversity baseline noise
+   band (-0.30% +/- 0.66%). The core hypothesis this experiment set out
+   to test -- that genuinely more OpenSpiel diversity, paired with
+   capacity this time properly proportioned to that data, would let the
+   model generalize zero-shot to a novel ARC-3 game -- **is not
+   supported by either fold.**
+2. **Both folds confirm the severe fold-1 instability from the smaller-
+   corpus experiment is gone.** `stage6-scaled-world-model`'s fold-1
+   width=2.0 run collapsed to -88.29% (every held-out game substantially
+   worse, `m0r0` ~11x its own identity baseline) while fitting the
+   training distribution unusually well (+69.11%) -- the textbook shape
+   of capacity-enabled overfitting. Neither fold here shows anything
+   resembling that: held-out results are flat at parity in both, and
+   trained-games fit is *weaker*, not dramatically stronger, than the
+   corresponding width=1.0 result (+5.75% and -0.30%, vs. +18.34% for
+   width=1.0 on the same fold-1 data). This is a real, useful, if
+   secondary finding: **the risk that motivated caution about capacity
+   scaling in the prior experiment appears to have been a genuine data-
+   scarcity artifact, not an inherent property of doubling this model's
+   width** -- at ~6x more and more diverse pretraining data, width=2.0 is
+   safe to use (no regression risk observed in 2/2 folds), just still not
+   beneficial for the held-out-games problem specifically.
 
 ## Overall verdict
 
-(TBD -- pending fold 2 result.)
+**Genuinely expanding the OpenSpiel roster from 6 to 26 games (spanning
+cell-index placement, destination-click movement, and direct-action-id
+mechanics across board games, chess variants, and grid/arcade puzzles),
+combined with a properly curriculum-balanced ~2.15M-transition pretrain
+corpus (~6x the prior attempt's 358k) and capacity re-tested at both
+1.0x and 2.0x width across two folds, does not close the held-out-ARC-
+games generalization gap.** Every held-out number obtained this session
+(-1.22%, +0.02%, -0.05%) sits at or inside the pre-existing 5-fold
+no-diversity baseline band. This is now the **12th, 13th, and 14th**
+independent interventions (per CLAUDE.md's running tally, which stood at
+11 going into this session -- 7 conditioning/architecture fixes, 3 prior
+data-diversity attempts, 1 capacity+modest-diversity attempt) to fail to
+close this specific gap.
+
+**What is new and worth keeping from this session, despite the negative
+headline result:**
+1. `jepa/data/openspiel_data.py`'s 3-tier generic handler design (cell-
+   index, destination-click, direct-id) and the 20 newly-added games are
+   real, reusable infrastructure for any future pretraining-diversity
+   experiment -- adding the *next* 10-20 OpenSpiel games (of the
+   remaining ~16 individually excluded, or others not yet attempted) is
+   now mostly config work, not new engineering, the same way this
+   session's 20 games were mostly config work on top of the original
+   6's design.
+2. **The fold-1 capacity-instability finding from `stage6-scaled-world-
+   model` does not replicate at this data scale** -- a genuine, actionable
+   result for anyone considering capacity scaling in this project later:
+   width=2.0 is not a free regression risk once the pretraining corpus is
+   large and diverse enough, even though it also isn't a win here.
+3. **A general Windows/PyTorch infrastructure lesson** (documented in
+   Part 3 above, worth folding into CLAUDE.md's gotchas list): past
+   roughly the hundreds-of-thousands-of-transitions range, `DataLoader`
+   `num_workers>0` becomes unusable on Windows (subprocess pickling of
+   the full dataset dominates and can run for 20-30+ minutes without
+   completing a single batch) -- `JEPA_NUM_WORKERS=0` is the correct
+   *default* for a corpus this large, not merely a slower fallback. Its
+   own cost must be budgeted for too: single-threaded throughput here was
+   directly measured at ~1,090 samples/s, meaning a single pretrain epoch
+   over ~1.9M samples takes ~29 minutes with no intermediate log output --
+   a multi-minute silent gap during this phase is expected behavior, not
+   evidence of a hang (this was directly, empirically confirmed after two
+   premature "stuck" diagnoses earlier in this session turned out to be
+   false positives).
+
+**Consistent with this project's own repeated pattern** (see CLAUDE.md's
+running tally and its own stated lesson: "when several different fixes
+all land on the same negative outcome, that consistency is evidence of a
+genuine limit in this project's current data regime, not an unturned
+dial"), this session's result reinforces rather than overturns that
+conclusion. Genuinely broader OpenSpiel diversity -- a real, order-of-
+magnitude step up in both game count and transition volume from the only
+prior diversity attempt at this scale -- still didn't move the held-out
+number in a positive direction. **The most likely remaining candidate
+mechanisms are the ones already flagged and partially explored before
+this session**: test-time adaptation (still the only lever in this
+project's entire held-out-games investigation to show any real, positive,
+dialable signal, see CLAUDE.md's Stage 6 addendum), or a fundamentally
+different data source shaped more like ARC-3's own puzzle-logic character
+rather than borrowed game engines (board games, arcade games, and now a
+much larger and more genre-diverse OpenSpiel roster have all, at this
+point, been tried and found insufficient on their own).
+
+**What remains genuinely untested, for a future session:** (a) whether
+combining this session's expanded-roster corpus with test-time
+adaptation (the one mechanism with real positive signal) does better than
+either alone -- these two levers have never been tried together; (b)
+width=4.0 or higher at this same data scale, now that 2.0x has been shown
+safe rather than merely untested -- the original capacity-instability
+concern that argued against pushing higher no longer applies at this data
+scale; (c) whether the individual 20 new games contribute unevenly (a
+per-source ablation, dropping OpenSpiel entirely vs. keeping only the
+chess-family games vs. only the placement games, etc.) -- this session
+tested the full 26-game roster as one bundle, not which subset (if any)
+matters most, mirroring the same open question `stage6-scaled-world-
+model` left about its own 6-game+arcade bundle.
