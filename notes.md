@@ -1624,7 +1624,116 @@ test push with a probe planted outside the normally-gated code path —
 and use *that* to actually observe what's happening before spending
 another real attempt.
 
-## 10. Current status (see `CLAUDE.md` for the live version of this section)
+## 10. Stage 6 — held-out-game generalization: a real, robust, still-open gap
+
+A methodology audit, prompted by a checkpoint that looked excellent
+locally but scored poorly on a real submission, turned up something that
+had been true of every single evaluation run since the beginning of the
+project: every held-out split used to measure "does the predictor beat
+identity" was a random split over individual moments of play, never a
+split over which *games* were used for training versus testing. In other
+words, every number so far measured how well the model generalized to
+unseen moments from games it had already trained on — never how well it
+generalized to a game it had never seen at all, which is exactly the
+situation a real, largely-novel hidden competition game presents.
+
+Fixing that measurement gap immediately revealed a real, sizable problem:
+when a handful of local games are withheld entirely from training, the
+predictor's advantage over "predict no change" collapses to essentially
+nothing on those withheld games, even though it clears a healthy margin
+on the games it was trained on. Repeating this with five different splits
+that together cover all twenty-five local games — so that every game gets
+a turn as the withheld one — showed the same collapse every time. This
+was not an unlucky choice of which games to hold out; it is a consistent
+property of the model as currently trained.
+
+What followed was a long, disciplined elimination process, testing one
+hypothesis at a time and insisting on a controlled comparison and
+(wherever practical) more than one held-out split before believing a
+result:
+
+- **Was it the per-game identity signal?** The predictor conditions on
+  which specific game it's looking at, and an unfamiliar game falls back
+  to an arbitrary, never-trained value for that signal. Removing that
+  conditioning entirely did not close the gap. A separate, apparently
+  large improvement this same change seemed to produce on the *familiar*
+  games turned out not to replicate under repeated, differently-seeded
+  runs — a useful reminder mid-investigation that a single run's result,
+  however striking, isn't evidence until it's been reproduced.
+- **Was the visual encoder failing to notice change on unfamiliar
+  content?** No — measured directly, it registers a pixel-level change on
+  withheld games at least as strongly as on familiar ones. The encoder
+  isn't the bottleneck.
+- **Was the predictor refusing to commit to a real prediction, instead
+  just echoing the input unchanged, specifically when it didn't recognize
+  the game?** This turned out to be exactly right, measured directly: the
+  predictor's own contribution collapses to almost nothing on unfamiliar
+  games, even though the encoder is handing it a clear signal that
+  something changed. A direct attempt to penalize this — explicitly
+  discouraging a near-zero prediction wherever real change was known to
+  have happened, plus deliberately hiding the game-identity signal during
+  part of training to simulate the unfamiliar case — did not fix it.
+- **Would a genuinely continuous, learned-from-observation notion of
+  "what game is this" work better than a fixed per-game lookup?** Three
+  different ways of building one were tried — reusing the project's own
+  recurrent memory component, deriving a signal from the current frame's
+  own content, and deriving one from a handful of other moments earlier
+  in the same episode. None closed the gap.
+- **Was it simply that the model had never seen enough different kinds of
+  games to have learned anything general in the first place?** This is
+  the one hypothesis that had real precedent — a much earlier stage of
+  this project found that adding a second, structurally different kind of
+  practice environment (beyond the original navigation-themed one)
+  produced a real, measured improvement that no amount of tuning on the
+  original data alone had. Five increasingly serious attempts followed
+  this thread: two different arcade-style environment families (one
+  reflex/physics-heavy, later corrected for a real but separate id-mixing
+  bug that turned out not to be the actual cause of its failure), one
+  attempt using procedurally generated puzzle/maze-style environments
+  (whose first try was confounded by an unrelated training-schedule
+  mistake, and whose properly corrected retry still failed), and finally
+  a serious, well-reasoned attempt at real scale: dozens of distinct
+  board and strategy games via an existing games library, generating on
+  the order of two million practice transitions — roughly six times the
+  next-largest attempt — paired with a deliberately wider version of the
+  model to give the extra data somewhere to go. None of these closed the
+  gap either. The wider model paired with the smaller of the two large
+  practice corpora was actually *less* stable than the standard-sized
+  model, though that instability itself did not reappear once paired with
+  the much larger corpus — more data seems to remove some of the risk of
+  adding capacity without also removing the underlying problem.
+- **Could an existing, already-trained model be adapted instead of
+  building one from scratch?** A real search turned up nothing usable:
+  every genuinely large, diverse model found was either not actually
+  available to download, trained on real-world video with far too large a
+  domain gap from this project's flat colored grids, or required far more
+  memory than either the project's own machine or a free cloud GPU
+  offers. Every model that was actually a close architectural fit turned
+  out to be a specialist trained on a single game, which does not solve
+  the underlying cross-game generalization problem at all.
+
+By the end of this line of investigation, thirteen different, carefully
+reasoned interventions had been tried against the same gap. Twelve
+failed. The pattern of failure — many genuinely different ideas, each
+implemented properly and tested fairly, all landing on the same negative
+result — is itself informative: it points at a real limit in how much
+the model can learn from the amount and kind of data available on this
+project's hardware, not at one specific still-undiscovered bug.
+
+The one exception, and the most promising open thread going into whatever
+comes next, is a mechanism fundamentally different from everything else
+tried: rather than asking the frozen model to already know what to do on
+a new game, let it take a handful of real training steps using that
+game's own observed data as it's actually encountered during play. Tested
+properly, this produced a small but real and consistently repeatable
+improvement — more so the more it was allowed to adapt, at the direct
+cost of a small, correspondingly larger amount of forgetting on the games
+it already knew. The size of the effect is modest, well short of what
+would be needed on its own, but it is the only mechanism out of everything
+tried that demonstrably moves the number in the right direction rather
+than leaving it flat or making it worse.
+
+## 11. Current status (see `CLAUDE.md` for the live version of this section)
 
 - Stage 0: done.
 - Stage 1: milestone passed (+29.2% changed-patches over identity,

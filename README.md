@@ -128,10 +128,16 @@ is in `CLAUDE.md`'s "Kaggle competition submission" section.
 
 ## Branches
 
-- `master` — stable; everything through the Stage 5 milestone and the
-  first real, scored Kaggle submission lives here.
-- `stage6-score-optimization` — in-progress experiment (see
-  `experiments/`), not yet merged; held pending validation against a
-  real submission before merging to `master`.
+- `master` — stable; everything through the Stage 5 milestone, the real
+  scored Kaggle submissions, and all Stage 6 documentation/write-ups
+  lives here. Experimental checkpoints/code from Stage 6 are not merged
+  here — only the honest record of what was tried and found.
+- `stage6-*` — a large number of in-progress or completed Stage 6
+  experiment branches (held-out-game generalization, diverse pretraining
+  sources, capacity scaling, test-time adaptation, etc.), none merged to
+  `master`. See `CLAUDE.md`'s "Stage 6 addendum" section for the full,
+  current list and status of each, and `experiments/` for their
+  individual write-ups — there are too many active branches at this point
+  to keep an accurate list duplicated here.
 - `stage1-jepa` — superseded; Stage 1's work was folded into `master`
   once its milestone passed. Kept around for history, not active.
