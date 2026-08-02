@@ -304,7 +304,63 @@ and raw eval output saved to `logs/stage6_scaled_world_model_eval.json`
 (label `scaled-w1-fold1`) and `checkpoints_scaled_fold1_w1/` (gitignored,
 main checkout only, not in this worktree's git history).
 
-### Width 2.0 result
+### Width 2.0 result: capacity made held-out generalization measurably WORSE
+
+Ran to completion cleanly (confirmed via a real blocking process-exit
+check, not assumed) -- no crash, all 60 finetune epochs completed. The
+epoch-by-epoch log itself looks *healthier* than width=1.0's, not worse:
+final epoch (60) val_pred_mse=0.00067 vs val_identity_mse=0.00105 on the
+standard trained-corpus validation split, both decreasing together in a
+normal, non-collapsed pattern throughout. Nothing in the training log
+alone would flag a problem -- this is exactly why Phase 4's actual
+held-out-games eval matters and the trained-validation-split number
+doesn't answer the real question.
+
+**Held-out-games result (fold 1, same 2,400 held-out transitions as the
+width=1.0 run):**
+
+| game | pred_changed_mse | identity_changed_mse | improvement |
+|---|---|---|---|
+| r11l | 0.010058 | 0.010029 | -0.28% |
+| bp35 | 0.045490 | 0.045325 | -0.36% |
+| m0r0 | 0.086388 | 0.007785 | -1009.67% |
+| tr87 | 0.001581 | 0.001431 | -10.49% |
+| ka59 | 0.002266 | 0.002198 | -3.08% |
+| **overall** | **0.030298** | **0.016091** | **-88.29%** |
+
+**-88.29% overall -- a real, substantial regression, not a small-
+baseline percentage artifact.** (CLAUDE.md flags this exact failure mode
+elsewhere -- a tiny identity-MSE denominator inflating an otherwise-small
+absolute gap into a huge percentage -- so it was checked directly here:
+m0r0's absolute pred error, 0.086388, is genuinely ~11x its own identity
+baseline, 0.007785, and is also the single largest absolute error of any
+game in either width's held-out table. This is a real degradation in
+kind, not a measurement artifact.) Every one of the 5 held-out games gets
+worse, not just the pooled number -- r11l and bp35 are close to parity
+(like width=1.0's), but tr87, ka59, and especially m0r0 are substantially
+worse in ways width=1.0 never was.
+
+**Trained-games sanity check**: pred=0.000756, identity=0.002448,
+**+69.11%** -- clearly *better* than width=1.0's +13.33%. This is the
+crux of the finding: **more capacity, on this larger and more diverse
+pretraining corpus, produced a model that fits the training distribution
+(both the ARC games it trained on and the diverse synthetic sources)
+substantially better, while generalizing to genuinely unseen ARC games
+substantially worse.** That is the textbook shape of a capacity-enabled
+overfitting/memorization tradeoff, not a neutral "no effect" result --
+and it is the opposite direction from what the "capacity + diversity"
+hypothesis this experiment was built to test predicted. Width=1.0's own
+identical-data result (+0.10% held-out, +13.33% trained) sits between
+the established baseline and width=2.0 on both axes, consistent with a
+real, monotonic-in-capacity trend rather than noise.
+
+Given how large and directionally consistent (every held-out game worse,
+not a mixed bag) this swing is, and given this project's own standing
+lesson about not trusting a single fold's result (see CLAUDE.md's whole
+multi-fold cross-validation section), a second fold was run before
+treating this as conclusive -- see below.
+
+### Fold 2 validation
 
 (training in progress -- see next update)
 
