@@ -1391,6 +1391,83 @@ attributable to any one mechanism. Worth remembering as a general
 debugging strategy: when two things being compared diverge on a specific
 subset, trace *that subset specifically*, not the full population.
 
+## Stage 6 addendum -- held-out-game generalization (this branch's own history)
+
+**Note on this section:** this branch (`stage6-scaled-world-model`,
+branched from `stage6-multifold-cv`) does not carry the full same-day
+"Stage 6 addendum" narrative (MinAtar/Procgen/test-time-adaptation/Kaggle-
+submission-variance history) that exists on several *other* divergent
+`stage6-*` branches -- those branches each appended their own findings to
+their own copy of this file without merging back into this lineage. This
+section documents only what actually happened on this branch's own
+history: `stage6-multifold-cv`'s 5-fold cross-validation (baseline
+held-out-games changed-patches improvement: -0.30% +/- 0.66% mean/std
+across 5 folds, range -1.46% to +0.11%, see
+`experiments/stage6_multifold_generalization.md`), followed by this
+branch's own scaled-world-model experiment below. A future session
+merging or reconciling the various `stage6-*` branches should merge this
+section with the fuller addendum that exists elsewhere rather than
+duplicate it.
+
+### Scaled world-model pretraining (capacity + genuinely diverse data): negative result, one fold shows real regression risk
+
+Tested the hypothesis that a meaningfully bigger model trained on a
+genuinely large, diverse corpus (dozens of different game mechanics, not
+just grid-navigation-themed ones) would generalize better to held-out
+ARC-3 games than anything tried before -- the biggest single build this
+project has attempted. Built two new synthetic pretraining sources,
+`jepa/data/openspiel_data.py` (6 OpenSpiel board games -- connect_four,
+tic_tac_toe, othello, checkers, pig, mancala -- spanning gravity
+placement, flip-capture, jump-capture, push-your-luck chance, and
+seed-sowing mechanics) and `jepa/data/arcade_data.py` (hand-rolled Snake
+and Pong, real-time-feel physics). Combined with the existing MiniGrid
+source (Sokoban/MinAtar/Procgen deliberately excluded -- see
+`experiments/stage6_scaled_world_model.md` for why), this gave a
+~358k-transition pretrain corpus, ~5.3x bigger than any single prior
+source, spanning 10 synthetic sources total. Ported `--width-mult`
+capacity scaling into `jepa/train_moe_predictor.py` and tested 1.0x and
+2.0x on fold 1, plus 2.0x on fold 2 (fold definitions from
+`stage6-multifold-cv`).
+
+**Result: no fold shows the hypothesized improvement, and capacity
+carries a real, if inconsistent, regression risk.**
+
+| run | held-out improvement | trained-games improvement |
+|---|---|---|
+| fold 1, width=1.0 (diverse data) | +0.10% | +13.33% |
+| fold 1, width=2.0 (diverse data) | **-88.29%** | +69.11% |
+| fold 2, width=2.0 (diverse data) | -0.03% | +5.26% |
+| *(reference) fold 1 baseline, no diverse data* | +0.01% | -- |
+| *(reference) fold 2 baseline, no diverse data* | +0.11% | -- |
+
+Fold 1's width=2.0 run showed a severe, directionally-consistent (every
+one of the 5 held-out games worse) regression alongside a much better
+trained-games fit -- the textbook shape of capacity-enabled overfitting.
+Fold 2's width=2.0 run did not replicate this: held-out stayed near
+baseline parity, and trained-games fit was actually the *weakest* of the
+three runs. Two folds aren't enough to explain why they diverge this
+much (most of fold 1's regression came from one game, `m0r0`, alone), but
+both folds agree on the thing that answers the actual question: neither
+shows capacity turning this project's diverse pretraining data into
+better held-out generalization. Did not run width=4.0 or a third fold --
+documented as a deliberate judgment call (diminishing information value
+given the already-clear qualitative verdict and the original
+`stage6-capacity-sweep` branch's own flat-to-worse 1x-4x result on a
+completely different data regime) in `experiments/stage6_scaled_world_model.md`,
+which has the full methodology, per-game tables, and reasoning.
+
+**This is now at least the 11th and 12th independent intervention (across
+this branch and the wider same-day investigation on other `stage6-*`
+branches) to fail to close the held-out-games gap.** The pattern -- many
+different, well-targeted, honestly-executed interventions all landing on
+the same negative outcome -- continues to point at a genuine data-regime
+limit rather than an unturned architecture/scale dial. Test-time
+adaptation (documented on `stage6-test-time-adaptation`/
+`stage6-test-time-adaptation-agent`, not this branch) remains the only
+mechanism with any real positive signal across this entire investigation
+-- this experiment's negative result makes that relative standing
+stronger, not weaker.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,

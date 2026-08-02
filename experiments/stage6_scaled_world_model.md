@@ -360,7 +360,153 @@ lesson about not trusting a single fold's result (see CLAUDE.md's whole
 multi-fold cross-validation section), a second fold was run before
 treating this as conclusive -- see below.
 
-### Fold 2 validation
+### Fold 2 validation: the fold-1 collapse did NOT replicate at the same magnitude
 
-(training in progress -- see next update)
+Same recipe, width=2.0, fold 2's held-out games (`ar25,cd82,cn04,dc22,ft09`,
+matching `stage6-multifold-cv`'s partition). Ran to completion cleanly (10
+polling attempts, ~100 minutes, no crash).
+
+**Held-out-games result (fold 2, 2,400+ held-out transitions):**
+
+| game | pred_changed_mse | identity_changed_mse | improvement |
+|---|---|---|---|
+| ar25 | 0.027823 | 0.027802 | -0.08% |
+| cd82 | 0.048249 | 0.048257 | +0.02% |
+| cn04 | 0.119877 | 0.119868 | -0.01% |
+| dc22 | 0.000252 | 0.000246 | -2.68% |
+| ft09 | 0.000117 | 0.000095 | -23.07% |
+| **overall** | **0.039621** | **0.039610** | **-0.03%** |
+
+**-0.03% overall -- essentially parity, and close to fold 2's own
+established baseline (+0.11%). This does NOT replicate fold 1's dramatic
+-88.29% collapse.** `ft09`'s -23.07% looks alarming in isolation but is
+the small-denominator artifact CLAUDE.md warns about (checked directly,
+unlike fold 1's m0r0 case which was real): identity=0.000095 is tiny, and
+the absolute gap (0.000022) is small in its own right, nothing like
+fold 1's m0r0 (an real ~11x absolute blowup). `dc22`'s -2.68% is a real
+but modest absolute effect. No game in fold 2 shows anything close to
+fold 1's magnitude of regression.
+
+**Trained-games sanity check**: pred=0.000181, identity=0.000191,
+**+5.26%** -- notably lower than fold 1's width=2.0 result (+69.11%) and
+even lower than fold 1's width=1.0 result (+13.33%). The pattern that
+looked like a clean "capacity trades held-out generalization for
+trained-fit" story in fold 1 (higher trained-fit, much worse held-out)
+does not hold up as a general rule in fold 2 (lower trained-fit than
+either fold-1 result, *and* held-out roughly unchanged from baseline).
+
+### Phase 4 verdict: no evidence "capacity + diversity together" closes the gap -- and one fold shows a real regression risk
+
+Three real, hard-won training runs now on the table, all sharing the
+identical diverse pretraining corpus and finetune recipe, differing only
+in fold and capacity:
+
+| run | held-out improvement | trained-games improvement |
+|---|---|---|
+| fold 1, width=1.0 (diverse data, baseline capacity) | +0.10% | +13.33% |
+| fold 1, width=2.0 (diverse data, 2x capacity) | **-88.29%** | +69.11% |
+| fold 2, width=2.0 (diverse data, 2x capacity) | -0.03% | +5.26% |
+| *(reference) established baseline, fold 1, no diverse data* | +0.01% | -- |
+| *(reference) established baseline, fold 2, no diverse data* | +0.11% | -- |
+| *(reference) 5-fold baseline mean +/- std, no diverse data* | -0.30% +/- 0.66% | -- |
+
+**The core hypothesis this experiment tested -- that genuinely diverse
+data at meaningfully larger capacity would let the model learn something
+transferable enough to generalize zero-shot to a novel ARC-3 game -- is
+not supported by either fold.** Every single held-out-games number here
+sits at or below the established no-diversity baseline band; none shows
+the kind of positive, meaningful improvement the hypothesis predicted.
+
+**The capacity finding is real but did not replicate cleanly across
+folds, which is itself the honest, reportable result, not a reason to
+discard fold 1's number.** Fold 1 showed a severe, directionally-
+consistent-across-every-held-out-game regression from added capacity (all
+5 games worse, one by a large absolute margin) alongside a substantially
+better trained-games fit -- the textbook shape of capacity-enabled
+overfitting. Fold 2 showed neither effect clearly: held-out stayed near
+parity with baseline, and trained-games fit was actually the *weakest*
+of all three runs. Two folds are not enough to establish *why* fold 1 and
+fold 2 diverge this much (a fold-specific interaction -- e.g. something
+about `m0r0` specifically, which alone accounted for most of fold 1's
+regression, vs. no single fold-2 game showing a comparable blowup -- is
+the most likely explanation, but wasn't isolated further given the
+compute cost of another full training run to chase it). What both folds
+agree on, without exception, is the thing that actually answers this
+experiment's question: **neither fold shows capacity turning this
+project's diverse-pretraining data into better held-out generalization.
+At best (fold 2) capacity is neutral to the held-out number while
+underperforming on trained-games fit relative to the smaller model; at
+worst (fold 1) it actively makes held-out generalization dramatically
+worse while overfitting harder to the training distribution.** That is a
+real regression risk with no compensating upside observed in either fold
+-- reason enough on its own not to pursue this direction for anything
+Kaggle-submission-relevant without a lot more evidence.
+
+**Decision: not running width=4.0, and not running a third fold, at this
+time -- both documented judgment calls, not oversights.** Width=4.0 was
+in scope per this task's own Phase 2 framing ("pick 1-2 width
+multipliers... document why"). Given neither tested width shows a
+positive effect and the *inconsistency* between fold 1 and fold 2's
+width=2.0 results already points to high run-to-run/fold-to-fold
+variance in this specific regime rather than a clean, extendable
+capacity trend, pushing capacity even higher seems more likely to add
+noise than signal -- and the original small-data capacity sweep
+(`stage6-capacity-sweep`) already found flat-to-worse results at 1x-4x
+on a completely different data regime, which is at least weakly
+consistent with "more capacity isn't the lever" holding across data
+regimes too. A third fold (or a width=1.0 companion run on fold 2, for a
+fully matched 2x2) would sharpen confidence in the *magnitude* of the
+fold-to-fold inconsistency, but the qualitative verdict -- no fold shows
+improvement, one fold shows serious regression -- is already
+well-supported by 3 real runs plus the existing 5-fold no-diversity
+baseline, and matches this project's own repeated pattern (see CLAUDE.md's
+running tally: 10 independent interventions today alone, 9 failures, 1
+modest success) of the held-out-games gap being a genuinely hard, likely
+data-fundamentals-bound problem that isolated architecture/scale changes
+don't crack. Spending further compute confirming the same qualitative
+conclusion at diminishing marginal information is a worse use of time
+than stating the result plainly now.
+
+## Overall conclusion
+
+**The "capacity + genuinely diverse data together" hypothesis, tested at
+a real order-of-magnitude step up from every prior attempt (~358k
+pretraining transitions across 10 synthetic sources spanning navigation,
+push-mechanics, 6 turn-based board-game genres, chance/dice, and arcade
+physics, at up to 2x model capacity), does not close the held-out-ARC-
+games generalization gap.** Every held-out number obtained (+0.10%,
+-88.29%, -0.03%) is at or below the pre-existing 5-fold no-diversity
+baseline band (-0.30% +/- 0.66%), and the one place capacity showed any
+directional signal at all was a severe regression in one of two folds
+tested, with no compensating held-out improvement anywhere to offset that
+risk. This is now the 11th and 12th independent interventions (out of an
+accumulating project total, see CLAUDE.md's running tally) to fail to
+close this gap, joining 7 conditioning/architecture fixes and 3 prior
+data-diversity attempts (MinAtar, MinAtar per-game-id, Procgen) -- all
+converging on the same qualitative conclusion this project has reached
+several times now (Stage 1's original action-input bug being the one
+major exception where a "several independent fixes converge on the same
+negative result" pattern *did* turn out to be a fixable bug, not a
+fundamental limit): when many different, well-targeted, honestly-
+executed interventions all land on the same negative outcome, that
+consistency is evidence of a genuine limit in this project's current data
+regime, not an unturned dial. Unlike Stage 1's case, this pattern has now
+been checked hard for a hidden bug (the action-input-style root cause) via
+7+ independent architecture/conditioning audits across this and the
+earlier same-day investigation, and none have found one.
+
+**What remains genuinely untested, for a future session:** (a) capacity
+paired with diverse data at a fold-matched, fully-symmetric 2x2 grid
+(width 1.0 and 2.0, both folds) to isolate whether fold 1's regression
+is fold-specific noise or a real if inconsistent effect; (b) capacity
+below 1.0 (a smaller, more regularized model) on this same diverse
+corpus, which this experiment never tried and which the classic
+overfitting-shape of fold 1's result makes newly interesting; (c) this
+project's own standing next-step list from CLAUDE.md's Stage 6 addendum,
+unchanged by this experiment's result -- test-time adaptation (the one
+mechanism that has shown any real, if modest, positive signal all
+project) remains the most promising lever, and this experiment's
+negative result on "more/different pretraining data + capacity" makes
+that relative standing stronger, not weaker.
+
 
