@@ -131,6 +131,38 @@ class Hypothesis(Agent):
     TTA_STEPS = int(os.getenv("HYPOTHESIS_TTA_STEPS", "8"))
     TTA_LR = float(os.getenv("HYPOTHESIS_TTA_LR", "5e-5"))
 
+    # Novelty-aware beta cap (stage6-novelty-aware-beta). CLAUDE.md's Stage
+    # 6 addendum established that the *gated* MoE prediction -- what the
+    # value head's inputs are built on, and (per the "does InfoGain
+    # collapse too?" follow-up) what the confidence-entropy beta signal
+    # implicitly tracks via *observed* per-expert error -- collapses to
+    # near-identity on any game outside the training vocab, while the raw,
+    # *ungated* per-expert disagreement (InfoGain) does not (held-out/
+    # trained ratio 0.999, scripts/diagnose_infogain_holdout.py). The
+    # entropy-driven beta has no a priori awareness of this: on an
+    # unfamiliar game, a collapsed-to-no-change predictor can look
+    # "reliable" (low, consistent observed error across experts) purely
+    # because the game itself doesn't change much under exploration
+    # either -- false confidence that hands control to the value head
+    # exactly where its own conditioning is least trustworthy.
+    # `self.game_id not in game_vocab` (see `_init_models`, the same
+    # lookup already used for `self.game_idx`) is a much cheaper, more
+    # reliable a priori signal for "this is a genuinely unfamiliar game"
+    # than anything derived from in-episode observed error -- and it's
+    # exactly the condition that will hold for essentially every real
+    # hidden Kaggle game. When true, caps (never raises) beta toward
+    # InfoGain: `beta = min(beta, NOVELTY_BETA_CAP)`, so the confidence
+    # signal can still push beta *lower* than the cap if it wants to, but
+    # can never push it above the cap on a game the model has never
+    # trained on. Deliberately does not touch `FORCE_BETA` ablation runs
+    # (those already pin beta directly for a different purpose) or
+    # familiar-game behavior at all -- Stage 5 follow-up 2 already
+    # validated the full adaptive blend as the right design there.
+    # 1.0 = no effect (pre-this-change behavior). See
+    # experiments/stage6_novelty_aware_beta.md for the sweep/backtest this
+    # value was chosen from.
+    NOVELTY_BETA_CAP = float(os.getenv("HYPOTHESIS_NOVELTY_BETA_CAP", "0.15"))
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         # self._rng must exist unconditionally -- it's what _safe_fallback_action
@@ -138,6 +170,11 @@ class Hypothesis(Agent):
         # even when everything below fails.
         self._rng = random.Random()
         self._init_failed = False
+        # Overwritten in _init_models once game_vocab is actually loaded;
+        # defaults False here so a failed init (routed straight to
+        # _safe_fallback_action, which never reads this) can't leave it
+        # unset.
+        self._is_novel_game = False
 
         try:
             self._init_models()
@@ -182,6 +219,7 @@ class Hypothesis(Agent):
         if vocab_path.exists():
             game_vocab = json.loads(vocab_path.read_text())
         self.game_idx = game_vocab.get(self.game_id, 0)
+        self._is_novel_game = self.game_id not in game_vocab
         num_games = max(len(game_vocab), 1)
 
         self.predictor = MoEPredictor(num_games=num_games, num_experts=8).to(self.device)
@@ -468,6 +506,8 @@ class Hypothesis(Agent):
                 action.reasoning = "hypothesis agent: epsilon-random fallback"
             else:
                 beta = self.FORCE_BETA if self.FORCE_BETA is not None else self.hypotheses.beta()
+                if self.FORCE_BETA is None and self._is_novel_game:
+                    beta = min(beta, self.NOVELTY_BETA_CAP)
                 best_q, best_action_id, best_xy = -1e18, available[0], None
                 trace = []
                 for candidate in available:
