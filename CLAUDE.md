@@ -1923,12 +1923,42 @@ non-degenerate learning happened from the much larger corpus -- it
 simply doesn't transfer to genuinely unseen ARC games, the same pattern
 every one of the 10 prior interventions already established. **This is
 the 11th consistent negative result against the held-out-games gap.**
-A width=2.0 retest on this same expanded corpus (the direct test of
-whether more *proportional* capacity fares differently on genuinely more
-data than `stage6-scaled-world-model`'s smaller corpus did) was in
-progress as of this entry; see that branch's own write-up
-(`experiments/stage6_expanded_roster.md`) for the final number once
-available.
+
+**Width=2.0 retest on this same expanded corpus -- the direct test of
+whether proportional capacity fares differently on genuinely more data:
+still no benefit, but a real, useful secondary finding.** Fold 1:
+**+0.02%** (essentially exact parity, not a real effect either way).
+Fold 2 (validation): **-0.05%**, confirming fold 1's story rather than
+contradicting it. **12th-13th consistent negative results.** The
+secondary finding: `stage6-scaled-world-model`'s severe fold-1
+capacity-instability (-88.29%, textbook capacity-enabled overfitting on
+the smaller 358k corpus) **did not replicate at this larger data scale,
+in either fold** -- width=2.0 is safe here (no regression risk), it
+simply still isn't beneficial. That's a genuine, useful data point on
+its own: more data does appear to remove the *downside* risk of scaling
+capacity, even though it hasn't yet produced an *upside*. Real,
+reusable infrastructure outlasts this negative result regardless:
+`jepa/data/openspiel_data.py` now has three generic, reusable handler
+families (cell-index placement, destination-click parsing, direct-
+action-id) instead of bespoke per-game code, so adding further OpenSpiel
+games in a future session is mostly config work, not new engineering.
+Full per-game exclusion reasoning and per-fold tables in
+`experiments/stage6_expanded_roster.md` on branch `stage6-expanded-roster`
+(not merged to master).
+
+**Running tally after this whole diverse-data investigation: 13
+independent interventions against the held-out-games gap, 12 failures,
+1 modest success (test-time adaptation).** Across conditioning fixes,
+architecture changes, and now five separate data-diversity attempts at
+increasing scale (MinAtar x2, Procgen x2, a 358k-transition 29-game mix,
+and a 2.14M-transition 26-OpenSpiel-game roster), nothing has closed the
+gap. The pattern is now consistent enough across enough independently-
+designed interventions that it's reasonable to treat this as this
+project's hardware/data ceiling for zero-shot generalization via
+pretraining alone, not a specific unfound bug -- test-time adaptation
+(real gradient updates during play, not a frozen forward pass) remains
+the only mechanism that has shown any real, positive, dialable signal
+across this entire investigation.
 
 ## Kaggle competition submission: root cause found, real score obtained
 
