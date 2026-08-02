@@ -1733,6 +1733,27 @@ would be needed on its own, but it is the only mechanism out of everything
 tried that demonstrably moves the number in the right direction rather
 than leaving it flat or making it worse.
 
+One more idea was tried after this: rather than changing what data the
+model sees or how it represents which game it's in, deliberately scramble
+which specific color stands for what in each training example, keeping
+the scramble consistent within a single moment of play so the actual
+cause-and-effect relationship being learned stays true — a standard way
+of stopping a model from memorizing incidental labels instead of real
+structure, and one this project had never tried despite direct evidence
+(the earlier same-color-similarity fix) that exactly this kind of
+color-specific memorization was happening. It didn't help on unfamiliar
+games, and it made the model measurably worse on familiar ones — a real
+cost, not just a null result, and a useful one: it confirms the model
+really was leaning on specific color identities as a shortcut, but taking
+that shortcut away didn't buy back any ability to generalize, it just
+removed something that had been working. A related idea — also
+scrambling the *positions* of things via rotation or flipping — was
+considered and deliberately not attempted, because there's no reliable
+way to know whether a given game's controls have a fixed spatial meaning
+that would need to be relabeled to match; doing it without being sure
+risked teaching the model something false rather than something more
+general.
+
 ## 11. Current status (see `CLAUDE.md` for the live version of this section)
 
 - Stage 0: done.

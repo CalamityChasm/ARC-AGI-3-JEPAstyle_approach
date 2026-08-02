@@ -1960,6 +1960,43 @@ pretraining alone, not a specific unfound bug -- test-time adaptation
 the only mechanism that has shown any real, positive, dialable signal
 across this entire investigation.
 
+**Color-permutation augmentation (`stage6-augmentation`): the 14th
+intervention, and the 13th failure -- with a real cost this time, not
+just a null result.** Every prior attempt targeted the predictor's
+conditioning or the training data's diversity; this targeted something
+different -- whether the model was overfitting to the *specific* color
+statistics of the 25 local games (directly evidenced by the
+object-identity checkpoint's contrastive-loss collapse earlier in this
+section). Added a `--color-augment` flag (`jepa/data/trajectories.py`)
+applying a fresh random permutation of all 16 ARC colors per training
+example, identically to `frame_t` and `frame_t1` so the causal
+action-effect relationship stays truthful -- color 0 deliberately
+included in the permutation (no cross-game convention establishes it as
+background in ARC-3 specifically, unlike classic ARC puzzles).
+
+**Result: no improvement on held-out games (+0.01% baseline -> -0.19%,
+both inside the established 5-fold noise band) and a real regression on
+trained games (+7.97% -> -1.76%),** corroborated by the training run's
+own validation curve eroding steadily from +2.4% at epoch 1 to -0.5% at
+epoch 60 -- not a fluke. This rules out "stop the model from relying on
+specific color ids" as sufficient on its own, and the trained-game
+regression is itself informative: color identity was a real, exploitable
+shortcut the model was using to do well on familiar games, and removing
+access to it didn't buy back any transfer to unfamiliar ones -- just cost
+accuracy on the games it already handled.
+
+**Spatial (rotation/flip) augmentation was investigated and deliberately
+not attempted**, a good example of catching a correctness risk before it
+could produce a misleading result: `rules.md`'s own Action Space section
+states that simple-action semantics "vary per game and must be
+discovered through exploration -- not documented in advance." Since
+there's no reliable way to know whether a given game's action ids carry
+a fixed spatial meaning (e.g. "move up") that a rotation/flip would need
+to relabel to keep training examples truthful, implementing it risked
+planting subtly incorrect training signal rather than genuine
+augmentation -- correctly judged not worth the risk without a way to
+verify it first.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
