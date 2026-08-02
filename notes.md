@@ -1713,3 +1713,80 @@ another real attempt.
   agent reached more total completions, more distinct games, and did so
   in fewer actions on average than the exploration-only agent, all three
   at once — the milestone this whole stage was built around is now met.
+
+## 11. Stage 6 — held-out-game generalization
+
+A methodology audit (prompted by a real, unexpectedly bad competition
+score on a checkpoint that looked strong locally) found that every
+prior evaluation in this project, from the very first stage onward, had
+only ever measured generalization to a held-out *slice of transitions*
+from the same 25 local games — never to a game withheld from training
+entirely. That's exactly the axis the real competition stresses, since
+almost all of its games are ones this project has never seen. Retraining
+with several local games withheld entirely and testing on those alone
+showed a stark result: whatever edge the trained predictor has over a
+trivial "nothing changes" baseline on familiar games collapses to
+essentially nothing on games it never trained on, and this held up
+across every way of slicing which games were withheld, not just one
+unlucky split.
+
+A long sequence of targeted attempts to close that gap — changing how
+the model is told which game it's looking at, replacing that mechanism
+with several different content-derived alternatives, adding synthetic
+training data from other game engines in various combinations, and
+directly patching the specific point in the network where the collapse
+was traced to — all failed to move the number in a meaningful way, one
+after another landing on the same "no real edge on an unfamiliar game"
+result. That consistency itself became the finding: this looks like a
+genuine data-bound ceiling for this project's scale, not a specific bug
+still waiting to be found. The one approach that did show a real, if
+modest, effect was letting the model take a few live gradient steps on
+a new game's own observed transitions as they're seen during play,
+rather than relying on a single frozen forward pass — a measurably
+different mechanism from everything else tried. Wiring that into the
+actual playing agent and testing it end to end, though, didn't show a
+clear benefit in real gameplay at a small sample size, echoing a pattern
+this project has now seen more than once: a real, verified improvement
+at the representation level doesn't automatically show up as a detectable
+win once it's several steps removed from the agent's final decisions and
+being measured on a small number of noisy, mostly-binary trials.
+
+A follow-up check asked a narrower, more encouraging question: does the
+directed-exploration agent's own novelty signal — how much its several
+internal hypotheses disagree with each other about what a candidate
+action will do — collapse the same way the raw prediction accuracy does?
+It does not: that disagreement signal turned out to be just as strong on
+games the model had never seen as on ones it had, even though the
+blended, gated prediction those same hypotheses feed into elsewhere does
+collapse. That gave a concrete, cheap idea worth testing directly: the
+agent already knows, with certainty and at essentially no cost, whether
+the current game is one it trained on — so on a genuinely unfamiliar
+game, deliberately lean on the exploration signal that's known to survive
+and cap how much weight the agent's other, less trustworthy confidence
+signal is allowed to claim, without touching how it behaves on familiar
+games at all. A quick offline check of what that confidence signal
+actually looks like on held-out games (replaying real recorded episodes
+through it without playing live) confirmed the concern was real: it
+never swings toward "very uncertain," it sits in a narrow, moderately
+confident band almost the entire time, quietly handing a meaningful share
+of every decision to the less trustworthy signal. That measurement, not a
+guess, picked the specific cap value used.
+
+A real, matched, agent-level comparison on the withheld games (same
+budget, same number of repeats used throughout this project's other
+head-to-head comparisons) came out ahead on every metric for the capped
+version — more total level completions, a higher average, and the more
+outlier-resistant of the two metrics still favored it after setting aside
+one unusually lucky run. A parallel sanity check on a handful of familiar
+games confirmed the change is genuinely inert there, exactly as designed
+— a large-looking gap on that side traced directly to one game's
+own noisy solve-or-not outcome under ordinary run-to-run randomness,
+not to anything this change touches. This is a real, promising signal —
+the most encouraging held-out-games result since the live-adaptation
+approach, and grounded in an actual measurement rather than a hunch —
+but it rests on a small number of trials on an intrinsically sparse
+outcome, the same regime where this project has seen genuine component-
+level wins fail to clear the bar of a confidently detectable agent-level
+one before. Worth keeping on by default given it costs nothing on
+familiar games, and worth a larger follow-up comparison before calling
+it fully proven rather than a strong lead.
