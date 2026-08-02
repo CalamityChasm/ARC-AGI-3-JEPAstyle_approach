@@ -1856,6 +1856,26 @@ Full roster reasoning, per-fold tables, and methodology in
 `experiments/stage6_scaled_world_model.md` on branch
 `stage6-scaled-world-model` (not merged to master).
 
+**Checked whether finetuning an existing open-source world model beats
+training from scratch: no viable candidate exists.** A real, current web
+search (not relying on stale training-data knowledge) checked Genie/
+Genie 2/3 (proprietary, no public weights), DIAMOND and IRIS (public
+weights, but each checkpoint is a *single-Atari-game specialist* trained
+on ~100k frames -- fine-tuning one buys a differently-pretrained
+single-game model, not cross-game generalization, which doesn't address
+the actual problem), WHAM/Microsoft Muse (single-game, non-commercial
+research license), Oasis (Minecraft-only, MIT, but inference-only --
+no training/fine-tune code was ever released), and V-JEPA2/Matrix-Game
+(genuinely large-scale and diverse, but either wrong-domain -- realistic
+video vs. this project's flat 16-color grids -- or requires 24GB+ VRAM
+neither the local RTX 2070 nor Kaggle's free-tier GPUs have). Notably,
+this reconfirms a decision `architecture.md`'s own "Discarded-for-
+Complexity Ideas" footnote already made before this session started --
+V-JEPA-family and Atari-benchmark models were considered and shelved for
+the same reasons found again today. The from-scratch, diverse-synthetic-
+pretraining approach this project is already running remains the more
+defensible path; no shortcut via an existing checkpoint is available.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
