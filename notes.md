@@ -1790,3 +1790,26 @@ level wins fail to clear the bar of a confidently detectable agent-level
 one before. Worth keeping on by default given it costs nothing on
 familiar games, and worth a larger follow-up comparison before calling
 it fully proven rather than a strong lead.
+
+That larger follow-up was run at roughly four times the sample size, and
+the promising small-sample signal did not hold up. Level completions on
+the one withheld game either version ever manages to solve came out
+exactly tied between the capped and uncapped versions, at an identical
+solve rate — no separation at all on the metric that actually matters.
+The remaining gap in average score flipped direction entirely compared
+to the smaller run, and turned out to trace to a couple of unusually
+fast, high-scoring completions landing on one side rather than the
+other, the same kind of single-outlier effect the earlier write-up had
+already flagged as a risk. Neither how often each version wins nor how
+efficiently it wins once it does showed any difference distinguishable
+from chance. None of this means the underlying idea was wrong — the
+reasoning behind it is still sound, and there's still no sign it costs
+anything on familiar games — only that, at real sample size, this
+project doesn't yet have evidence it changes what the agent actually
+does on unfamiliar ones. This is the third time this session a real,
+well-motivated fix to one piece of the system has failed to show up as
+a detectable difference once measured all the way through actual
+gameplay on these particular withheld games, which by now looks less
+like a string of individually inconclusive results and more like a
+structural limit of trying to detect a modest effect through a single
+sparse win/loss outcome on only one game that ever gets solved at all.

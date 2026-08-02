@@ -253,3 +253,133 @@ python scripts/run_scorecard.py --agent hypothesis --label trained_cap_on_r1 --g
 
 python scripts/summarize_scorecards.py holdout_cap_on holdout_cap_off trained_cap_on trained_cap_off
 ```
+
+## Part 3: large-sample rerun (n=30/condition) -- the n=8 result does not replicate
+
+The verdict above was explicit that n=8 on a metric this sparse (a single
+game, `r11l`, driving essentially the whole result) wasn't conclusive on
+its own, and recommended a 25-30-repeat follow-up before treating the
+cap as a confirmed win. This section is that follow-up.
+
+**Protocol:** identical to Part 2's held-out-games backtest -- same
+checkpoint (`checkpoints_holdout_baseline/`: `encoder_moe.pt`,
+`moe_predictor.pt`, `game_vocab_moe.json`, `value_head.pt`, confirmed
+byte-identical via SHA-256 to the exact checkpoint files present in the
+worktree that produced Part 2's numbers), same 5 held-out games
+(`r11l`, `bp35`, `m0r0`, `tr87`, `ka59`), same `MAX_ACTIONS=300`
+(`Hypothesis`'s unmodified default), same `scripts/run_scorecard.py`
+tooling, same `HYPOTHESIS_NOVELTY_BETA_CAP=0.15` (cap ON) vs. `=1.0`
+(cap OFF, mathematically a no-op) env-var toggle. Only change: n=30 per
+condition instead of n=8 (`scripts/run_novelty_backtest_largescale.py`,
+a straightforward sequential loop over `run_scorecard.py` -- the
+trained-games sanity check from Part 2 was not rerun, since that half
+already showed the cap is structurally inert on in-vocab games by direct
+inspection of `game_vocab_moe.json`, which a larger sample can't change).
+60 total repeats (2 conditions x 30 repeats x 5 games each = 300
+individual game-runs), ~34 minutes wall-clock.
+
+### Results (n=30 each)
+
+| condition | mean score | std | median score | mean levels | total levels | distinct games solved |
+|---|---|---|---|---|---|---|
+| cap ON (0.15) | 0.0294 | 0.0678 | 0.0 | 0.433 | **13** | 1 (`r11l`) |
+| cap OFF (1.0) | 0.0937 | 0.2486 | 0.0 | 0.433 | **13** | 1 (`r11l`) |
+
+**Levels completed is now exactly tied: 13 vs. 13, mean 0.433 vs. 0.433,
+identical solve rate (13/30 = 43.3%) on the identical single game
+(`r11l`) for both conditions.** Neither condition solved `bp35`, `m0r0`,
+`tr87`, or `ka59` in any of the 60 runs (30 per condition) -- consistent
+with Part 2 and with the test-time-adaptation agent backtest's own
+finding that these four games are essentially never solved by this agent
+at this budget regardless of checkpoint or mechanism.
+
+**Mean score now favors cap OFF (0.094 vs. 0.029), the opposite direction
+from the n=8 result (which favored cap ON, 0.060 vs. 0.011).** This
+reversal is fully explained by the same "one outlier run drives the mean"
+pattern the Part 2 verdict already flagged as a risk: cap OFF has two
+runs that hit the game's max per-level score band (`0.9524` each,
+`r18`/`r30`) plus a third at `0.5122` (`r27`), while cap ON's best run
+tops out at `0.2742` (`r15`). With levels-completed exactly tied, these
+score-magnitude outliers are the entire source of the remaining gap, not
+a difference in how often either condition wins.
+
+**Distribution comparison, not just the two means:**
+- Solve-rate: 13/30 vs. 13/30 -- identical, no interval needed.
+- Per-solved-run `r11l` score, Mann-Whitney U (two-sided): U=439.0,
+  **p=0.86** -- no detectable difference in the score distribution
+  conditional on solving.
+- Per-solved-run action-count-to-solve (level-1 `level_actions`),
+  Mann-Whitney U: U=95.5, **p=0.59** -- no detectable difference in
+  solve efficiency either (cap ON's solved-run mean was actually slightly
+  *higher*, 162 vs. 144 actions, i.e. marginally slower, though not
+  significantly so).
+
+Both checks point the same way: nothing about *how* either condition
+solves `r11l` differs in a way distinguishable from chance at this
+sample size. The pooled mean-score gap is not a hidden second effect
+riding under a tied levels-completed count -- it's sampling variance in
+which specific runs happened to solve the game quickly (and therefore
+score high) versus slowly.
+
+### Verdict: the n=8 result does not replicate. Call it noise.
+
+**At n=8, cap ON led on every metric (mean score, mean levels, total
+levels). At n=30, levels-completed is exactly tied and mean score
+reverses to favor cap OFF, with neither distribution passing even a loose
+significance check.** This is precisely the failure mode the Part 2
+write-up warned was possible ("one extra level completion out of 8
+attempts is exactly the kind of margin that... needs a larger sample...
+before being called conclusive") and precisely the outcome: more data
+revealed the original result was closer to noise than the n=8 numbers
+suggested, not a confirmation of it.
+
+Worth being explicit about what this does and doesn't mean:
+- It does **not** mean the cap is harmful -- levels-completed is exactly
+  tied, and the mechanistic argument behind it (InfoGain doesn't collapse
+  on held-out games, the gated V/prediction path does -- see Motivation
+  above) is still true and still unaffected by this result.
+- It does mean there is **no evidence at this sample size that the cap
+  changes agent-level outcomes on these 5 held-out games at all**, in
+  either direction. The representation-level asymmetry it was built on
+  is real; whether biasing beta toward InfoGain converts that into a
+  detectable behavioral difference within a 300-action budget remains
+  unconfirmed.
+- This is now the **third** time this exact pattern has shown up in this
+  project's Stage 6 work: a real, well-motivated component-level fix
+  (teacher-policy value head; test-time adaptation; now the novelty-aware
+  beta cap) fails to produce a statistically distinguishable agent-level
+  signal at the sample sizes this project can practically run. The
+  common thread across all three is the same: 5 held-out games, a
+  300-action budget, and a metric (`levels_completed`) that only ever
+  fires on one of the five games (`r11l`) regardless of intervention --
+  that specific combination appears to be the actual bottleneck on
+  statistical power here, not any one component's design.
+
+**Practical recommendation:** keep `NOVELTY_BETA_CAP=0.15` enabled by
+default -- it remains a mechanistically well-motivated, zero-regression-
+risk change on trained games (Part 2's sanity check already established
+that; nothing here touches it), and there is still no evidence it hurts
+held-out-game performance. But retract the "most encouraging held-out-
+games result of this whole Stage 6 investigation" framing from Part 2's
+verdict -- at real statistical power, it is not distinguishable from a
+no-op on the one metric (agent-level `levels_completed`/score on these 5
+games) that would actually confirm it helps. If this is revisited again,
+a higher-resolution metric that doesn't require an actual game win to
+register signal (e.g. directly tracking `Q`/InfoGain component values
+across matched action sequences, as `scripts/
+diagnose_hypothesis_beta_holdout.py` already does for beta itself) is
+more likely to resolve this than a further increase in n on the binary
+win/loss metric -- 30 repeats already required ~34 minutes for a fully
+tied levels-completed outcome; getting a binomial comparison to resolve
+"13/30 vs. 13/30, is that really tied" needs an outcome to differ at all
+first, which more of the same repeats on the same games may simply not
+produce if the true effect size on this metric is at or near zero.
+
+### Reproducing this rerun
+
+```
+# Same checkpoints_holdout_baseline/* swap into checkpoints/ as Part 2.
+python scripts/run_novelty_backtest_largescale.py --n 30
+python scripts/summarize_scorecards.py ls_holdout_cap_on_ ls_holdout_cap_off_
+python scripts/summarize_per_game.py ls_holdout_cap_on_ ls_holdout_cap_off_
+```
