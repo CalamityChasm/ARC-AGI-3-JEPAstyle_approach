@@ -209,12 +209,82 @@ thousands-of-transitions range, `JEPA_NUM_WORKERS=0` is the safer default
 for any future corpus this large, not a slower fallback to reach for only
 after something else fails.**
 
-(Placeholder -- populated as each training run completes:)
+**A second real infrastructure lesson, worth recording for future sessions
+at this corpus scale: `num_workers>0` isn't simply "faster," it's
+unusable at this scale on Windows, and the safe `num_workers=0`
+fallback's own cost is real and must be budgeted for, not assumed away.**
+Directly measured (a standalone throughput script instrumenting the exact
+training-step code `_run_epochs` runs, 2,000 real forward+backward+
+optimizer-step iterations): single-threaded `__getitem__` throughput
+stabilizes around **~1,090 samples/s**. At `n_train=1,922,251` for this
+corpus, that's **~29 minutes for ONE pretrain epoch alone** (`_run_epochs`
+prints nothing until the *entire* epoch, train+val, completes -- so a
+process that's silently "not printing" for 20-40 minutes during this
+phase is very likely working normally, not stuck; a fixed CPU-time-based
+"is it stuck" heuristic checked too early produced two false-positive
+"hang" diagnoses during this session before a longer, log-growth-only
+patience threshold and a direct throughput measurement resolved it).
+`--pretrain-epochs 1` (already the minimum whole-epoch count, chosen for
+curriculum-balance reasons in Part 3) keeps this bounded to a single
+~29-minute pass rather than compounding it.
 
 ## Part 4: capacity retest results
 
-(TBD)
+### Fold 1, width=1.0 (diversity alone, no added capacity): real run, real negative result
+
+Full run (`--pretrain-epochs 1 --epochs 60 --width-mult 1.0`,
+`JEPA_NUM_WORKERS=0`) completed cleanly end to end -- pretrain phase (1
+epoch) then 60 ARC-finetune epochs, `tag=final` checkpoint saved to
+`checkpoints_expanded_fold1_w1/`. Total wall-clock ~78 minutes (within
+this project's usual per-run budget, despite the much bigger pretrain
+corpus -- the curriculum-balanced single pretrain epoch keeps the added
+cost bounded as intended). Finetune-phase training log shows normal,
+non-collapsed learning throughout (e.g. epoch 60: `train_loss=0.0019`,
+`val_pred_mse` and `val_identity_mse` moving together in a healthy
+pattern, not a Procgen-style collapse to equal near-zero values).
+
+**Held-out-games result (fold 1, `scripts/eval_scaled_world_model.py`,
+2,400 held-out transitions across `r11l, bp35, m0r0, tr87, ka59`):**
+
+| game | pred_changed_mse | identity_changed_mse | improvement |
+|---|---|---|---|
+| r11l | 0.000500 | 0.000442 | -13.04% |
+| bp35 | 0.024269 | 0.024014 | -1.06% |
+| m0r0 | 0.013541 | 0.013405 | -1.02% |
+| tr87 | 0.001134 | 0.001111 | -2.04% |
+| ka59 | 0.000707 | 0.000697 | -1.47% |
+| **overall** | **0.009037** | **0.008928** | **-1.22%** |
+
+**-1.22% overall -- every one of the 5 held-out games individually
+negative, not a mixed picture.** `r11l`'s -13.04% looks dramatic in
+isolation but is the small-absolute-denominator artifact CLAUDE.md
+warns about (checked directly, per this project's standing practice):
+identity=0.000442 is tiny, and the absolute gap (0.000058) is small in
+its own right -- not a real large-magnitude effect, just a big percentage
+on a small base. This result sits at or slightly below the established
+5-fold no-diversity baseline band (-0.30% +/- 0.66%) and is *worse* than
+the prior, much-less-diverse `stage6-scaled-world-model` fold-1 width=1.0
+result (+0.10%, 358k pretrain transitions, 6 OpenSpiel games) -- **~5.3x
+more OpenSpiel games and ~6x more total pretrain transitions did not
+move this number in a positive direction; if anything it's very slightly
+worse, well within noise of "no effect."**
+
+**Trained-games sanity check** (9,600 transitions across the fold's other
+20 games): pred=0.001932, identity=0.002366, **+18.34% improvement** --
+healthy, clearly positive, comparable in kind to every prior production-
+style recipe's own trained-games numbers -- confirms the model learned
+real, non-degenerate dynamics from the vastly expanded pretrain corpus.
+The gap specifically fails to transfer to genuinely unseen ARC games,
+exactly the pattern every one of CLAUDE.md's prior 10 interventions
+already established -- this is the 11th consistent with that pattern
+(the 10 already documented, now an 11th independent negative result: more
+OpenSpiel diversity alone, without added capacity, doesn't close it
+either).
+
+### Fold 1, width=2.0 (diversity + capacity together, the main event)
+
+(TBD -- launching next.)
 
 ## Overall verdict
 
-(TBD)
+(TBD -- pending width=2.0 result(s).)
