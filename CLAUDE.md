@@ -2071,6 +2071,30 @@ established noise floor) -- two independent tests, the larger local
 backtest and the one real submission, now agree there's no detectable
 benefit, where a single small local sample had briefly suggested one.
 
+**MAX_ACTIONS=900 + test-time adaptation, combined (`stage6-budget-tta-
+combo`): a structurally interesting n=8 signal, explicitly not trusted
+yet given the lesson just above.** Two levers that each showed modest
+individual promise -- a longer action budget (helps every checkpoint
+tested) and test-time adaptation (real but small representation-level
+gain) -- had never been tested together. Four-condition backtest (n=8,
+5 held-out games, `stage6-game-holdout` fold-1 checkpoint): baseline
+0.500 mean levels (4/8 total), budget-900-alone 0.750 (6/8), TTA-alone
+0.375 (3/8), **combo 1.000 mean levels -- every one of 8 repeats
+completed at least one level, the first zero-zero-completion-run
+condition in this project's entire Stage 6 backtest history.** Naive
+addition of the two individual effects predicts ~5/8; observed is 8/8,
+suggesting real compounding rather than two independent small effects.
+**Important limits, not glossed over**: mean *score* (as opposed to
+levels) is still outlier-driven and not trusted on its own; breadth did
+not improve -- all four conditions, including the combo, only ever
+solved `r11l`, so this is a reliability gain on a game already
+partially solvable, not new generalization to a harder game. And given
+the novelty-aware beta override *just* showed an equally clean-looking
+n=8 win across every metric that completely evaporated at n=30, **this
+result is explicitly flagged as preliminary, not validated** -- a
+25-30-repeat confirmatory backtest is the recommended next step before
+it influences any submission decision, not an immediate green light.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
