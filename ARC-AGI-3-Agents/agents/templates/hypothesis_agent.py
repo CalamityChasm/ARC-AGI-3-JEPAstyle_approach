@@ -65,7 +65,12 @@ _PATCHES_PER_SIDE = CANVAS // PATCH  # 8
 class Hypothesis(Agent):
     """Bayesian hypothesis bundle over MoE experts + InfoGain/value-driven action selection."""
 
-    MAX_ACTIONS = 300
+    # env-var-overridable (stage6-budget-x-checkpoint's pattern, ported here
+    # for the budget x test-time-adaptation combo backtest -- see
+    # experiments/stage6_budget_tta_combo.md) so a backtest can sweep the
+    # budget without editing code between runs; default kept at 300
+    # (the real Kaggle default) so production behavior is unchanged.
+    MAX_ACTIONS = int(os.getenv("HYPOTHESIS_MAX_ACTIONS", "300"))
     EXPLOIT_REPEATS = 2
     # Bayesian update temperature -- small, since our latent MSE errors sit
     # around 1e-4 to 1e-2 (see CLAUDE.md's Stage 1/4 numbers); a temperature
