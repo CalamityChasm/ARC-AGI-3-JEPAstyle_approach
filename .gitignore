@@ -15,6 +15,10 @@ dist/
 /checkpoints_holdout_baseline/
 /checkpoints_holdout_objid/
 /checkpoints_smoke_test/
+/checkpoints_smoke_test_meta/
+/checkpoints_smoke_test_meta2/
+/checkpoints_meta_fold1/
+/checkpoints_meta_fold1_highdose/
 /runs/
 *.log
 recordings/
