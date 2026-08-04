@@ -2095,6 +2095,50 @@ result is explicitly flagged as preliminary, not validated** -- a
 25-30-repeat confirmatory backtest is the recommended next step before
 it influences any submission decision, not an immediate green light.
 
+**A Reptile meta-learning objective (`stage6-meta-learning`): the
+biggest build attempted today, and it produced this investigation's
+first *dosage-confirmed* representation-level improvement -- amplifying
+test-time adaptation itself, not just matching it -- though still no
+detected agent-level effect.** Every fix so far started from a normally-
+trained checkpoint and hoped it happened to be adaptable. This instead
+built a first-order (Reptile) meta-training objective explicitly
+optimizing the predictor for *post-adaptation* performance: the same
+~33.8K-param ANIL-style head `TestTimeAdapter` uses at real eval time,
+periodically nudged during training via real inner-loop adaptation steps
+on sampled training-pool games (`jepa/train_meta_predictor.py`).
+
+**A real bug found and fixed first**: the textbook ANIL design (freeze
+the head from ordinary training, update it only via the Reptile nudge)
+caused catastrophic representation collapse -- with the head unable to
+produce meaningful residuals during normal training, the encoder learned
+to make transitions look trivially identical rather than learn real
+dynamics. Fixed by keeping the head in ordinary joint training *and*
+layering the Reptile nudge on top, verified via a smoke test before any
+full run.
+
+**Standard-dose Reptile was a clean negative** -- post-adaptation
+held-out improvement (+0.57%/+0.42%) was *worse* than the plain
+baseline checkpoint's own post-adaptation improvement (+0.78%/+0.66%,
+`stage6-test-time-adaptation-agent`'s own number). **High-dose Reptile
+(3x more updates/epoch, no epsilon annealing) reversed this: +0.98%/
++1.28% vs. the same +0.78%/+0.66% baseline** -- a real, directionally
+consistent gain concentrated on 3 of the 5 held-out games, confirming
+the standard-dose result was a dosing artifact, not a ceiling on the
+approach itself. This is the first result in this whole investigation
+that measurably improves on test-time adaptation's own already-real
+effect, not just matches or fails to match it.
+
+**Preliminary agent-level backtest (n=8, since the high-dose result
+looked promising): levels-completed came back exactly tied with the
+already-published baseline+TTA-on numbers** (3 total, 0.375 mean, all on
+`r11l`) -- the same "component measurably improved, small real-play
+sample couldn't detect it" pattern this project has now hit three times
+today (teacher-policy value head, test-time adaptation itself, and now
+this). Full write-up in `experiments/stage6_meta_learning.md` on branch
+`stage6-meta-learning` (not merged to master) -- worth a larger backtest
+of the high-dose checkpoint specifically before drawing an agent-level
+conclusion either way.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
