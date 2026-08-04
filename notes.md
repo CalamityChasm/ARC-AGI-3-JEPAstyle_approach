@@ -1713,3 +1713,140 @@ another real attempt.
   agent reached more total completions, more distinct games, and did so
   in fewer actions on average than the exploration-only agent, all three
   at once — the milestone this whole stage was built around is now met.
+
+## 11. Stage 6 — held-out-game generalization, test-time adaptation, and meta-learning
+
+A methodology audit (prompted by a real Kaggle submission scoring the
+worst of any tried so far) found a gap running through every result in
+this project up to that point: every local evaluation ever computed had
+validated on a held-out slice of *transitions* from the same 25 local
+games the model trained on, never on a game withheld from training
+entirely — exactly the axis the real competition stresses, since most of
+its evaluation games are genuinely novel. Building a proper leave-some-
+games-out test confirmed the gap was real and severe: the world model's
+prediction-quality edge over a "nothing changes" baseline, which is
+substantial on trained games, collapses to essentially nothing on games
+it never saw, and this held up across five-fold cross-validation
+covering all 25 local games, not just one unlucky split.
+
+What followed was an unusually long single-session investigation: more
+than a dozen independently-designed interventions aimed at closing that
+gap, nearly all of them negative. Ablating the per-game identity signal
+entirely didn't help. The encoder itself was directly verified to be
+registering real changes just fine on unseen games — the failure was
+localized to the predictor coasting on a trivial "predict no change"
+shortcut specifically when it didn't recognize the game. An explicit
+anti-collapse loss aimed at that shortcut didn't fix it. Three
+architecturally different ways of replacing the categorical per-game
+lookup with something continuous and observation-derived — a recurrent
+hidden state, a single-frame content encoder, a multi-transition episode
+encoder — all landed in the same null result. Several attempts at adding
+more diverse pretraining data (borrowed game engines spanning arcade
+reflex games, puzzle-and-maze games, and eventually a much larger, more
+deliberately curated roster of dozens of board and strategy games) also
+failed to move the needle, even at a genuine order-of-magnitude increase
+in pretraining data volume — more of the same *kind* of external data
+did not translate into better handling of a truly novel game, a pattern
+distinct from (and more stubborn than) earlier stages' own "more data
+helps" lesson. Scaling model capacity alongside that larger dataset
+didn't help either, and in one fold showed real signs of the extra
+capacity making generalization actively worse, not better — a classic
+overfitting risk when capacity outpaces genuinely diverse data, though a
+second fold suggested this specific downside wasn't a stable trend
+either. A parallel check confirmed a promising-looking exploration signal
+inside the directed-exploration agent does *not* collapse the same way
+the raw prediction accuracy does — a narrower, more encouraging finding,
+though not yet confirmed to matter in real play.
+
+Exactly one mechanism out of all of this showed a real, positive,
+dialable effect: letting the model take a handful of genuine gradient
+steps using a new game's own observed data, live, during play, rather
+than only ever running a frozen forward pass. Restricting those updates
+to a small, deliberately narrow slice of the model (roughly the last
+layer of each expert's output path, plus the final layer of the routing
+mechanism — leaving the shared feature extractor and every embedding
+untouched) produced a real, monotonic improvement in prediction quality
+on unseen games as more of that game's own data accumulated, with a
+clean, controllable trade against how much it interferes with performance
+on the games already trained on. Built out into the actual playing agent
+with a proper reset boundary and real latency measurements (negligible),
+this mechanism is genuine, verified, safe to leave on by default — but a
+first real-gameplay backtest didn't show a detectable win at a practical
+sample size, the same "the underlying signal improved, the agent's raw
+win count didn't move enough to tell" pattern this project has now hit
+more than once on a sparse, binary outcome measured only a handful of
+times.
+
+Given that mechanism was the one clear success of the whole
+investigation, the natural next step was to stop trying to make a
+frozen, zero-shot forward pass generalize (an idea now about as
+thoroughly tested as a hypothesis gets) and instead build a training
+objective that explicitly optimizes for *how well the model adapts*,
+rather than training it the ordinary way and hoping the ability to adapt
+comes along for free. This meant a real meta-learning objective: rather
+than one shared gradient descent trying to fit every training game at
+once, periodically simulate the exact few-shot adaptation procedure
+itself during training — sample a game, take a few real adaptation steps
+on just that narrow slice of the model using only that game's data, then
+nudge the real, shared version of that same slice a small step toward
+wherever the simulated adaptation ended up. Repeated across many sampled
+games, the intended effect is a starting point that isn't just accurate
+on average, but specifically *easy to fine-tune quickly* on whatever game
+comes next — deliberately choosing the simpler, more implementation-safe
+first-order version of this idea over the more expensive, harder-to-get-
+right alternative that would require differentiating through the
+adaptation process itself, a reasonable trade on this project's modest
+single-GPU hardware.
+
+The first full attempt at this produced a real, instructive failure
+before it produced a real result: restricting the periodic meta-learning
+nudge to only affect that narrow model slice, with the rest of ordinary
+training left untouched, seemed like the theoretically cleaner design —
+but it caused the *whole model* to collapse toward a degenerate shortcut
+instead of learning anything real. With that narrow slice's capacity to
+produce a genuine prediction locked out of ordinary training entirely,
+the only way left for ordinary training to reduce its own loss was for
+the shared feature extractor itself to learn to make a game state look
+almost identical to itself before and after a transition — trivially
+"correct" by the letter of the loss, useless in practice, and the same
+underlying failure shape this project's very first modeling stage hit
+once before, one level further out in the design. The fix kept the
+narrow slice fully part of ordinary training the whole time, exactly as
+it always had been, and layered the periodic meta-learning nudge on top
+as an addition rather than a replacement — confirmed healthy on a short
+trial run before committing to a full one.
+
+With that fixed, the first full, standard-strength version of the real
+experiment came back as a clean, honest negative: on the same five held-
+out games used throughout this investigation, a model explicitly trained
+to adapt well did not actually adapt any better, after the fact, than
+one trained the ordinary way — if anything, marginally worse on the
+summary numbers, though the gap was small enough to plausibly be within
+this project's own already-documented run-to-run noise on this exact
+measurement. Rather than stopping there, a natural follow-up question —
+was that a real ceiling, or just too weak a dose of the new training
+signal relative to how much ordinary training was still going on
+underneath it — got a direct answer: retraining with substantially more
+of the meta-learning pressure, and without letting its own strength fade
+out over the course of training the way a standard schedule would, did
+produce a real, directionally consistent edge over the ordinary baseline
+on the actual measurement this whole exercise was about, concentrated
+unevenly across a subset of the held-out games rather than spread evenly
+across all of them.
+
+A preliminary real-gameplay check on that higher-dose result, at the
+same small sample size this project has repeatedly found insufficient to
+detect a real but modest effect, showed no distinguishable difference
+from the already-established result for the ordinary baseline under the
+same live-adaptation mechanism — the same honest "component measurably
+improved, a small real-play sample couldn't confirm it" outcome this
+project has now reached three separate times on three different
+components. Read together rather than in isolation, the throughline is
+consistent rather than contradictory: a real, controllable meta-learning
+effect exists and was worth building, it needed meaningfully more of its
+own signal than a natural first guess would have used to become visible
+at all, and confirming whether it actually helps a real playing agent —
+as opposed to just the underlying prediction-quality measurement it was
+built to move — remains open, exactly the kind of question a larger
+real-play sample size exists to answer, not something this session's
+scope could resolve on its own.

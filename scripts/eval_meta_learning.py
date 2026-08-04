@@ -59,6 +59,7 @@ TRAINED_PROBE_GAMES = ["ft09", "s5i5", "vc33", "ar25", "cd82", "cn04", "lp85", "
 CHECKPOINTS = {
     "baseline": REPO_ROOT / "checkpoints_holdout_baseline",
     "meta-reptile": REPO_ROOT / "checkpoints_meta_fold1",
+    "meta-reptile-highdose": REPO_ROOT / "checkpoints_meta_fold1_highdose",
 }
 
 # The validated stage6-test-time-adaptation-agent operating point --
