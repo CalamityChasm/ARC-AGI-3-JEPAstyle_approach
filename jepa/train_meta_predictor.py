@@ -30,34 +30,59 @@ correctness over squeezing out the last bit of sample efficiency, Reptile
 is the defensible default here; nothing encountered while building this
 suggested MAML would be worth its extra complexity/risk on this problem.
 
-## Design: ANIL-style split between "body" and "head"
+## Design: joint training on ALL params + a periodic Reptile nudge on the head
 
-The predictor is split into two groups, mirroring EXACTLY the parameter
-subset `TestTimeAdapter` adapts at real eval/play time (imported directly
-from `jepa/test_time_adapter.py: get_adapter_params` so the two can never
-silently drift apart):
+The predictor's head (the SAME adapter subset `TestTimeAdapter` adapts at
+real eval/play time -- each expert's LAST Conv2d + the gate's LAST Linear,
+~33.8K params, imported directly from `jepa/test_time_adapter.py:
+get_adapter_params` so the two can never silently drift apart) receives
+TWO update signals during the ARC fine-tune phase:
 
-- **Head** (the adapter subset, ~33.8K params): each expert's LAST Conv2d
-  + the gate's LAST Linear. Updated ONLY via the Reptile meta-objective
-  below -- never touched by the ordinary per-batch joint loss. This is the
-  one thing this script exists to change relative to the existing recipe.
-- **Body** (everything else -- encoder, action/xy/game embeddings, every
-  expert's FIRST Conv2d, the gate's FIRST Linear): trained by ordinary
-  joint multi-task gradient descent on i.i.d.-shuffled batches across every
-  training game, IDENTICAL to `jepa/train_moe_predictor.py`'s own ARC
-  fine-tune recipe (same loss terms, same LR, same EMA target). This keeps
-  the shared representation itself trained the normal way -- what makes a
-  "trained games" sanity check meaningful/comparable to the existing
-  baseline, and avoids the encoder only ever seeing frozen-encoder,
-  few-shot inner-loop episodes (which would starve it of ordinary
-  supervised signal).
+1. The SAME ordinary per-batch joint gradient step every other parameter
+   gets (identical loss/LR/EMA-target recipe to `jepa/train_moe_predictor.py`'s
+   own ARC fine-tune phase) -- this is NOT optional, see "a real bug found
+   and fixed" below.
+2. A periodic Reptile meta-update (a handful of times per epoch): sample a
+   training-pool ARC game, run real AdamW inner-loop steps on ONLY the head
+   (matching the validated `TestTimeAdapter` operating point), then
+   interpolate the head toward the averaged adapted weights across a
+   sampled batch of games.
 
-This is why a bare "run Reptile on the whole model" design was NOT used:
-it would confound "does the meta-objective help the adaptable subset" with
-"did multi-task training on the rest of the model get worse because it's
-now only getting sparse few-shot gradient signal instead of dense
-supervised batches." Splitting body/head isolates the ONE variable this
-experiment is actually about.
+**A real bug found and fixed during this build: a pure ANIL-style split
+(head updated ONLY by Reptile, frozen during ordinary joint SGD) causes
+catastrophic representation collapse, not useful meta-learning.** The
+first implementation excluded the head entirely from the joint optimizer
+(the classic ANIL recipe from the meta-learning literature). Training it
+end to end produced `val_pred_mse` and `val_identity_mse` that shrink
+together, in lockstep, from ~0.0027 at epoch 1 to ~0.00005 by epoch 60 of
+the ARC fine-tune phase -- collapsing to near-zero WITHOUT ever opening
+the gap between them the baseline recipe shows throughout (baseline:
+val_pred=0.00070, val_identity=0.00087 at epoch 60, a real, stable,
+non-collapsing gap). This is the same failure shape CLAUDE.md's Stage 1
+history calls out ("both predictor and identity errors shrinking together
+toward zero" -- representation collapse, not real learning), and the
+mechanism is understandable in hindsight: with the head frozen at small
+near-random values (see moe_predictor.py's own init -- experts' last layer
+starts at small random weights, not zero, but still tiny), the predictor
+structurally CANNOT produce a meaningful nonzero residual, so `feat +
+residual ~= feat` regardless of what the body learns. The only way left
+for ordinary joint SGD to reduce `weighted_prediction_loss(pred_feat,
+target_feat, mask)` is for the ENCODER itself to make `feat` and
+`target_feat` (the same underlying frame encoded before/after a
+transition) trivially close to each other -- i.e. learn transition-
+INSENSITIVE features -- since `variance_regularizer` only floors
+per-channel std ACROSS THE BATCH (encoder outputs can still differ freely
+between different game states) and says nothing about temporal
+sensitivity WITHIN one state's own before/after pair. Freezing the head
+from ordinary training removes the only gradient path that would have
+punished this shortcut. Switched to the joint-training-plus-nudge design
+described above -- the head stays fully trainable by the same forces that
+keep it honest in the baseline recipe, while ALSO being explicitly pulled
+by the Reptile objective toward being "quick to adapt further" on top of
+that. This is a legitimate, well-precedented Reptile variant (using it as
+an auxiliary fine-tuning-style regularizer on top of ordinary training,
+not as the sole training signal for the affected parameters) -- not a
+watered-down compromise adopted for convenience.
 
 ## The Reptile update itself
 
@@ -473,7 +498,14 @@ def train(
         if checkpoint_every > 0:
             _save("minigrid-pretrain-complete")
 
-    # --- Phase 1: ARC fine-tune, body via joint SGD + head via Reptile. ----
+    # --- Phase 1: ARC fine-tune, joint SGD on EVERYTHING (head included) --
+    # plus a periodic Reptile nudge layered on top of the head only. See
+    # the module docstring's "a real bug found and fixed" section: an
+    # earlier version excluded the head from joint_opt entirely (a pure
+    # ANIL split) and that caused catastrophic representation collapse,
+    # not useful meta-learning -- joint_opt (built above, before the
+    # MiniGrid phase, covering online+predictor together) is reused
+    # unchanged here, exactly like train_moe_predictor.py's own recipe.
     arc_train_loader, arc_val_loader, game_pools = _split_and_build_loaders(
         arc_transitions, game_vocab, batch_size, device
     )
@@ -483,10 +515,8 @@ def train(
     )
 
     head_params = get_adapter_params(predictor)
-    head_ids = {id(p) for p in head_params}
-    body_params = [p for p in list(online.parameters()) + list(predictor.parameters()) if id(p) not in head_ids]
-    body_opt = torch.optim.AdamW(body_params, lr=lr)
-    print(f"head (Reptile-only) params: {sum(p.numel() for p in head_params)}  body (joint-SGD) params: {sum(p.numel() for p in body_params)}")
+    n_body = sum(p.numel() for p in online.parameters()) + sum(p.numel() for p in predictor.parameters()) - sum(p.numel() for p in head_params)
+    print(f"head (joint-SGD + Reptile-nudged) params: {sum(p.numel() for p in head_params)}  body (joint-SGD only) params: {n_body}")
 
     rng = random.Random(meta_seed)
     updates_per_epoch = max(1, meta_iters_per_epoch // meta_tasks_per_batch)
@@ -516,9 +546,9 @@ def train(
                 loss = loss + contrast_weight * contrast_loss
                 total_contrast_loss += contrast_loss.item()
 
-            body_opt.zero_grad()
+            joint_opt.zero_grad()
             loss.backward()
-            body_opt.step()
+            joint_opt.step()
             update_ema_target(target, online, EMA_MOMENTUM)
 
             total_loss += loss.item()
