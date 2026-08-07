@@ -34,7 +34,7 @@ def _game_id_from_entry(name: str) -> str:
 
 
 def load_external_transitions(
-    repo_root: Path, max_per_game: int | None = 2000, seed: int = 0
+    repo_root: Path, max_per_game: int | None = 2000, seed: int = 0, exclude_games: list | None = None
 ) -> list:
     """Returns a list of (frame_t, action_id, x, y, frame_t1, changed, game_id)
     tuples in the same shape `trajectories.TransitionDataset` expects.
@@ -65,6 +65,8 @@ def load_external_transitions(
         names = sorted(n for n in zf.namelist() if n.endswith(".jsonl"))
         for name in names:
             game_id = _game_id_from_entry(name)
+            if exclude_games is not None and any(game_id.startswith(f"{g}-") for g in exclude_games):
+                continue
             reservoir = []
             with zf.open(name) as f:
                 for i, raw in enumerate(f):

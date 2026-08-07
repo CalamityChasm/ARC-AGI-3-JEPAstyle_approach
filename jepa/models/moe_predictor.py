@@ -167,6 +167,28 @@ class MoEPredictor(nn.Module):
 
         return feat + residual, gate_weights
 
+    def gate_logits(
+        self,
+        feat: torch.Tensor,
+        action_id: torch.Tensor,
+        xy: torch.Tensor,
+        game_idx: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        """stage6-partitioned-experts addition: raw (pre-softmax, pre-noise)
+        gate logits only -- no expert computation. Used by
+        `jepa/train_partitioned_moe.py`'s routing-supervision auxiliary
+        loss (a cross-entropy against a known expert assignment), which
+        needs gate logits under a *separate*, possibly game-id-dropped-out
+        conditioning input than whatever's used for the main task loss's
+        hard-routed prediction -- computing full expert outputs for that
+        second forward would be pure waste. Does not affect `forward`'s or
+        `predict_all_experts`'s existing behavior at all.
+        """
+        pooled_feat = feat.mean(dim=(2, 3))
+        cond, _cond_spatial, _x = self._condition(feat, action_id, xy, game_idx)
+        gate_input = torch.cat([pooled_feat, cond], dim=-1)
+        return self.gate(gate_input)
+
     def predict_all_experts(
         self,
         feat: torch.Tensor,
