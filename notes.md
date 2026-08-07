@@ -1850,3 +1850,37 @@ as opposed to just the underlying prediction-quality measurement it was
 built to move — remains open, exactly the kind of question a larger
 real-play sample size exists to answer, not something this session's
 scope could resolve on its own.
+
+That larger sample eventually got run, at the same scale that finally
+settled the earlier, similarly encouraging small-sample result for the
+novelty-aware exploration change. Both the meta-learned checkpoint and
+the ordinary baseline were put through the identical live-adaptation
+mechanism, thirty real playthroughs each of the same five held-out
+games, run back to back in the same session so nothing about the
+comparison could drift between the two arms. The result was about as
+clean a tie as this project's backtests have ever produced: the exact
+same number of levels completed on each side, the exact same fifty
+percent success rate on the one game either version has ever solved,
+and every distributional check — overall score, score conditional on
+succeeding, and how many actions it took to succeed — came back
+statistically indistinguishable, with nothing even approaching a
+meaningful gap. Solve speed nudged very slightly in the meta-learned
+checkpoint's favor, but by an amount well inside the noise. This closes
+the loop the small-sample check had left open, and the honest answer is
+a real, well-powered null rather than a promising lead: a checkpoint
+trained explicitly to adapt well does measurably adapt better on the
+underlying prediction task, and that improvement still does not show up
+as more wins at the table when actually played, joining the same list
+of components — a value head trained on richer data, live test-time
+adaptation itself, and a cheap exploration-bias fix — where a real
+improvement in the underlying measurement failed to clear the bar of an
+actual gameplay difference at a sample size this project can practically
+run. The recurring explanation isn't that these fixes don't work; it's
+that the one outcome this evaluation protocol can observe — whether a
+300-action attempt at any of five held-out games ends in a completed
+level — only ever fires on one of those five games in the first place,
+which puts a hard ceiling on how small an effect thirty attempts per
+side can ever resolve. Getting a real answer for any future component
+like this will most likely need either far more repeats than are
+practical to run in a session, or a way of measuring the effect that
+doesn't require an outright win to register at all.
