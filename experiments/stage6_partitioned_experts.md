@@ -1,6 +1,6 @@
 # Stage 6 experiment: does hard-partitioning MoE experts by training game close the held-out-games gap?
 
-**Status: COMPLETE. Clean negative on the central question (held-out generalization is unchanged), but a real, unambiguous positive on the narrower mechanism question (does forced partitioning spread genuine competence across more of the 8 experts) -- at a severe, unacceptable cost to trained-game prediction quality.**
+**Status: COMPLETE, including a user-proposed follow-up. Hard-partitioning alone: clean negative on held-out generalization, real positive on spreading specialization across experts, at a severe cost to trained-game accuracy. The follow-up (specialize, then recalibrate the gate end-to-end on a disjoint game pool with no auxiliary loss) was tried in full and made every metric worse, via representation collapse in the narrow, unregularized recalibration phase -- see the "Follow-up" section at the end.**
 
 ## Motivation
 
@@ -310,6 +310,101 @@ turned out to be the actual blocker. Not recommended as the next lever
 to pull; test-time adaptation and further content-derived conditioning
 (if a genuinely new mechanism is found, not a variant of the three
 already tried) remain better-motivated next steps.
+
+## Follow-up: specialize-then-recalibrate curriculum (user-proposed) -- tried in full, made everything worse
+
+**Motivation.** The result above showed the gate only ever learned to
+mimic a fixed game_id -> expert lookup table (via the routing-supervision
+cross-entropy loss), which is structurally useless on a held-out game's
+untrained id. A direct, well-motivated follow-up: what if, *after*
+specialization is established, the gate is unfrozen and trained
+end-to-end on the real task loss alone (no routing-supervision crutch,
+no hard routing) -- forced to learn a routing rule from its own true
+objective rather than by copying a lookup table? Critically, this
+recalibration phase should run on a *different* set of games than
+specialization used, so the gate can't just re-derive the same
+game-id-keyed lookup from memorizing phase-1's own games.
+
+**Design** (`jepa/train_recalibrated_moe.py`): the same fold-1 20-game
+pool was split further into 15 SPECIALIZE_GAMES (phase 1, hard-routed,
+identical mechanism to the experiment above) and 5 CALIBRATE_GAMES (phase
+2, entirely disjoint from phase 1 -- `su15`, `tn36`, `tu93`, `vc33`,
+`wa30`), with the same 5 fold-1 games held out from both phases for final
+eval. Phase 2 restores the normal soft `forward()` pass and trains on
+`weighted_prediction_loss + variance_regularizer` alone -- no
+routing-supervision loss, no hard-routing, no load-balance loss -- with a
+fresh optimizer (phase 1's AdamW moment estimates were shaped by a
+differently-structured loss surface). 20 MiniGrid pretrain epochs, 60
+specialize epochs, 30 recalibrate epochs -- same recipe scale as the
+experiment above for comparability.
+
+**A warning sign was visible in the raw training log before the held-out
+eval even ran**: phase 2's own validation split (on the 5 calibrate
+games) showed `val_identity_mse` collapsing **16x** over 30 epochs
+(0.00016 -> 0.00001) while `val_pred_mse` stayed proportionally similar,
+ending with the model *worse* than "predict no change" (pred=0.00019 vs
+identity=0.00016) on data it was directly training on. Identity-baseline
+MSE dropping that fast is the classic signature of representation
+collapse (frames trivially converging toward looking similar to each
+other in feature space), not genuine learning.
+
+**Result: the held-out eval confirms it, and it's not a mild regression
+-- every single metric got worse than the already-failed hard-partitioned
+checkpoint, several dramatically so.**
+
+| metric | baseline | partitioned (phase 1 only) | **recalibrated (phase 1+2)** |
+|---|---|---|---|
+| trained-games changed-patches | +49.89% | -0.08% | **-3.51%** |
+| held-out changed-patches (pooled) | -0.19% | -0.35% | **-1.84%** |
+| held-out `r11l` | -1.4% | -31.6% | **-39.7%** |
+| held-out `bp35` | -0.3% | +0.2% | **-0.9%** |
+| held-out `m0r0` | +0.3% | -0.0% | **-3.4%** |
+| held-out `tr87` | -0.3% | -0.7% | **-9.6%** |
+| held-out `ka59` | -0.2% | -3.8% | **-21.8%** |
+| gate entropy, held-out (% of max) | 99.82% | 7.60% | **0.00%** |
+| gate entropy, trained (% of max) | 99.00% | 0.00% | 0.00% |
+| InfoGain (held-out, trained) abs. magnitude | 7.1e-3, 1.4e-2 | 8.4e-4, 5.4e-3 | **5.3e-5, 3.8e-5** |
+| split-half agreement (trained) | 71.9% | 95.5% | **76.4%** |
+| max single-expert winner share | 37.1% | 18.0% | **42.7%** |
+| experts that ever win a context | 7/8 | 8/8 | **6/8** |
+
+Removing the routing-supervision crutch didn't make the gate learn a
+smarter, more transferable rule from its true objective -- it removed the
+*only* structure keeping the gate's behavior non-degenerate. With just 5
+games' worth of data, no auxiliary loss, and an already hard-specialized
+starting point, the optimizer found a genuinely worse local optimum: the
+gate became **even more** deterministic than the pure hard-routed
+checkpoint (0.00% entropy on *both* held-out and trained games, versus
+partitioned's 7.60%/0.00%), raw InfoGain (per-expert disagreement, before
+any gating) collapsed by roughly two orders of magnitude in absolute
+terms -- the experts stopped disagreeing with each other at all, not just
+with the gate averaging them out -- and specialization breadth
+*regressed* past even the original baseline (6/8 experts ever win,
+concentrated 77.5% in just 2 of them, worse than baseline's own 7/8).
+Every accuracy number got worse too, trained and held-out alike.
+
+**Honest read: the specific mechanism proposed -- specialize, then let
+real gradient descent alone define routing -- was tried in full and
+failed cleanly, for a different reason than expected.** The hypothesis
+wasn't wrong to test (genuinely distinct from the routing-supervision
+approach, and from every conditioning-mechanism attempt in
+`stage6-context-embedding`), but "remove the auxiliary structure and let
+the true objective decide" turned out to need either much more data than
+a 5-game pool provides, or its own regularization to avoid collapsing
+into a degenerate solution -- neither of which this run had. This isn't
+evidence the underlying idea (gate learns from its own objective, not a
+lookup) is unsound in principle; it's evidence that *this* narrow,
+unregularized way of trying it collapses fast on limited data, which is
+a different and more mundane failure mode than the held-out-generalization
+question it was built to answer. A properly regularized version (e.g.
+keeping a light load-balance term active during recalibration, or running
+it on a larger/more diverse pool than 5 games) is a plausible next
+attempt if this is revisited -- but per this project's now-16-deep
+running tally of held-out-generalization interventions, the stronger
+prior remains that no amount of on-trained-data curriculum engineering
+substitutes for the model actually seeing a truly novel game's own
+content, which only test-time adaptation has shown any real ability to
+exploit so far.
 
 ## Reproducing this experiment
 
