@@ -1,8 +1,14 @@
 # Stage 6 experiment: does MAX_ACTIONS=900 compound with test-time adaptation?
 
-**Status: COMPLETE (local backtest only, n=8 per condition). Preliminary
-read, not a validated result -- see the honest-limits section below
-before acting on this.**
+**Status: COMPLETE, including the n=25 confirmatory backtest this doc's
+own "Honest limits" section called for. Verdict flipped: the 8/8 combo
+result did NOT replicate -- it was the same kind of small-sample
+artifact that debunked the novelty-aware beta result. The real, robust
+finding is that `MAX_ACTIONS=900` alone is a genuine reliability lever;
+test-time adaptation adds nothing on top of it, and may mildly hurt. See
+"Confirmatory backtest (n=25)" below for the full numbers -- read that
+section, not the preliminary one above it, before drawing any conclusion
+from this file.
 
 ## Motivation
 
@@ -175,19 +181,96 @@ Additional reasons for caution specific to this result:
    changes at `MAX_ACTIONS=900` (more adaptation events per episode) is
    untested here.
 
-## Verdict
+## Verdict (superseded by the n=25 confirmatory backtest above -- kept for history)
 
-**A real, non-additive compounding effect on the levels-completed
-reliability metric, not just "no better than either lever alone" and not
-"nothing detectable."** The combo (8/8 zero-completion-free) is a
-qualitatively different result from every single-lever condition tested
-today or in prior Stage 6 backtests -- but it rests on n=8 with all
-signal concentrated on one game, and this project's own novelty-aware
-beta result is direct proof that an equally clean n=8 win can evaporate
-at n=30. **Treat this as a promising lead worth a larger confirmatory
-backtest (25-30 repeats, matching this project's own stated bar for
-trusting a result at this sparsity) before it influences a real
-submission decision** -- not as a validated finding on its own.
+~~A real, non-additive compounding effect on the levels-completed
+reliability metric~~ -- **this did not hold up.** See "Confirmatory
+backtest (n=25)" above: the combo's apparent 8/8 compounding effect was
+noise, not a real interaction. **Final verdict: `MAX_ACTIONS=900` alone
+is the real, replicated lever (0.480 -> 0.800 mean-levels, confirmed at
+both n=8 and n=25); test-time adaptation, alone or combined with the
+larger budget, shows no confirmed agent-level benefit at proper sample
+size** -- consistent with every other TTA agent-level backtest this
+project has run (plain TTA, TTA+Reptile meta-learning). Ship
+`MAX_ACTIONS=900` on its own merits if a submission decision needs one;
+don't bundle TTA in expecting it to help.
+
+## Confirmatory backtest (n=25, all 4 conditions rerun fresh)
+
+Per this doc's own explicit call for "a larger confirmatory backtest
+(25-30 repeats) before it influences a real submission decision," and
+per this project's standing lesson (from the novelty-aware beta
+retraction) that comparing a new n=8 result against numbers *reused from
+a different round* is not reliable -- all four conditions were rerun
+fresh, in the same round, at n=25 each, same checkpoint
+(`checkpoints_holdout_baseline`, copied into `checkpoints/`), same 5
+held-out games, same TTA operating point (K=5, STEPS=8, LR=5e-5).
+
+(One operational note: the first attempt at this rerun failed all 100/100
+runs instantly with no scorecard produced -- the anonymous `ARC_API_KEY`
+had expired, the exact gotcha CLAUDE.md's own "Gotchas" section already
+documents. Refreshed via `curl https://three.arcprize.org/api/games/anonkey`,
+verified with a single-game smoke test, then reran cleanly end to end in
+~2 hours with zero errors.)
+
+| condition | n | mean score | mean levels | total levels (of 25) | distinct games |
+|---|---|---|---|---|---|
+| baseline (300, TTA off) | 25 | 0.04726 | 0.480 | 12 | 1 (`r11l`) |
+| `MAX_ACTIONS=900` alone | 25 | 0.02687 | **0.800** | **20** | 1 (`r11l`) |
+| TTA alone (300) | 25 | 0.02870 | 0.360 | 9 | 1 (`r11l`) |
+| combo (900 + TTA) | 25 | 0.08958 | 0.680 | 17 | 1 (`r11l`) |
+
+**n=8 vs. n=25, side by side (mean levels completed):**
+
+| condition | n=8 (preliminary) | n=25 (confirmatory) | replicated? |
+|---|---|---|---|
+| baseline | 0.500 | 0.480 | yes |
+| budget=900 alone | 0.750 | 0.800 | **yes -- a real, robust effect** |
+| TTA alone | 0.375 | 0.360 | yes (no benefit, mildly negative) |
+| **combo** | **1.000** | **0.680** | **NO -- did not replicate** |
+
+**The headline 8/8 result was noise, not a compounding effect.** At n=25
+the combo's mean-levels (0.680) sits *below* budget-900-alone's own
+(0.800), not above it -- the opposite of the "real, non-additive
+interaction" this doc originally concluded. Everything else replicated
+cleanly: baseline and TTA-alone landed within a couple percentage points
+of their n=8 values, and budget-900-alone's own lift over baseline held
+up almost exactly (0.750->0.800 vs. baseline's 0.500->0.480). Only the
+combo condition -- the one built from the smallest, most cherry-picked-
+looking n=8 sample (a literal 8-for-8) -- failed to hold, which is
+exactly the pattern a spurious small-sample result produces and a real
+effect doesn't.
+
+**This is the third time this session an equally clean n=8 win has
+evaporated at proper power** (after the novelty-aware beta cap and the
+high-dose Reptile+TTA checkpoint, both documented elsewhere in
+`experiments/`). The pattern is now consistent enough to treat as a
+standing rule for this project, not a one-off surprise: **an n=8
+agent-level backtest on this 5-game, sparse-completion metric is not
+sufficient evidence for a real effect, however clean it looks, however
+good the mechanistic story sounds.** Nothing less than n=25-30 should be
+trusted before it influences a submission decision -- this doc's own
+prior "preliminary, worth trusting as a lead" framing was too generous
+given that standard, in hindsight.
+
+**What IS real and robust, confirmed at n=25:** `MAX_ACTIONS=900` alone,
+independent of TTA, lifts mean-levels from 0.480 to 0.800 and total
+completions from 12/25 to 20/25 -- consistent across both the n=8 and
+n=25 rounds, and consistent with `stage6_budget_x_checkpoint.md`'s
+original finding that this budget bump is a reliability lever across
+every checkpoint tested. Test-time adaptation does not add to this, and
+if anything costs a little (0.800 -> 0.680 mean-levels when combined) --
+though a single condition's regression at n=25 isn't itself enough to
+call TTA-on-top-of-budget a confirmed *harm*, just clearly not the
+confirmed *benefit* the n=8 round suggested.
+
+**Breadth is still completely flat.** All 100 runs across all 4
+conditions solved only `r11l` -- zero progress on `bp35`, `m0r0`, `tr87`,
+or `ka59` at any sample size, any condition. Nothing tested in this whole
+experiment (budget, TTA, or their combination) does anything for the
+actual held-out-*generalization* gap this project's Stage 6 investigation
+is fundamentally about -- it only affects how reliably one already-
+partially-solvable game gets solved.
 
 ## Reproducing this backtest
 
