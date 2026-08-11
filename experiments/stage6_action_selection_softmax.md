@@ -263,6 +263,87 @@ evaluated on pure exploration efficacy the way `Hypothesis`'s InfoGain/
 value blend was) -- both meaningfully larger undertakings than a live
 trace, and not pursued further this session.
 
+## Source + visual diagnosis: bp35 and ka59 both hard-cap actions PER ATTEMPT, far below tr87's
+
+Two more diagnostics, following the same priority order agreed with the
+user (cheapest first): read the actual game engine source
+(`environment_files/<game>/*/<game>.py` -- real, checked-in game
+implementations, e.g. `class Bp35(ARCBaseGame)`), then visualize the
+recorded frames with `scripts/visualize_recording.py` (already built
+this project, produces a scrubbable HTML replay).
+
+**Source reading was a partial dead end, but not for a boring reason:**
+past the first ~160 lines (sprite/level declarations, genuinely
+readable), both files' class/method/variable names are deliberately
+obfuscated (`iawriokslna`, `qzddpxsvrfr`, etc.) -- almost certainly
+intentional on the competition's part, so a game's exact win condition
+can't just be read out of the shipped engine code. Still extracted real,
+useful structure despite the obfuscation (control flow and argument
+types survive renaming): `bp35` has exactly one sprite (a single-pixel
+sprite, `pixels=[[9]]`) across all 9 levels, `available_actions=[3,4,6,7]`
+where 3/4 are 1D horizontal movement and 6 is a click; `ka59` has a much
+more visually complex multi-layer sprite scene and
+`available_actions=[1,2,3,4,6]` (full 4-directional movement + click).
+
+**Visualizing the actual frames (via the new big-budget recordings)
+found something neither source-reading nor any prior diagnostic had
+surfaced: both games impose a HARD, tight cap on actions per individual
+attempt, well below what a longer total budget can route around.**
+
+- **`ka59`: every single one of 24 episodes in the 2500-action run lasted
+  *exactly* 100 actions** (99 for the very first, an off-by-one from
+  counting at step 0) -- confirmed via `state` transitions in the
+  recording, completely independent of which action was being taken at
+  the moment of `GAME_OVER` (varied across ACTION1/2/3/4/6 with no
+  pattern) or where an ACTION6 click landed. A rendered two-color bar in
+  the frame itself (colors 0 and 4, counts always summing to a constant
+  ~96) ticks in lockstep with this -- a literal in-game countdown timer,
+  not a hazard or player mistake. This is a hard, deterministic per-
+  attempt ceiling, not a stochastic "died early" outcome.
+- **`bp35`: episode lengths cap at 64 actions (reached in 12 of 50
+  episodes, 24%) but end earlier in the rest** (range 20-64, mean 48.68)
+  -- so `bp35` has both a hard ceiling *and* an earlier-triggering
+  fail/hazard condition in most attempts. (A separate observed detail --
+  a small 2-pixel marker next to the player instantly vanishes exactly on
+  the `GAME_OVER` frame every time, and a background element's pixel
+  count fluctuates continuously regardless of action -- consistent with
+  some kind of animated hazard or timer visual, though its exact causal
+  role wasn't fully pinned down.)
+- **`tr87` (the one that occasionally solves) has no such tight cap**:
+  episode lengths measured at 128-129 actions in an earlier trace --
+  1.3-2x longer per attempt than `ka59`'s hard 100, nearly 2x `bp35`'s
+  64-cap, and not a suspiciously round number (consistent with a
+  hazard/state-based ending like `bp35`'s, not a rigid clock like
+  `ka59`'s).
+
+**Why this matters more than "these games are just harder":** every
+budget experiment in this whole investigation (the `MAX_ACTIONS=900`
+lever, this doc's own 2500-action probes) implicitly treated the action
+budget as one continuous pool an agent spends down across as many resets
+as it needs. That framing is wrong for `ka59` and partly wrong for
+`bp35` -- their real constraint is *per-attempt* runway, which a bigger
+total budget cannot relax at all; it only buys more independent
+100-action (or up-to-64-action) attempts, each starting from scratch. If
+the actual winning sequence needs meaningfully more setup/exploration
+than that per-attempt ceiling allows a largely-undirected policy to
+discover, no amount of *total* budget closes the gap -- which is exactly
+the null result already observed (0/9 for both games even at 2500 total
+actions). This reframes the earlier "margin ratio" analysis from the
+live-trace section above: the relevant number was never "total budget
+divided by first-level baseline," it's "hard per-attempt cap vs.
+first-level baseline," and `ka59`'s cap (100) vs. its own baseline (28)
+looks generous on paper but still isn't enough for a policy with no real
+multi-step planning to reliably find the right ~28-action sequence among
+the combinatorially many it could try in 100 mostly-undirected steps.
+
+**This is a genuinely new, previously-undocumented mechanism for this
+project** -- every prior `MAX_ACTIONS` analysis (`stage6_max_actions.md`,
+`stage6_budget_x_checkpoint.md`, this doc's own earlier sections) treated
+budget as fungible across resets. It isn't, at least not for these two
+games. Worth checking whether any other held-out or trained games have
+similarly tight per-attempt caps before trusting a budget-based lever's
+effect size on them specifically.
+
 ## Where this leaves the investigation
 
 **The held-out-games breadth ceiling that survived 13+ independent
@@ -304,6 +385,18 @@ anything past 900, let alone 2500, on these specific 3 games.
    project could actually ship as-is; the interesting result is that
    `tr87` is solvable in principle now, not that this exact config is
    submission-ready.
+5. ~~Live-trace `bp35`/`ka59` to find the real bottleneck~~ -- **done,
+   see "Source + visual diagnosis" above: both games hard-cap actions
+   PER ATTEMPT (`ka59` exactly 100, `bp35` up to 64) independent of total
+   `MAX_ACTIONS`, unlike `tr87` (128-150/attempt, no tight cap).** This
+   is the more actionable finding of the two: total-budget levers
+   (`MAX_ACTIONS`) cannot help these two games no matter how large, since
+   the constraint is runway-per-attempt, not total attempts. The next
+   real lever for `bp35`/`ka59` specifically would need to make EACH
+   single attempt more effective within its hard cap -- e.g. real
+   multi-step planning/lookahead, or wiring in Stage 3's recurrent core
+   (already built, never evaluated for pure exploration) -- rather than
+   any further budget or dose tuning.
 
 ## Housekeeping
 
