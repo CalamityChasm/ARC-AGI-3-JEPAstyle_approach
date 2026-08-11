@@ -185,6 +185,34 @@ direction (the same standard applied when the 8/8 budget+TTA combo result
 evaporated at n=25, and equally applicable here to avoid the opposite
 mistake of writing off a low-but-nonzero rate as noise).
 
+## bp35 and ka59 at the same budget: a clean negative, not just "not yet confirmed"
+
+Ran 8 fresh repeats each of `bp35` and `ka59` at `MAX_ACTIONS=2500`, same
+fixed agent, same checkpoint, same protocol as `tr87`'s confirmation
+batch above.
+
+**Result: 0/8 for `bp35`, 0/8 for `ka59` -- zero completions in 16 runs.**
+Combined with each game's earlier single run at this budget, that's
+**0/9 attempts for both games.** Unlike `tr87` (2/9, a real if modest
+positive rate), `bp35` and `ka59` show no sign of budging even with an
+8x larger budget and the action-selection fix both in place.
+
+**This sharpens the picture rather than muddying it.** The
+action-selection bug and the budget ceiling were real and, together,
+demonstrably sufficient to unlock `tr87` -- but they are evidently NOT
+sufficient for `bp35`/`ka59`, which points at a third factor specific to
+those two games (their own mechanics, a longer/more precise action
+sequence than a still-mostly-undirected softmax-sampled policy can find
+even with more tries, or something structurally different from `tr87`'s
+own difficulty shape). `bp35` (9 levels, win requires 4 distinct simple
+actions) and `ka59` (7 levels, 5 distinct actions including ACTION6) are
+plausibly harder in a way `tr87` (6 levels, only 4 actions, none of them
+ACTION6) isn't -- but that's speculation, not yet diagnosed. Worth a
+targeted live-trace on these two specifically (mirroring the same
+"trace the subset where it actually diverges" approach that found the
+argmax bug in the first place) if this is revisited, rather than assuming
+more budget alone would eventually crack them too.
+
 ## Where this leaves the investigation
 
 **The held-out-games breadth ceiling that survived 13+ independent
@@ -205,8 +233,10 @@ anything past 900, let alone 2500, on these specific 3 games.
 1. ~~Confirm `tr87`'s solve wasn't a lucky n=1 roll~~ -- **done, see
    above: replicated at 1/8 in a fresh batch, ~22% combined rate across 9
    total attempts. Real, but not yet reliable.**
-2. Test `bp35`/`ka59` at the same budget with more repeats before
-   concluding they need something beyond budget+diversity.
+2. ~~Test `bp35`/`ka59` at the same budget with more repeats~~ -- **done,
+   see above: a clean 0/9 for both. They need something beyond
+   budget+diversity; worth a targeted live-trace on these two
+   specifically before assuming more budget alone would help.**
 3. A real `MAX_ACTIONS=300`-budget agent-level backtest (n=25-30, this
    project's own standard for trusting a result) of the softmax fix
    alone, to properly confirm the `r11l` reliability gain (0.375 -> 0.500
