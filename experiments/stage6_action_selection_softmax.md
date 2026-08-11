@@ -161,6 +161,30 @@ policy) ever cracked it. `bp35`/`ka59` not solving even at 2500 actions
 in a single run doesn't rule out the same story applying with more
 repeats or more budget -- it just isn't confirmed yet at n=1.
 
+## Confirmation batch: was the tr87 solve a lucky n=1 roll?
+
+Ran 8 fresh repeats of `tr87` alone at `MAX_ACTIONS=2500` (same temporary
+bump-and-revert pattern, same fixed agent, same checkpoint) specifically
+to check whether the single solve above was a fluke.
+
+**Result: 1/8 repeats completed a level** (`tr87_bigbudget_confirm_r1`,
+`total_actions=2501`; r2-r8 all zero). Combined with the original single
+run, that's **2 solves across 9 total attempts at this budget (~22%)**.
+
+**This replicates, but modestly -- not the "clearly fixed" result a
+single success might have suggested.** The good news: it's not a fluke
+-- a genuinely novel-to-this-checkpoint game that had *never* been solved
+once across 48+ historical recordings, any budget, any world model, just
+got solved twice independently in two separate small samples. The honest
+caveat: at `MAX_ACTIONS=2500`, this is roughly a 1-in-4 to 1-in-9 event,
+not a reliable win -- `tr87` went from *literally never solvable* to
+*occasionally solvable given 8x the budget*, which is real, meaningful
+progress, but still far from "cracked." Consistent with this project's
+own repeated lesson about not over-reading a small sample in either
+direction (the same standard applied when the 8/8 budget+TTA combo result
+evaporated at n=25, and equally applicable here to avoid the opposite
+mistake of writing off a low-but-nonzero rate as noise).
+
 ## Where this leaves the investigation
 
 **The held-out-games breadth ceiling that survived 13+ independent
@@ -178,8 +202,9 @@ prior backtest (`experiments/stage6_budget_x_checkpoint.md`) never tested
 anything past 900, let alone 2500, on these specific 3 games.
 
 **Recommended next steps, in order:**
-1. Confirm `tr87`'s solve wasn't a lucky n=1 roll -- a small repeat batch
-   (n=4-8) at `MAX_ACTIONS=2500` with the fix in place.
+1. ~~Confirm `tr87`'s solve wasn't a lucky n=1 roll~~ -- **done, see
+   above: replicated at 1/8 in a fresh batch, ~22% combined rate across 9
+   total attempts. Real, but not yet reliable.**
 2. Test `bp35`/`ka59` at the same budget with more repeats before
    concluding they need something beyond budget+diversity.
 3. A real `MAX_ACTIONS=300`-budget agent-level backtest (n=25-30, this
@@ -188,12 +213,17 @@ anything past 900, let alone 2500, on these specific 3 games.
    at n=8) isn't itself a small-sample artifact -- this project has hit
    that exact trap twice already this session (novelty-aware beta, the
    budget+TTA combo).
-4. If (1)-(2) hold up, this reframes the real Kaggle-relevant lever as
+4. If (2) holds up, this reframes the real Kaggle-relevant lever as
    `MAX_ACTIONS` (already the highest-value single change found all
    session, per `experiments/stage6_budget_tta_combo.md`'s n=25
    confirmation) COMBINED with this action-selection fix, not test-time
    adaptation or any world-model change -- worth prioritizing over
    further TTA/meta-learning work for any future submission decision.
+   Note the combined lever's own cost, though: `MAX_ACTIONS=2500` is
+   ~8x the real Kaggle default's action budget -- not something this
+   project could actually ship as-is; the interesting result is that
+   `tr87` is solvable in principle now, not that this exact config is
+   submission-ready.
 
 ## Housekeeping
 
