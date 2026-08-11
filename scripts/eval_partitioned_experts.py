@@ -68,6 +68,7 @@ CHECKPOINTS = {
     "baseline-fold1": REPO_ROOT / "checkpoints_holdout_baseline",
     "partitioned-experts-fold1": REPO_ROOT / "checkpoints_partitioned_experts",
     "recalibrated-experts-fold1": REPO_ROOT / "checkpoints_recalibrated_experts",
+    "recalibrated-experts-v2-fold1": REPO_ROOT / "checkpoints_recalibrated_experts_v2",
 }
 
 

@@ -37,11 +37,37 @@ motivation -- same convention as build_game_to_expert's own round-robin):
 sorted list of the 20 non-held-out local games, first 15 -> SPECIALIZE_
 GAMES, last 5 -> CALIBRATE_GAMES.
 
+**v2 (this version): phase 2 got real structure back, targeting the two
+clearest collapse signatures the unregularized v1 attempt showed
+(see experiments/stage6_partitioned_experts.md's "Follow-up" section):**
+1. **Encoder frozen during recalibration** (ANIL-style, matching
+   `jepa/test_time_adapter.py`'s own restricted-parameter-subset
+   philosophy) -- v1's `val_identity_mse` collapsed 16x over 30 epochs,
+   the signature of the encoder itself drifting/overfitting on a narrow
+   5-game pool. Freezing it structurally prevents that regardless of what
+   the predictor/gate do.
+2. **A light `load_balance_loss` (weight 0.001, same value used in the
+   MiniGrid pretrain phase) stays active during recalibration** -- v1's
+   gate went to 0.00% entropy (fully deterministic) on both trained and
+   held-out games, exactly the failure mode this loss is designed to
+   penalize (`K * sum_i f_i * P_i`, minimized at uniform usage, maximized
+   at total collapse). It was previously reasoned that keeping this off
+   would reveal a "pure" real-objective routing signal -- instead it just
+   removed the only thing stopping the gate from collapsing.
+
+Deliberately NOT reintroduced: the routing-supervision cross-entropy loss
+(that's the game-id-lookup mechanism phase 2 exists specifically to move
+away from) and hard-routing (phase 2's whole point is a soft, gate-driven
+blend). An explicit diversity loss on raw per-expert outputs (targeting
+v1's ~100x InfoGain collapse) is deliberately deferred -- try (1) and (2)
+first, since they're both already-proven mechanisms, before adding a
+third, novel one.
+
 Usage:
     python -m jepa.train_recalibrated_moe --pretrain-epochs 20 \
         --specialize-epochs 60 --recalibrate-epochs 30 \
         --external-per-game 2000 --checkpoint-every 5 \
-        --out checkpoints_recalibrated_experts
+        --out checkpoints_recalibrated_experts_v2
 """
 
 import argparse
@@ -56,7 +82,7 @@ from .data.minigrid_data import DEFAULT_ENV_NAMES, generate_transitions
 from .data.trajectories import TransitionDataset, load_all_transitions
 from .device import get_device
 from .losses import prediction_loss, variance_regularizer, weighted_prediction_loss
-from .models import CNNEncoder, MoEPredictor, make_ema_target, update_ema_target
+from .models import CNNEncoder, MoEPredictor, load_balance_loss, make_ema_target, update_ema_target
 from .train_partitioned_moe import (
     _make_loaders,
     _run_partitioned_finetune_epochs,
@@ -82,41 +108,60 @@ CALIBRATE_GAMES = _ALL_20_SORTED[15:]
 
 def _run_recalibration_epochs(
     online, target, predictor, opt, train_loader, val_loader, device, epochs: int,
+    load_balance_weight: float = 0.001,
     checkpoint_cb=None, checkpoint_every: int = 0,
 ) -> None:
-    """Phase 2: normal SOFT gated forward(), real task loss only -- no
-    routing-supervision loss, no hard-routing, no load-balance loss. The
-    point is to see what the gate does when optimizing purely for
-    prediction accuracy, starting from a checkpoint whose experts are
-    already genuinely specialized (unlike every prior dense-gate run,
-    which started from unspecialized experts and had to learn
-    specialization and routing simultaneously)."""
+    """Phase 2 (v2): normal SOFT gated forward(), real task loss -- but
+    now with two structural fixes v1 lacked, both targeting a specific
+    diagnosed v1 collapse signature (see module docstring):
+
+    1. Encoder frozen (online(cur) wrapped in no_grad(), online.eval(),
+       and `opt` is constructed over predictor.parameters() only by the
+       caller) -- prevents the representation collapse v1's
+       val_identity_mse showed (16x drop over 30 epochs).
+    2. A light load_balance_loss stays active -- prevents the gate
+       collapsing to full determinism (0.00% entropy) v1 showed on both
+       trained and held-out games.
+
+    Still deliberately absent: routing-supervision loss, hard-routing.
+    The point remains letting the gate learn routing from the real task
+    objective, not a lookup table -- just without the two failure modes
+    that made v1's version of "no structure" collapse instead of learn."""
+    online.eval()  # frozen for the whole phase -- never re-toggled to train()
     for epoch in range(epochs):
-        online.train()
         predictor.train()
         total_loss = 0.0
+        total_lb_loss = 0.0
         n_batches = 0
         for cur, action_id, xy, nxt, patch_mask, game_idx in train_loader:
             cur, action_id, xy = cur.to(device), action_id.to(device), xy.to(device)
             nxt, patch_mask, game_idx = nxt.to(device), patch_mask.to(device), game_idx.to(device)
-            cur_feat = online(cur)
-            pred_feat, _gate_weights = predictor(cur_feat, action_id, xy, game_idx)
             with torch.no_grad():
+                cur_feat = online(cur)
                 target_feat = target(nxt)
+            pred_feat, gate_weights = predictor(cur_feat, action_id, xy, game_idx)
 
-            loss = weighted_prediction_loss(pred_feat, target_feat, patch_mask) + variance_regularizer(cur_feat)
+            lb_loss = load_balance_loss(gate_weights)
+            loss = (
+                weighted_prediction_loss(pred_feat, target_feat, patch_mask)
+                + variance_regularizer(cur_feat)
+                + load_balance_weight * lb_loss
+            )
 
             opt.zero_grad()
             loss.backward()
             opt.step()
-            update_ema_target(target, online, EMA_MOMENTUM)
+            # No EMA/encoder update -- online is frozen this phase, so
+            # target has nothing new to track toward.
 
             total_loss += loss.item()
+            total_lb_loss += lb_loss.item()
             n_batches += 1
 
         stats = evaluate(online, predictor, val_loader, device=device)
         print(
-            f"[recalibrate] epoch {epoch + 1}/{epochs}  train_loss={total_loss / n_batches:.4f}  "
+            f"[recalibrate-v2] epoch {epoch + 1}/{epochs}  train_loss={total_loss / n_batches:.4f}  "
+            f"lb_loss={total_lb_loss / n_batches:.3f}  "
             f"val_pred_mse={stats['pred']:.5f}  val_identity_mse={stats['identity']:.5f}  |  "
             f"changed-patches: pred={stats['pred_changed']:.5f} identity={stats['identity_changed']:.5f}"
         )
@@ -138,6 +183,7 @@ def train(
     minigrid_steps_per_episode: int = 80,
     routing_weight: float = 0.01,
     game_id_dropout_p: float = 0.25,
+    recalibrate_load_balance_weight: float = 0.001,
     checkpoint_every: int = 0,
 ) -> None:
     device = get_device()
@@ -211,15 +257,18 @@ def train(
     del spec_train_loader, spec_val_loader
     _save("specialize-complete", "specialize")
 
-    # --- Phase 2: soft end-to-end recalibration on CALIBRATE_GAMES only ---
-    # Fresh optimizer: phase 1's AdamW moment estimates were shaped by the
-    # hard-routed loss landscape (only one expert + the gate's routing
-    # head getting gradient per example); reusing them into a suddenly
-    # dense, differently-shaped loss surface risks a bad first few steps.
-    opt = torch.optim.AdamW(list(online.parameters()) + list(predictor.parameters()), lr=lr)
+    # --- Phase 2 (v2): soft end-to-end recalibration on CALIBRATE_GAMES
+    # only, encoder frozen -- fresh optimizer over predictor.parameters()
+    # ONLY (online is frozen this phase; including it would let AdamW's
+    # moment estimates accumulate for a parameter set that never
+    # receives gradient, which is harmless but wasteful -- excluding it
+    # is also the clearest signal in the code itself that the encoder is
+    # deliberately not part of this phase). ---
+    opt = torch.optim.AdamW(predictor.parameters(), lr=lr)
     cal_train_loader, cal_val_loader = _make_loaders(calibrate_transitions, game_vocab, batch_size, device)
     _run_recalibration_epochs(
         online, target, predictor, opt, cal_train_loader, cal_val_loader, device, recalibrate_epochs,
+        load_balance_weight=recalibrate_load_balance_weight,
         checkpoint_cb=lambda e, phase: _save(f"{phase}-epoch{e}-inprogress", "recalibrate"),
         checkpoint_every=checkpoint_every,
     )
@@ -233,10 +282,11 @@ if __name__ == "__main__":
     parser.add_argument("--recalibrate-epochs", type=int, default=30)
     parser.add_argument("--num-experts", type=int, default=8)
     parser.add_argument("--encoder", type=Path, default=REPO_ROOT / "checkpoints" / "encoder.pt")
-    parser.add_argument("--out", type=Path, default=REPO_ROOT / "checkpoints_recalibrated_experts")
+    parser.add_argument("--out", type=Path, default=REPO_ROOT / "checkpoints_recalibrated_experts_v2")
     parser.add_argument("--external-per-game", type=int, default=None)
     parser.add_argument("--routing-weight", type=float, default=0.01)
     parser.add_argument("--game-id-dropout", type=float, default=0.25)
+    parser.add_argument("--recalibrate-load-balance-weight", type=float, default=0.001)
     parser.add_argument("--checkpoint-every", type=int, default=0)
     args = parser.parse_args()
     train(
@@ -248,5 +298,6 @@ if __name__ == "__main__":
         external_per_game=args.external_per_game,
         routing_weight=args.routing_weight,
         game_id_dropout_p=args.game_id_dropout,
+        recalibrate_load_balance_weight=args.recalibrate_load_balance_weight,
         checkpoint_every=args.checkpoint_every,
     )

@@ -1,6 +1,6 @@
 # Stage 6 experiment: does hard-partitioning MoE experts by training game close the held-out-games gap?
 
-**Status: COMPLETE, including a user-proposed follow-up. Hard-partitioning alone: clean negative on held-out generalization, real positive on spreading specialization across experts, at a severe cost to trained-game accuracy. The follow-up (specialize, then recalibrate the gate end-to-end on a disjoint game pool with no auxiliary loss) was tried in full and made every metric worse, via representation collapse in the narrow, unregularized recalibration phase -- see the "Follow-up" section at the end.**
+**Status: COMPLETE, including two follow-ups. Hard-partitioning alone: clean negative on held-out generalization, real positive on spreading specialization across experts, at a severe cost to trained-game accuracy. Follow-up v1 (specialize, then recalibrate the gate end-to-end on a disjoint game pool with no auxiliary loss) made every metric worse via representation collapse. Follow-up v2 (same idea, but with the encoder frozen and a light load-balance loss kept active during recalibration) fixed the representation-collapse symptom cleanly but left the gate just as collapsed as v1, and the combination is a further regression, not an improvement -- see "Follow-up v2" at the end for the full mechanistic diagnosis. Recommend pausing this line of experiments here.**
 
 ## Motivation
 
@@ -310,6 +310,123 @@ turned out to be the actual blocker. Not recommended as the next lever
 to pull; test-time adaptation and further content-derived conditioning
 (if a genuinely new mechanism is found, not a variant of the three
 already tried) remain better-motivated next steps.
+
+## Follow-up v2: frozen encoder + light load-balance loss during recalibration -- one fix worked cleanly, the other didn't move at all, and combined they're worse than v1
+
+**Motivation.** v1's recalibration phase (previous section) collapsed via
+two distinct symptoms: `val_identity_mse` (encoder-only) dropped 16x over
+30 epochs, and the gate went fully deterministic (0.00% entropy) on both
+trained and held-out games. Two targeted, independently-motivated fixes,
+both reusing already-proven mechanisms rather than inventing anything
+new:
+
+1. **Freeze the encoder during phase 2** (ANIL-style, matching
+   `TestTimeAdapter`'s own restricted-parameter-subset design) --
+   `online(cur)` wrapped in `torch.no_grad()`, phase-2 optimizer built
+   over `predictor.parameters()` only. If the encoder can't move, it
+   can't collapse.
+2. **Keep a light `load_balance_loss` active** (weight 0.001, the exact
+   value already validated for the MiniGrid pretrain phase) -- directly
+   targets gate determinism, the Switch-Transformer-style loss v1 had
+   turned off entirely.
+
+## Results (v1 vs v2, both against the same baseline)
+
+| metric | baseline | v1 (no structure) | **v2 (frozen encoder + load-balance)** |
+|---|---|---|---|
+| trained-games changed-patches | +49.89% | -3.51% | **-134.61%** |
+| held-out changed-patches (pooled) | -0.19% | -1.84% | **-7.11%** |
+| held-out `r11l` | -1.4% | -39.7% | -19.1% |
+| held-out `bp35` | -0.3% | -0.9% | -10.2% |
+| held-out `m0r0` | +0.3% | -3.4% | +0.0% |
+| held-out `tr87` | -0.3% | -9.6% | +0.6% |
+| held-out `ka59` | -0.2% | -21.8% | -6.3% |
+| val_identity_mse over 30 epochs | -- | dropped 16x (collapse) | **flat at 0.00021, exactly, every epoch** |
+| gate entropy, held-out/trained (% of max) | 99.82% / 99.00% | 0.00% / 0.00% | **0.00% / 0.00% -- unchanged** |
+| `load_balance_loss` value | -- | not tracked (loss absent) | **pinned at 8.000 (the theoretical maximum) from epoch 1 through epoch 30, never moving** |
+| InfoGain held-out / trained (absolute) | 7.1e-3 / 1.4e-2 | 5.3e-5 / 3.8e-5 (near-total collapse) | 2.7e-4 / 7.4e-4 (partial recovery, still far below baseline) |
+| split-half agreement (trained) | 71.9% | 76.4% | 75.3% |
+
+**Fix 1 (frozen encoder) worked exactly as designed, in isolation.**
+`val_identity_mse` is *exactly* flat at 0.00021 every single epoch of
+phase 2 -- not approximately stable, literally unchanged to 5 decimal
+places, which makes sense: if `online` truly never receives a gradient,
+this number can only change from EMA-target drift, and target has
+nothing left to drift toward once online is frozen. The representation-
+collapse symptom v1 showed is completely gone. InfoGain also partially
+recovered (2.7e-4 vs. v1's 5.3e-5) -- consistent with the encoder no
+longer actively degrading over the course of phase 2.
+
+**Fix 2 (load-balance loss) did not move the gate at all.** `lb_loss`
+sat at exactly 8.000 -- `num_experts`, the theoretical ceiling for total
+collapse to one expert -- for the entire 30-epoch run, with zero visible
+drift in either direction. Gate entropy confirms this: 0.00% of max on
+both trained and held-out games, statistically identical to v1's fully
+collapsed gate. **The likely reason this weight (0.001) didn't work here
+even though it's the exact value already validated for the original
+MiniGrid pretrain phase:** that validation happened starting from a
+freshly-initialized gate with small, symmetric logits. Phase 2 here
+instead warm-starts from a gate whose logits were just driven toward a
+literal one-hot cross-entropy target for 60 epochs of hard-routing
+(`routing_acc=1.000` by the end of phase 1) -- almost certainly saturating
+the gate's last layer to large-magnitude weights that produce a
+near-one-hot softmax regardless of input, a very different and much
+harder-to-escape starting point than fresh initialization. A weight
+tuned to nudge a gate *away from an attractor it's drifting toward* is
+not obviously the right weight to *pull a gate back out of a state it's
+already been driven deep into* -- those are different optimization
+problems even though both are called "load-balance loss."
+
+**Net effect: worse than v1 on the metrics that matter most, not
+better.** Trained-games changed-patches went from v1's already-bad
+-3.51% to **-134.61%** -- more than double the identity baseline's own
+error. The most likely mechanism: with the gate stuck routing every
+example to the same single expert (unfixed) and the encoder now unable
+to move at all (newly frozen), the model lost its last remaining degree
+of freedom to compensate for a badly-mismatched routing decision. v1's
+unfrozen encoder could at least drift to partially absorb the mismatch
+(which is itself *why* it collapsed -- but the collapse and the
+compensation were two sides of the same coping mechanism); v2 removed
+that coping mechanism without fixing the actual mismatch underneath it,
+leaving the single always-selected expert to try to fit all of
+`CALIBRATE_GAMES`' genuinely different dynamics through one frozen
+feature space it was never trained for. Held-out generalization followed
+the same pattern (-1.84% -> -7.11%, worse across 4 of 5 individual
+games).
+
+## Honest read
+
+**One targeted diagnosis, one clean confirmed fix, one confirmed
+non-fix -- worth knowing precisely, not just "v2 was worse."** This
+wasn't a wasted experiment: it directly answers the question "does
+freezing the encoder alone solve the collapse problem" (no -- it solves
+*its own* symptom cleanly but that symptom wasn't the dominant driver of
+the bad accuracy) and "does the established load-balance weight transfer
+to a hard-routing-warm-started gate" (no, and now there's a specific,
+falsifiable mechanistic reason why: logit saturation from the
+cross-entropy warm-start, not a generic "load-balance doesn't work
+here"). A future attempt at this specific idea would need either a much
+larger load-balance weight calibrated for *this* starting condition
+specifically (not borrowed from the fresh-init case), or an explicit
+reset/rescale of the gate's last layer before phase 2 begins (mirroring
+this project's own established zero-init/small-random-init precedent for
+avoiding a different kind of gate symmetry problem at the *start* of MoE
+training, applied here to break saturation instead).
+
+**Given this is now the second consecutive negative result for the
+specialize-then-recalibrate idea specifically, and the ~18th-ish
+intervention against the broader held-out-generalization gap across this
+whole Stage 6 investigation, the marginal case for a v3 attempt is
+weaker than it was for v2.** Both structural fixes tested here were
+well-motivated and each taught something real and specific -- but
+neither, alone or combined, improved on v1's own already-negative
+result, and v2 is a clear regression on the metric that matters most
+(trained-games accuracy). Recommend pausing this specific line
+(specialize-then-recalibrate) here rather than iterating a third time on
+the same mechanism, and redirecting further effort toward test-time
+adaptation (the one lever in this entire investigation with any
+confirmed positive signal) unless a fundamentally different idea for
+fixing gate saturation specifically presents itself.
 
 ## Follow-up: specialize-then-recalibrate curriculum (user-proposed) -- tried in full, made everything worse
 
