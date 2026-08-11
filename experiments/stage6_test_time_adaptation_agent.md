@@ -375,6 +375,108 @@ surface as worse real play. Both are honest, useful findings:
   now that the wiring, reset mechanism, and backtest protocol are all in
   place and reusable.
 
+## Follow-up: why don't representation-level TTA gains ever show up in play? Two hypotheses tested, one ruled out, one confirmed real but still not enough
+
+By this point TTA had failed to show an agent-level benefit in three
+separate tests (plain TTA here, the `MAX_ACTIONS=900` combo, and
+TTA-on-top-of-Reptile-meta-learning -- see CLAUDE.md's Stage 6 addendum).
+Rather than run a fourth backtest at the same operating point hoping for
+a different roll, went looking for a mechanistic reason the
+representation-level gain might not be translating.
+
+**Hypothesis 1 (ruled out): TTA's accuracy gradient suppresses InfoGain.**
+TTA's loss is plain per-step prediction MSE on the GATED blend across all
+8 MoE experts. Since averaging several experts' raw predictions reduces
+variance, the gradient that lowers prediction error could plausibly also
+be pulling the experts' *raw* (ungated) predictions toward agreement with
+each other -- directly eroding InfoGain (expert disagreement,
+`jepa/hypothesis_bundle.py: info_gain`), which the Stage 6 addendum's own
+earlier finding showed does NOT collapse under a frozen forward pass and
+is exactly what `Hypothesis` falls back on via `NOVELTY_BETA_CAP` on an
+unfamiliar game. Built `scripts/diagnose_tta_infogain_collapse.py`
+(reuses `scripts/test_time_adaptation.py`'s exact adaptation trajectory,
+adds a fixed-sample InfoGain measurement at each checkpoint) and ran it
+at the production operating point (K=5, STEPS=8, LR=5e-5, from
+`hypothesis_agent.py`'s `TTA_K`/`TTA_STEPS`/`TTA_LR` defaults) across all
+5 held-out games. **Result: InfoGain ratio (post/pre-adaptation) = 1.017
+-- flat to slightly up, not collapsing.** Hypothesis not supported.
+
+**A real, previously-unexamined flaw found while checking this: the
+"conservative" operating point was chosen against a cost that doesn't
+exist in deployment.** `sweep_test_time_adaptation.py`'s config search
+penalized configs for trained-game interference (re-evaluating the SAME
+adapted weights on OTHER games after adapting on one held-out game). But
+`TestTimeAdapter`'s own docstring is explicit that this never happens in
+production: `ARC-AGI-3-Agents/agents/swarm.py` constructs one fresh
+`Hypothesis` instance (and therefore one fresh `TestTimeAdapter`, from
+the pristine checkpoint) per `game_id`, and an agent's `main()` loop only
+ever plays that ONE game before exiting. Cross-game interference is real
+*in the diagnostic's own methodology* but structurally impossible in real
+play. The sweep's "conservative" pick was solving for a cost that cannot
+occur.
+
+**Testing a much higher dose directly (K=5, STEPS=25, LR=2e-4, vs.
+production's STEPS=8/LR=5e-5), freed from that fictitious constraint:**
+mean held-out changed-patches improvement at n=200 jumped from
+production's **+0.79%** to **~+5.5%** -- roughly 7x larger, with 4 of 5
+games improving substantially (`bp35` +7.29%, `m0r0` +13.38%, `ka59`
++7.30%, `r11l` +1.85%) and one regression (`tr87` -2.22%, after dipping
+to -6.53% mid-trajectory). InfoGain still did not collapse at this dose
+either (ratio 1.077) -- so the higher dose isn't buying its accuracy gain
+by quietly disarming exploration.
+
+**Agent-level backtest, n=8, same round, same checkpoint
+(`checkpoints_holdout_baseline` copied into `checkpoints/`), same 5 held-
+out games, matching this project's own standing lesson (from the
+novelty-aware-beta retraction) to always rerun the baseline fresh rather
+than reuse a number from a different round:**
+
+| condition | n | mean score | mean levels | total levels (of 8) | distinct games |
+|---|---|---|---|---|---|
+| TTA off (fresh baseline) | 8 | 0.00289 | 0.375 | 3 | 1 (`r11l`) |
+| TTA on, high dose (K=5, STEPS=25, LR=2e-4) | 8 | 0.07267 | 0.375 | 3 | 1 (`r11l`) |
+
+**Exactly tied on levels-completed -- the metric this project has
+repeatedly found more robust than mean score at this sample size (see
+CLAUDE.md's Stage 2/5 sections and the novelty-aware-beta retraction).**
+Despite a representation-level gain roughly 7x larger than production's
+own operating point, and confirmed-preserved InfoGain, the higher dose
+produces zero detectable agent-level difference from TTA off. Mean score
+looks higher for the high-dose condition (0.073 vs 0.003), but per this
+project's own repeated finding that score is outlier-driven and noisier
+than levels-completed at n=8, this is not read as a real effect on its
+own.
+
+**This is the 4th time this session a real, verified component-level
+improvement (teacher-policy value head, plain TTA, TTA+Reptile
+meta-learning, now a 7x-larger-dose TTA) has failed to produce a
+statistically detectable agent-level effect on these 5 held-out games.**
+Given the accumulating pattern, and given a much larger accuracy gain
+still produced an *exact* tie (not even a favorable-but-inconclusive
+lean), this is stronger evidence than any single prior instance that the
+ceiling on the other 4 games (`bp35`, `m0r0`, `tr87`, `ka59`) is not
+primarily about world-model prediction accuracy at all -- every backtest
+run in this entire investigation, across every condition (baseline,
+budget, TTA at any dose, meta-learning, novelty-aware beta), has solved
+`r11l` and only `r11l`. Whatever gates progress on the other 4 games
+looks structural to those specific games at a 300-action budget (an
+exploration-strategy ceiling, an action-budget ceiling, or something
+about those games' own mechanics/scoring), not something a more accurate
+one-step predictor -- however obtained -- is positioned to fix. Sinking
+further effort into dosage or mechanism tuning for TTA specifically is
+not recommended as the next lever; if held-out-game breadth (not just
+`r11l` reliability) is the goal, the next diagnostic should ask
+specifically why `bp35`/`m0r0`/`tr87`/`ka59` never get solved under ANY
+condition tested to date, independent of the world model.
+
+**Housekeeping:** the higher-dose config was NOT promoted to
+`hypothesis_agent.py`'s defaults (`TTA_STEPS`/`TTA_LR` remain 8/5e-5) --
+no agent-level benefit was found to justify the change, and the
+regression on `tr87` at the higher dose is a real, if untested-at-
+agent-level, downside risk. `scripts/diagnose_tta_infogain_collapse.py`
+is kept as a reusable diagnostic (supports `--k`/`--steps`/`--lr`
+overrides) for any future dose-related question.
+
 ## Reproducing this experiment
 
 ```
