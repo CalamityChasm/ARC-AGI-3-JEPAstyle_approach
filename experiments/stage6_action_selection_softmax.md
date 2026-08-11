@@ -207,11 +207,61 @@ even with more tries, or something structurally different from `tr87`'s
 own difficulty shape). `bp35` (9 levels, win requires 4 distinct simple
 actions) and `ka59` (7 levels, 5 distinct actions including ACTION6) are
 plausibly harder in a way `tr87` (6 levels, only 4 actions, none of them
-ACTION6) isn't -- but that's speculation, not yet diagnosed. Worth a
-targeted live-trace on these two specifically (mirroring the same
-"trace the subset where it actually diverges" approach that found the
-argmax bug in the first place) if this is revisited, rather than assuming
-more budget alone would eventually crack them too.
+ACTION6) isn't -- see the live-trace follow-up immediately below, which
+confirmed action diversity is fine on both but found episode length
+alone doesn't cleanly explain the gap either.
+
+## Live-tracing bp35 and ka59 specifically: action diversity is fine, episode length differs a lot, neither cleanly predicts the gap
+
+Enabled `DEBUG` again and ran one full `MAX_ACTIONS=2500` episode each on
+`bp35` and `ka59` directly through `main.py` (same as the `tr87` trace
+earlier), to see what's actually happening now that the argmax-lock bug
+is fixed and the budget is large.
+
+**Action diversity is confirmed genuinely fine on both -- the fix is
+working as intended, this isn't a repeat of the original bug:**
+
+| game | available actions | action counts (2500-action run) |
+|---|---|---|
+| `bp35` | `[3,4,6,7]` | a3:495 a4:483 a6:410 a7:461 -- roughly even |
+| `ka59` | `[1,2,3,4,6]` | a1:348 a2:336 a3:375 a4:372 a6:330 -- roughly even |
+
+**Episode length (time between `RESET`s -- confirmed via
+`hypothesis_agent.py`'s own code that `RESET` only ever fires reactively
+on `GameState.GAME_OVER`/`NOT_PLAYED`, not voluntarily) differs
+substantially across the three games, and does NOT cleanly predict which
+ones solve:**
+
+| game | resets in a 2500(ish)-action run | avg actions/episode | first-level baseline | margin (episode length / baseline) | solved at all? |
+|---|---|---|---|---|---|
+| `bp35` | 50 (per 2500) | 50.0 | 21 | 2.38x | No (0/9) |
+| `tr87` | 2 (per 300, extrapolates to ~17 per 2500) | 150.0 | 54 | 2.78x | **Yes (2/9)** |
+| `ka59` | 24 (per 2500) | 104.2 | 28 | **3.72x** (best margin of the three) | No (0/9) |
+
+**This rules out the simplest story ("shorter episodes = harder to
+solve").** `ka59` has the *most* headroom per attempt relative to its own
+first-level difficulty (3.72x) of any of the three games, and still
+never solved once across 9 full attempts -- while `tr87`, with a
+tighter margin (2.78x), did. `bp35`'s short ~50-action episodes (2.38x
+margin, the tightest of the three) are at least directionally consistent
+with "less room per attempt," but on their own don't explain why `ka59`
+also fails despite ample room.
+
+**Working read:** episode length is a real, measurable difference between
+these games, but not sufficient on its own to explain the gap -- the
+remaining bottleneck for `bp35`/`ka59` is more likely genuine mechanical
+difficulty (a specific, non-obvious sequence or setup state that a
+memoryless, one-step-Q, temperature-diversified policy has no real
+sequence-planning ability to discover, regardless of how many independent
+short attempts it gets) rather than a budget or diversity problem this
+session's fixes could reach. Confirming that properly would need either
+(a) direct visual inspection of `bp35`/`ka59`'s frame sequences to
+understand their actual mechanics, or (b) a genuinely different
+exploration strategy with real multi-step lookahead/planning (this
+project's Stage 3 recurrent core carries episode history but was never
+evaluated on pure exploration efficacy the way `Hypothesis`'s InfoGain/
+value blend was) -- both meaningfully larger undertakings than a live
+trace, and not pursued further this session.
 
 ## Where this leaves the investigation
 
