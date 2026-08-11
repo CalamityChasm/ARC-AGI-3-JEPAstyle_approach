@@ -81,6 +81,24 @@ class Hypothesis(Agent):
     # same rationale as Curiosity's PATCH_SAMPLE_TEMPERATURE (see that
     # agent's own _sample_click). Not swept here either.
     PATCH_SAMPLE_TEMPERATURE = 0.1
+    # Softmax temperature for TOP-LEVEL action selection (a1 vs a2 vs ...),
+    # replacing what used to be a hard argmax over Q(s,a). Found via a
+    # live-trace diagnostic on the held-out games that never get solved
+    # under any world-model condition (bp35, tr87, ka59 -- see CLAUDE.md's
+    # Stage 6 addendum): Q margins between candidate SIMPLE actions are
+    # routinely tiny (e.g. 0.098/0.105/0.104/0.097) but consistently favor
+    # the same one turn after turn, so a hard argmax locks onto ONE action
+    # for essentially the entire episode (100% of greedy decisions, not
+    # just most of them, on all three games checked) -- unlike a
+    # click-only game like r11l, where even always picking ACTION6 still
+    # gets real behavioral diversity for free from _sample_click's own
+    # softmax over WHERE to click. Simple actions have no such parameter
+    # to vary, so this was the one form of the "deterministic argmax on a
+    # near-flat map defaults to the same index" bug (see this project's
+    # own Gotchas entry) that was never actually fixed here -- only
+    # _sample_click and Curiosity's analogous version were. Same value as
+    # PATCH_SAMPLE_TEMPERATURE for consistency; not independently swept.
+    ACTION_SAMPLE_TEMPERATURE = 0.1
     # None (default) uses the real entropy-driven beta from HypothesisBundle.
     # Set to a fixed float (0.0 = pure InfoGain/explore, 1.0 = pure
     # value-greedy/exploit) to ablate the Q-blend itself -- isolates
@@ -468,17 +486,35 @@ class Hypothesis(Agent):
                 action.reasoning = "hypothesis agent: epsilon-random fallback"
             else:
                 beta = self.FORCE_BETA if self.FORCE_BETA is not None else self.hypotheses.beta()
-                best_q, best_action_id, best_xy = -1e18, available[0], None
                 trace = []
+                xy_by_candidate = {}
                 for candidate in available:
                     q, xy_candidate = self._score_action(feat, candidate, beta)
                     trace.append((candidate, q))
-                    if q > best_q:
-                        best_q, best_action_id, best_xy = q, candidate, xy_candidate
+                    xy_by_candidate[candidate] = xy_candidate
+                # Temperature-weighted softmax sample over Q(s, candidate),
+                # not a hard argmax -- see ACTION_SAMPLE_TEMPERATURE's own
+                # docstring. A hard argmax here reproduces, for simple
+                # (non-ACTION6) actions, exactly the "deterministic argmax
+                # on a near-flat map always picks the same index" bug
+                # _sample_click already had to fix for click location: live
+                # traces on bp35/tr87/ka59 showed the greedy branch picking
+                # the SAME single action on 100% of decisions all episode,
+                # because tiny Q margins (e.g. 0.098/0.105/0.104/0.097)
+                # still have one candidate consistently, if barely, ahead.
+                qs = [q for _c, q in trace]
+                max_q = max(qs)
+                weights = [
+                    pow(2.718281828, (q - max_q) / self.ACTION_SAMPLE_TEMPERATURE) for q in qs
+                ]
+                candidates = [c for c, _q in trace]
+                best_action_id = self._rng.choices(candidates, weights=weights, k=1)[0]
+                best_q = dict(trace)[best_action_id]
+                best_xy = xy_by_candidate[best_action_id]
                 if logger.isEnabledFor(logging.DEBUG):
                     trace_str = " ".join(f"a{c}:{q:.5f}" for c, q in trace)
                     logger.debug(
-                        f"{self.game_id} - hypothesis trace: beta={beta:.3f} {trace_str} -> chosen a{best_action_id}"
+                        f"{self.game_id} - hypothesis trace: beta={beta:.3f} {trace_str} -> sampled a{best_action_id}"
                     )
                 action_id, xy = best_action_id, best_xy
                 action = GameAction.from_id(action_id)
