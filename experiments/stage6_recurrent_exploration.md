@@ -1,8 +1,12 @@
 # Stage 6: wiring Stage 3's recurrent core into live exploration for the first time
 
-**Status: COMPLETE. Clean negative -- real accumulated episode memory, in
-this design, does not unlock `bp35`/`ka59` either, at either budget
-tested.**
+**Status: COMPLETE. Clean negative for both retrospective memory AND real
+multi-step lookahead search, on both games, at both budgets tested --
+and mechanistically explained: the recurrent world model itself collapses
+to identity on held-out games, so nothing built on top of it (better
+ranking, real memory, real search) has real signal to search over. See
+the "Follow-up" section below for the search result and root-cause
+diagnostic.**
 
 ## Motivation
 
@@ -132,6 +136,93 @@ experiment is reasonably strong evidence that the "smarter ranking of
 already-observed outcomes" family of fixes is exhausted for these two
 games specifically.
 
+## Follow-up: real lookahead/search, and why it also fails -- mechanistically confirmed
+
+Per this doc's own recommendation, built `RecurrentSearch`
+(`ARC-AGI-3-Agents/agents/templates/recurrent_search_agent.py`): genuine
+random-shooting MPC over the recurrent predictor, not retrospective
+ranking. Each decision: for every candidate first action (all simple
+actions + 6 uniformly-sampled ACTION6 click points), simulate
+`SEARCH_DEPTH=3` steps forward *purely in feature space* (predicted
+features fed back in as the next "current" state -- no CNN re-encoding,
+no real environment interaction), scored by the max *reachable novelty*
+along the trajectory (min L2 distance from each imagined pooled feature
+to any REAL feature already observed this episode, via an episodic
+memory that only ever records true observations). The highest-scoring
+candidate's first action is taken -- standard random-shooting MPC, the
+natural lightweight search when you have a learned dynamics model and no
+reward model. `self._hidden`/`self._memory` only ever advance from real
+transitions; the scratch hidden state used inside a single search call
+is a clone, discarded after scoring.
+
+**Backtest (n=8 each, `bp35`/`ka59`, both 300 and 2500 actions, same
+protocol as `RecurrentCuriosity` above): 0/32.** A third fundamentally
+different exploration strategy -- after `Hypothesis`'s InfoGain/value
+blend and `RecurrentCuriosity`'s retrospective surprise ranking -- comes
+back a clean null. Combined total across this whole investigation: **0/48
+across three architecturally distinct exploration strategies, at two
+budgets each, on these two specific games.**
+
+**Diagnosed the mechanism rather than leaving three unexplained nulls
+side by side.** Built `scripts/diagnose_recurrent_residual_holdout.py`,
+mirroring the exact diagnostic Stage 6 already used to explain the MoE
+predictor's own held-out-game collapse (CLAUDE.md's Stage 6 addendum,
+item 3): stream real local-recording transitions with a real accumulated
+hidden state through the recurrent predictor, measure the residual
+branch's magnitude (pre-skip-connection, i.e. `self.net(x)` before
+`feat + self.net(x)`) relative to the true observed feature delta.
+
+| | mean residual^2 | mean true-delta^2 | residual/true-delta ratio |
+|---|---|---|---|
+| held-out games (`r11l,bp35,m0r0,tr87,ka59`, n=244,900 transitions) | 3.05e-4 | 7.42e-3 | **0.041** |
+| trained games (60-episode sample, n=9,420 transitions) | 1.35e-4 | 4.15e-4 | **0.325** |
+
+**The recurrent predictor's residual branch is ~8x weaker relative to the
+true change on held-out games than on trained ones -- it is coasting to
+identity on unfamiliar games, structurally the same failure Stage 6
+already found and named for the MoE predictor.** This is not a new bug;
+it's the same root cause reappearing in an independently-trained model,
+which is itself informative: two architecturally different predictors
+(MoE gating vs. a monolithic GRU-conditioned model), trained on the same
+~20-game corpus, both learn to hedge toward "predict no change" on a
+genuinely novel game rather than commit to a real residual.
+
+**This is a real, mechanistic explanation for the triple null, not
+speculation:** `RecurrentSearch`'s whole exploration signal depends on the
+model imagining *meaningfully different* futures for different candidate
+actions. If the model instead predicts "almost nothing changes"
+regardless of which action or click is imagined, every candidate's
+simulated trajectory looks nearly identical to the current state and to
+each other -- the novelty-scoring objective has almost no real signal to
+discriminate on, and the sophisticated MPC machinery degrades toward
+picking among near-tied, uninformative options (functionally close to
+the epsilon-random fallback, which is exactly what the 0/32 result looks
+like). The bottleneck was never really "the exploration *strategy*
+wasn't smart enough" -- retrospective ranking, real episodic memory, and
+now genuine multi-step search were all tried and all hit the same wall
+-- it's that **the world model these strategies search *over* has
+nothing real to offer on a genuinely unseen game**, the exact same
+data-bound ceiling this project's Stage 6 addendum already established
+for the MoE predictor via 7+ independent conditioning/architecture
+interventions, now confirmed to extend to a second, independently-built
+predictor architecture too.
+
+**Where this leaves the investigation, for real this time:** every lever
+this project can build *on top of* a frozen-or-lightly-adapted world
+model trained on ~20-25 ARC-3 games -- better ranking, real memory,
+real search -- has now been tried against `bp35`/`ka59` specifically and
+failed identically, for the same underlying reason each time. Per Stage
+6's own accumulated conclusion (13+ interventions against the broader
+held-out-games gap, all converging the same way): closing this requires
+either genuinely more diverse *training* data (the one lever that worked
+once, for Stage 4's MoE gate specialization via MiniGrid) or a
+fundamentally different adaptation mechanism (test-time adaptation showed
+a real if modest representation-level effect earlier this session,
+`experiments/stage6_test_time_adaptation_agent.md`) -- not another
+exploration-strategy variant layered on the current world model. This is
+a good, well-evidenced stopping point for the exploration-strategy family
+of fixes specifically.
+
 ## Reproducing this experiment
 
 ```
@@ -141,4 +232,9 @@ python -m jepa.train_recurrent_predictor --epochs 30 \
 python scripts/run_scorecard.py --agent recurrentcuriosity --label rc_bp35_r1 --game bp35
 # ... repeat x8 per game, per budget (RecurrentCuriosity.MAX_ACTIONS bump-and-revert
 # for the 2500 condition, same pattern as hypothesis_agent.py's own probes)
+
+python scripts/run_scorecard.py --agent recurrentsearch --label rs_bp35_r1 --game bp35
+# ... repeat x8 per game, per budget (RecurrentSearch.MAX_ACTIONS bump-and-revert)
+
+python scripts/diagnose_recurrent_residual_holdout.py
 ```

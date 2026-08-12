@@ -17,6 +17,7 @@ from .templates.press_once_agent import PressOnce
 from .templates.random_agent import Random
 from .templates.reasoning_agent import ReasoningAgent
 from .templates.recurrent_curiosity_agent import RecurrentCuriosity
+from .templates.recurrent_search_agent import RecurrentSearch
 from .templates.smolagents import SmolCodingAgent, SmolVisionAgent
 
 load_dotenv()
@@ -51,6 +52,7 @@ __all__ = [
     "PressOnce",
     "Curiosity",
     "RecurrentCuriosity",
+    "RecurrentSearch",
     "Memory",
     "Hypothesis",
     "Agent",
