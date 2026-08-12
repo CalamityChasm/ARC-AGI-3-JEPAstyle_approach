@@ -55,6 +55,14 @@ class RecurrentSearchTTA(RecurrentSearch):
     TTA_K = 5
     TTA_STEPS = 8
     TTA_LR = 5e-5
+    # A higher dose (STEPS=25, LR=2e-4) was tested via bump-and-revert
+    # here and confirmed dramatically stronger in representation space
+    # (bp35 changed-patches: -9.76% zero-shot -> +20.74% at n=200 observed
+    # transitions, a real, large absolute MSE gap -- see
+    # experiments/stage6_recurrent_exploration.md's "Follow-up 3") -- but
+    # produced the identical 0/16 agent-level result as every other dose,
+    # so it's not kept as the default: no benefit to justify the ~3x extra
+    # per-decision compute.
     ADAPT_BUFFER_CAP = 2000
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:

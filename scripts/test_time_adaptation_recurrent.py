@@ -214,10 +214,16 @@ def run_adaptation_trajectory(
 
 
 def main() -> None:
+    global K, N_STEPS, LR
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--games", nargs="+", default=["bp35", "ka59"])
     parser.add_argument("--checkpoint-dir", type=Path, default=DEFAULT_CHECKPOINT_DIR)
+    parser.add_argument("--k", type=int, default=K, help="Adapt every K newly observed transitions.")
+    parser.add_argument("--steps", type=int, default=N_STEPS, help="AdamW steps per adaptation event.")
+    parser.add_argument("--lr", type=float, default=LR)
     args = parser.parse_args()
+    K, N_STEPS, LR = args.k, args.steps, args.lr
 
     device = get_device()
     print(f"Device: {device}")

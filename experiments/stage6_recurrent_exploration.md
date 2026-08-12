@@ -336,6 +336,83 @@ action caps (`ka59` exactly 100, `bp35` up to 64) leave too little room
 per attempt for any of these small representation-level edges to matter
 before the attempt ends. Moving to option 3 (higher TTA dose) next.
 
+## Follow-up 3: higher TTA dose closes the gap decisively in representation space -- and it still doesn't matter
+
+Per the user's ranked list, option 3: retest TTA at a higher dose, per
+the same "the conservative dose was needlessly conservative" lesson
+already learned once for the MoE predictor's own TTA agent
+(`experiments/stage6_test_time_adaptation_agent.md` -- the production
+dose was chosen against a fictitious cross-game-interference cost, since
+`TestTimeAdapter`/this agent's own adaptation both reset per game
+anyway). Bumped `scripts/test_time_adaptation_recurrent.py`'s dose from
+`STEPS=8, LR=5e-5` to `STEPS=25, LR=2e-4` (matching the exact values that
+worked for the MoE predictor), tested on the ORIGINAL (non-meta,
+non-collapsed) `checkpoints_recurrent_holdout` -- not the Reptile
+checkpoint above, since that one's own real signal was already
+established to be much smaller.
+
+**Representation-level result: the biggest, most unambiguous swing of
+this entire investigation.** `bp35`: zero-shot -9.76% -> **+20.74%** at
+n=200 observed transitions, with a real, large absolute MSE gap
+(pred=0.029881 vs identity=0.037699, a gap of 0.0078 on an absolute scale
+of ~0.03-0.04 -- nothing like the meta checkpoint's noise-level margins
+above). `ka59` also moved substantially, though non-monotonically and
+not fully across zero (-6.51% -> -7.71% at n=50 -> **-0.48%** at n=200) --
+still real, directional progress, just slower to converge than `bp35`.
+This is not a fluke: the absolute magnitude and the clean, large gap on
+`bp35` rule out the "tiny numbers, tiny noise" reading that applied to
+the meta checkpoint's own crossing-to-positive result above.
+
+**Bumped `RecurrentSearchTTA`'s `TTA_STEPS`/`TTA_LR` to match (bump-and-
+revert), reran the full n=8x2-game agent-level backtest: 0/16, identical
+to every prior condition.** Even the single largest, most convincingly
+real representation-level improvement of the whole session -- a world
+model that now genuinely predicts `bp35`'s dynamics *better than
+identity* by a wide, real margin -- produced exactly as many additional
+level completions as a completely frozen, never-adapted model: zero,
+across all 16 real attempts.
+
+**This is the decisive result, not another data point to average in with
+the others.** Every previous negative in this whole `bp35`/`ka59`
+investigation could still be explained as "the intervention's
+representation-level effect just wasn't big or real enough yet." That
+explanation no longer survives: this is about as large and clean a
+world-model improvement as this project has ever produced on these two
+specific games, deliberately chosen and tested for exactly this reason,
+and it still didn't move the needle by even one level completion. The
+bottleneck for `bp35`/`ka59` is very unlikely to be world-model quality
+at all -- it is much better explained by the structural finding
+`experiments/stage6_action_selection_softmax.md` already made and this
+doc's own introduction restates: **these two games hard-cap actions per
+attempt** (`ka59` exactly 100, `bp35` up to 64) **independent of total
+budget.** A better-adapted world model can only make each of those few
+dozen actions per attempt marginally better-informed; it cannot buy more
+attempts, and if these games require finding a specific, non-obvious
+action sequence within a tight per-attempt window (rather than rewarding
+"noticing surprising outcomes" or "reaching novel states," which is what
+every exploration strategy tried so far actually optimizes for), no
+amount of world-model quality improvement targets the real constraint.
+
+**Recommendation, not pursued further this round per the "stop and
+postulate" instruction once a calculus-changing result appears:** options
+4-6 on the original ranked list (adapt more predictor parameters, warm
+the hidden state during TTA, also adapt the encoder) are all further
+variations on "make the world model even better/more adapted" -- the same
+family of intervention this follow-up just showed doesn't matter even at
+a much larger, cleanly-real magnitude than anything tried before. Not
+worth running them against `bp35`/`ka59` specifically before addressing
+the structural finding directly. Two directions that target the actual
+constraint instead: (a) a genuinely tight, per-attempt-budget-aware
+search/planning strategy that treats the small per-attempt action count
+as a hard planning horizon rather than an incidental budget limit (none
+of the strategies tried -- retrospective ranking, real episodic memory,
+random-shooting MPC -- were designed with "you get ~60-100 actions and
+then it's over, permanently" as an explicit constraint); or (b) directly
+inspecting what actually happens within a single `bp35`/`ka59` attempt
+(frame-by-frame, informed by this session's now-solid world model) to
+understand what those games actually require, rather than continuing to
+treat them as generic exploration targets.
+
 ## Reproducing this experiment
 
 ```
