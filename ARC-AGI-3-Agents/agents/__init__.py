@@ -16,6 +16,7 @@ from .templates.multimodal import MultiModalLLM
 from .templates.press_once_agent import PressOnce
 from .templates.random_agent import Random
 from .templates.reasoning_agent import ReasoningAgent
+from .templates.recurrent_curiosity_agent import RecurrentCuriosity
 from .templates.smolagents import SmolCodingAgent, SmolVisionAgent
 
 load_dotenv()
@@ -49,6 +50,7 @@ __all__ = [
     "SmolVisionAgent",
     "PressOnce",
     "Curiosity",
+    "RecurrentCuriosity",
     "Memory",
     "Hypothesis",
     "Agent",

@@ -70,10 +70,13 @@ def train(
     batch_size: int = 8,
     lr: float = 3e-4,
     seq_len: int = SEQ_LEN,
+    exclude_games: list | None = None,
 ) -> None:
     device = get_device()
     print(f"training on {device}")
-    episodes = load_all_episodes(REPO_ROOT)
+    if exclude_games:
+        print(f"excluding games from the episode corpus: {exclude_games}")
+    episodes = load_all_episodes(REPO_ROOT, exclude_games=exclude_games)
     print(f"loaded {len(episodes)} episodes")
     game_vocab = build_game_vocab(episodes)
     print(f"{len(game_vocab)} distinct games")
@@ -138,6 +141,9 @@ def train(
         {k: v.cpu() for k, v in predictor.state_dict().items()}, out_dir / "recurrent_predictor.pt"
     )
     (out_dir / "game_vocab_recurrent.json").write_text(json.dumps(game_vocab, indent=2))
+    (out_dir / "recurrent_training_meta.json").write_text(
+        json.dumps({"exclude_games": exclude_games, "epochs": epochs, "seq_len": seq_len}, indent=2)
+    )
     print(f"saved encoder + recurrent predictor + game vocab to {out_dir}")
 
 
@@ -187,5 +193,13 @@ if __name__ == "__main__":
     )
     parser.add_argument("--out", type=Path, default=REPO_ROOT / "checkpoints")
     parser.add_argument("--seq-len", type=int, default=SEQ_LEN)
+    parser.add_argument(
+        "--exclude-games", type=str, default=None,
+        help="Comma-separated short game codes to exclude entirely from the episode corpus "
+        "(e.g. r11l,bp35,m0r0,tr87,ka59), for a held-out-generalization comparison.",
+    )
     args = parser.parse_args()
-    train(args.epochs, args.encoder, args.out, seq_len=args.seq_len)
+    train(
+        args.epochs, args.encoder, args.out, seq_len=args.seq_len,
+        exclude_games=args.exclude_games.split(",") if args.exclude_games else None,
+    )

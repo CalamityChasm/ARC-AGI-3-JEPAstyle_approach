@@ -22,13 +22,23 @@ from ..grid import arc3_frame_to_tensor, patch_change_mask
 from .trajectories import RECORDINGS_DIR, _load_frame_lines
 
 
-def load_all_episodes(repo_root: Path) -> list:
+def load_all_episodes(repo_root: Path, exclude_games: list | None = None) -> list:
     """Returns a list of episodes; each episode is a list of
     (frame_t, action_id, x, y, frame_t1, changed, game_id) tuples in
-    original temporal order, one list per recording file."""
+    original temporal order, one list per recording file.
+
+    `exclude_games` (stage6-recurrent-holdout addition, mirrors
+    `trajectories.py: load_all_transitions`'s own flag exactly): if given,
+    skip any recording file whose name starts with one of these short game
+    codes followed by a hyphen -- builds a corpus that never saw a given
+    set of games at all, for a fair held-out-generalization comparison
+    against the MoE checkpoint's own `checkpoints_holdout_baseline`.
+    """
     recordings_dir = repo_root / RECORDINGS_DIR
     episodes = []
     for path in sorted(recordings_dir.glob("*.recording.jsonl")):
+        if exclude_games is not None and any(path.name.startswith(f"{g}-") for g in exclude_games):
+            continue
         frames = _load_frame_lines(path)
         transitions = []
         for i in range(len(frames) - 1):
