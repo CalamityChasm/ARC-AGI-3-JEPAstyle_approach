@@ -18,6 +18,7 @@ from .templates.random_agent import Random
 from .templates.reasoning_agent import ReasoningAgent
 from .templates.recurrent_curiosity_agent import RecurrentCuriosity
 from .templates.recurrent_search_agent import RecurrentSearch
+from .templates.recurrent_search_tta_agent import RecurrentSearchTTA
 from .templates.smolagents import SmolCodingAgent, SmolVisionAgent
 
 load_dotenv()
@@ -34,6 +35,10 @@ for rec in Recorder.list():
 
 # update the agent dictionary to include subclasses of LLM class
 AVAILABLE_AGENTS["reasoningagent"] = ReasoningAgent
+
+# RecurrentSearchTTA subclasses RecurrentSearch, not Agent directly, so
+# Agent.__subclasses__() (direct subclasses only) doesn't discover it.
+AVAILABLE_AGENTS["recurrentsearchtta"] = RecurrentSearchTTA
 
 __all__ = [
     "Swarm",
@@ -53,6 +58,7 @@ __all__ = [
     "Curiosity",
     "RecurrentCuriosity",
     "RecurrentSearch",
+    "RecurrentSearchTTA",
     "Memory",
     "Hypothesis",
     "Agent",

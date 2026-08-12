@@ -223,6 +223,119 @@ exploration-strategy variant layered on the current world model. This is
 a good, well-evidenced stopping point for the exploration-strategy family
 of fixes specifically.
 
+## Follow-up 2: does test-time adaptation actually help at the agent level? Two more negative results, one real training-curve lesson
+
+`scripts/test_time_adaptation_recurrent.py` (built in a prior session)
+found TTA substantially narrows the residual-collapse gap on `bp35`/
+`ka59` specifically in representation space (changed-patches `bp35`:
+-9.76% -> -0.51%, `ka59`: -6.51% -> -1.84%, at n=200 observed
+transitions) -- bigger than TTA's effect on the MoE predictor. Two
+follow-ups tested whether that translates into real play, per the user's
+own ranked list of adaptation methods to try in order, stopping to
+investigate only if something looked drastically better or changed the
+calculus.
+
+### 1. Wire TTA into `RecurrentSearch`, backtest on `bp35`/`ka59`
+
+Built `RecurrentSearchTTA`
+(`ARC-AGI-3-Agents/agents/templates/recurrent_search_tta_agent.py`),
+extending `RecurrentSearch` unchanged except for a live adaptation loop:
+every 5 newly observed real transitions (`TTA_K=5`), run 8 AdamW steps
+(`TTA_STEPS=8`, `lr=5e-5`) on `predictor.net[-1]` only, sampling a fresh
+16-step chunk from the accumulated real-transition buffer each step --
+the exact operating point the diagnostic validated. Adaptation persists
+across RESETs of the same game (mirrors `TestTimeAdapter`'s established
+design), only a fresh agent instance per game resets it. Manually
+registered in `AVAILABLE_AGENTS` (subclasses `RecurrentSearch`, not
+`Agent` directly, so `Agent.__subclasses__()` doesn't auto-discover it --
+same pattern `ReasoningAgent` already uses).
+
+**Result: 0/16** (n=8 each, `bp35`/`ka59`, `MAX_ACTIONS=300`) -- identical
+null to the frozen-model baseline. The representation-level gain (closing
+most of a ~7-10 percentage point gap) did not survive contact with real
+play, the same "component measurably improved, agent-level result didn't
+move" pattern this project has now hit repeatedly (Stage 5's
+teacher-policy value head, the MoE predictor's own TTA backtest, Reptile
+meta-learning for the MoE predictor).
+
+### 2. Reptile meta-learning for the recurrent predictor -- a real training-curve lesson, and a second negative
+
+Built `jepa/train_recurrent_meta_predictor.py`, porting
+`jepa/train_meta_predictor.py`'s design (built for the MoE predictor) to
+`RecurrentActionConditionedPredictor`. Reused the already-learned lesson
+from that port directly rather than re-discovering it: the head
+(`predictor.net[-1]`, the same subset TTA adapts) stays in ordinary joint
+SGD throughout, with a periodic Reptile nudge layered on top -- a pure
+ANIL split (head frozen from ordinary training) is already documented to
+cause catastrophic representation collapse for the MoE predictor, and
+there was no reason to expect a different architecture to be immune.
+Per-game Reptile task pools are built from real per-episode sequences
+(not flattened transitions), so each inner-loop chunk has genuine
+temporal continuity, mirroring the diagnostic's own chunk-sampling
+convention exactly. Trained with the "high-dose" recipe already validated
+for the MoE predictor (3x updates/epoch, no epsilon annealing) directly,
+rather than re-running the "standard dose fails" step of that discovery
+first.
+
+**A real, if smaller, collapse signature showed up anyway, despite
+avoiding the specific bug already fixed once.** `val_pred_mse` and
+`val_identity_mse` shrank together across all 30 epochs to genuine
+near-zero (epoch 30: pred=0.00026, identity=0.00027 on the whole-grid
+metric -- both ~9x smaller in absolute terms than the non-meta baseline's
+own epoch-30 identity MSE of 0.00234). The *relative* changed-patches
+improvement tells the same story more precisely: it peaked at **+32.5%**
+around epoch 10-11 (where absolute identity MSE, ~0.0022, actually
+matches the non-meta baseline's own epoch-30 scale) and eroded steadily
+to **+7.0%** by epoch 30 -- the checkpoint kept "improving" on raw MSE
+while its *real* predictive edge over identity was quietly shrinking, a
+clear sign of over-training into a collapsing regime rather than genuine
+convergence. Not a repeat of the documented ANIL bug (the head was never
+frozen from joint SGD here) -- more likely the extra 120 Reptile-driven
+head-only gradient steps per epoch (15 outer updates x 8 inner steps),
+applied on top of a much smaller corpus (181 episodes) than the MoE
+version ever trained on, simply over-trained the head faster relative to
+the body than the MoE recipe's own dose ratio did. **Lesson for any
+future revisit: save intermediate checkpoints (this script doesn't --
+a real gap relative to `train_meta_predictor.py`, which has
+`--checkpoint-every`) so an earlier, less-collapsed epoch can be
+evaluated directly instead of only ever having the final, most-converged
+one.**
+
+**Representation-level result on `bp35`/`ka59` (via the same TTA
+diagnostic, pointed at this checkpoint): both games cross into positive
+changed-patches territory for the first time all session** -- `bp35`:
+zero-shot -0.19% -> TTA @ n=200 **+0.94%**; `ka59`: zero-shot -1.01% ->
+TTA @ n=200 **+0.71%**. But the absolute margins are tiny and directly
+consistent with the collapse reading, not a real breakthrough: `bp35`'s
+zero-shot starting point (-0.19%) is already far closer to parity than
+the non-meta checkpoint's own zero-shot starting point (-9.76%) --
+exactly what a partially-collapsed model would show on *any* game,
+trained or held-out, since a model that mostly predicts near-identity
+everywhere has almost no relative gap to close in the first place.
+Absolute pred-vs-identity MSE gaps at the best (n=200) checkpoint are
+correspondingly minuscule (`bp35`: 0.018892 vs 0.019071, a gap of
+0.000179; `ka59`: 0.000328 vs 0.000330, a gap of 0.000002) -- on the same
+order of magnitude as the "small absolute error swing = huge relative
+swing" artifact CLAUDE.md's own Stage 1 history already flags for
+low-identity-MSE games.
+
+**Agent-level backtest (`RecurrentSearchTTA` pointed at this checkpoint
+via a new `RECURRENT_CHECKPOINT_DIR` env override, same n=8x2-game
+protocol): 0/16, identical to every other condition.** Predicted before
+running, given a *much larger* representation-level movement from plain
+TTA on the non-meta checkpoint already failed to produce a single level
+completion -- this much smaller, barely-positive movement was never
+likely to do better, and didn't. Confirms this is noise-adjacent, not a
+real finding: not investigated further per the "carry on if it proves a
+fluke" instruction.
+
+**Net read on adaptation methods 1-2 of the ranked list**: both are clean
+negatives at the agent level, for the same underlying reason -- neither
+changes the fact that `bp35`/`ka59`'s hard, game-intrinsic per-attempt
+action caps (`ka59` exactly 100, `bp35` up to 64) leave too little room
+per attempt for any of these small representation-level edges to matter
+before the attempt ends. Moving to option 3 (higher TTA dose) next.
+
 ## Reproducing this experiment
 
 ```

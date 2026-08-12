@@ -57,6 +57,7 @@ r11l,bp35,m0r0,tr87,ka59`) for a fair zero-shot comparison.
 """
 
 import json
+import os
 import random
 import sys
 from pathlib import Path
@@ -75,7 +76,13 @@ from jepa.device import get_device  # noqa: E402
 from jepa.grid import CANVAS, arc3_frame_to_tensor  # noqa: E402
 from jepa.models import CNNEncoder, RecurrentActionConditionedPredictor  # noqa: E402
 
-_CHECKPOINT_DIR = _REPO_ROOT / "checkpoints_recurrent_holdout"
+# RECURRENT_CHECKPOINT_DIR override lets a controlled comparison (e.g.
+# a Reptile-meta-trained checkpoint) swap in a different checkpoint
+# directory without touching the default -- mirrors this project's usual
+# bump-and-revert pattern, as an env var instead of a class-attribute
+# edit since this constant is read at IMPORT time (module load), before
+# any agent instance exists to bump.
+_CHECKPOINT_DIR = Path(os.getenv("RECURRENT_CHECKPOINT_DIR", str(_REPO_ROOT / "checkpoints_recurrent_holdout")))
 
 
 class RecurrentSearch(Agent):
