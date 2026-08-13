@@ -105,6 +105,81 @@ wrong-direction policy into a right-direction one. The detector correctly
 identifies "less time is left," it just has nothing to hand that
 information to that would know what to do about it.
 
+## Follow-up: full 25-game sweep, both the detector and the agent
+
+Two things checked, per a direct follow-up request: (1) which of the 25
+local games have a detectable bar, verified against real frames rather
+than trusted blindly; (2) a full 25-game agent-level backtest, not just
+the two hardest, already-diagnosed cases.
+
+### Detector coverage: 16/25 games, spot-checked
+
+Ran the detector against each game's most recent recording (no new
+gameplay needed): **16/25 games show a detected bar** (`ar25`, `bp35`,
+`cd82`, `cn04`, `dc22`, `g50t`, `ka59`, `r11l`, `re86`, `s5i5`, `sc25`,
+`su15`, `tr87`, `tu93`, `vc33`, `wa30`); **9/25 show none** (`ft09`,
+`lf52`, `lp85`, `ls20`, `m0r0`, `sb26`, `sk48`, `sp80`, `tn36`). Directly
+visually verified 3 of the 16 against real rendered frames before trusting
+the list (`s5i5`: a green-to-yellow bottom bar; `dc22`: a
+background-color-to-black bottom bar, small at step 0, visibly larger by
+step 200; `r11l`: a much subtler bar, a short segment on the *left* edge
+near the top, easy to miss by eye but genuinely shrinks between step 0
+and step 200) -- all three confirmed real, not detector noise. The
+"not detected" list is a real, useful data point on its own: it's not
+that these games definitely lack any progress indicator (a bar in a
+color/position/shape the detector's edge-strip-only search wouldn't
+catch, e.g. a numeric counter, a non-edge-adjacent element, or one that
+depletes from both ends rather than one, would be invisible to this
+specific detector), but it does mean at minimum they don't have the
+*one* common pattern (single-edge, one-directional, contiguous depletion)
+this detector looks for.
+
+### Agent-level backtest: all 25 games, n=8 each, TIMER_AWARE on vs off
+
+Same `MAX_ACTIONS=300` protocol as every other comparison this session,
+run same-round on the merged codebase (400 runs total, ~63 minutes
+wall-clock via 5-way parallel batching by game).
+
+| condition | total levels | mean score | distinct games (>=1 level) |
+|---|---|---|---|
+| off (baseline) | 10 | 0.0667 | 2 (`r11l`, `sp80`) |
+| on (timer-aware) | 14 | 0.0573 | 4 (`cn04`, `lp85`, `r11l`, `sp80`) |
+
+Mixed at face value -- more total levels and more distinct games for
+`on`, but a lower mean *score* (Kaggle's real scoring formula weights
+per-level action-efficiency, not just raw completion count, so completing
+more levels less efficiently, or losing efficient completions on one
+game while gaining inefficient ones on another, can net negative on score
+even while netting positive on the raw count).
+
+**The useful part: two of the four differing games have NO detected bar
+at all, giving a real noise-floor calibration for free.** `lp85`
+(+1 level, off->on) and `sp80` (-2 levels) both show `TIMER_AWARE=None`
+throughout (no bar detected -- see the coverage list above), meaning the
+feature was mechanically inert on both; any difference there is pure
+run-to-run variance from `Hypothesis`'s own unseeded exploration, not the
+detector doing anything. That's a direct, in-band measurement of how much
+an n=8 level-count comparison swings by chance alone on this metric: up
+to +/-2 levels on a single game, with no intervention active at all.
+
+Against that calibrated noise floor, the two remaining differing games --
+**`cn04` (+2 levels) and `r11l` (+3 levels), both on games with a
+confirmed real bar** -- are directionally consistent (both positive, both
+on bar-detected games) and both larger than the noise-floor swings
+observed on the inert games. Real signal, not proof: n=8 per game is the
+same sample size this project has repeatedly found insufficient to
+separate a genuine small effect from noise on this exact metric (see
+CLAUDE.md's own novelty-aware-beta retraction, where an equally
+clean-looking n=8 win completely evaporated at n=30). Worth a larger
+confirmatory backtest specifically on `cn04`/`r11l` before treating this
+as validated, not a reason to dismiss it either.
+
+**`bp35`/`ka59` specifically: 0 total levels on both conditions,
+unchanged.** Consistent with, not contradicted by, this broader sweep --
+the mechanics-level diagnosis (no sense of direction, not no sense of
+urgency) still stands as the best explanation for why these two
+specifically see zero effect from either condition.
+
 ## What's real and worth keeping regardless
 
 The detector itself is genuine, validated, reusable infrastructure,
