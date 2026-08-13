@@ -51,6 +51,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
+from jepa.countdown_detector import CountdownBarDetector  # noqa: E402
 from jepa.device import get_device  # noqa: E402
 from jepa.grid import CANVAS, PATCH, arc3_frame_to_tensor  # noqa: E402
 from jepa.hypothesis_bundle import HypothesisBundle, info_gain  # noqa: E402
@@ -181,6 +182,24 @@ class Hypothesis(Agent):
     # value was chosen from.
     NOVELTY_BETA_CAP = float(os.getenv("HYPOTHESIS_NOVELTY_BETA_CAP", "0.15"))
 
+    # Timer-aware exploration (stage6-countdown-detector). A classical-CV,
+    # non-learned detector (jepa/countdown_detector.py) watches the board's
+    # four edges for a depleting bar -- built after directly confirming
+    # (scripts/diagnose_countdown_bar_prediction.py) that the recurrent
+    # world model does NOT transfer this pattern to held-out games, despite
+    # it being common across many ARC-3 games (the model's game-id-
+    # conditioned residual has no representation of "bars near an edge
+    # shrink" independent of which specific game this is) -- a detector
+    # that works directly on raw pixels sidesteps that failure mode
+    # entirely, at the cost of only ever giving a coarse "how much time is
+    # left" signal, not a goal-directed one. When a bar is confidently
+    # detected, scales EPSILON down as urgency rises -- less random
+    # exploration, more commitment to the current best-scoring action, as
+    # the detected budget runs out. Off by default (same on/off-flag
+    # pattern as TEST_TIME_ADAPT) so this can be A/B tested cleanly and
+    # disabled instantly if it ever misbehaves on a real scored run.
+    TIMER_AWARE = os.getenv("HYPOTHESIS_TIMER_AWARE") == "1"
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         # self._rng must exist unconditionally -- it's what _safe_fallback_action
@@ -193,6 +212,7 @@ class Hypothesis(Agent):
         # _safe_fallback_action, which never reads this) can't leave it
         # unset.
         self._is_novel_game = False
+        self._timer = CountdownBarDetector()
 
         try:
             self._init_models()
@@ -457,6 +477,20 @@ class Hypothesis(Agent):
         action.reasoning = "hypothesis agent: safe fallback after internal error"
         return action
 
+    def _effective_epsilon(self) -> float:
+        """self.EPSILON, scaled down toward 0 as detected time pressure
+        rises (TIMER_AWARE only) -- less random exploration, more
+        commitment to the current best-scoring action, as the detected
+        countdown/hazard bar depletes. Falls back to the plain constant
+        whenever TIMER_AWARE is off or nothing has been confidently
+        detected yet."""
+        if not self.TIMER_AWARE:
+            return self.EPSILON
+        urgency = self._timer.urgency()
+        if urgency is None:
+            return self.EPSILON
+        return self.EPSILON * (1.0 - urgency)
+
     def _choose_action_inner(
         self, frames: list[FrameData], latest_frame: FrameData
     ) -> GameAction:
@@ -470,6 +504,7 @@ class Hypothesis(Agent):
             self._prev_xy = None
             self._prev_state_key = None
             self._prev_raw_frame = None
+            self._timer.reset()
             # Experiment-designer opening probe: try every simple action
             # once before trusting the hypothesis bundle's own confidence
             # weights, matching PressOnce's "press each action once" idea.
@@ -480,6 +515,8 @@ class Hypothesis(Agent):
 
         feat = self._encode(latest_frame)
         self._update_hypotheses(feat, latest_frame)
+        if self.TIMER_AWARE:
+            self._timer.observe(latest_frame.frame)
 
         if latest_frame.levels_completed > self._last_levels_completed:
             self._exploit_remaining = self.EXPLOIT_REPEATS
@@ -513,7 +550,7 @@ class Hypothesis(Agent):
                 xy = None
                 action = GameAction.from_id(action_id)
                 action.reasoning = "hypothesis agent: experiment-designer opening probe"
-            elif self._rng.random() < self.EPSILON:
+            elif self._rng.random() < self._effective_epsilon():
                 action_id = self._rng.choice(available)
                 xy = None
                 action = GameAction.from_id(action_id)
