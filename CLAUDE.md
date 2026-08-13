@@ -1945,6 +1945,40 @@ also drives a real `main.py --agent hypothesis` run against a local
 mock gateway if one can be improvised) remains the most direct way to
 actually resolve this, not further hypothesis generation.
 
+**Update (2026-08-13): 7th real submission, ref `55470338`, `SubmissionStatus.PENDING`
+at time of writing -- combines two previously-separate, independently-
+validated improvements for the first time.** `hypothesis_agent.py` on
+`stage6-test-time-adaptation-agent` had the action-selection argmax-lock
+fix (`ACTION_SAMPLE_TEMPERATURE`, this session -- see
+`experiments/stage6_action_selection_softmax.md`, validated at 14/5 vs.
+Curiosity's 11/4 total-levels/distinct-games at n=8x25) but not
+`stage6-novelty-aware-beta`'s `NOVELTY_BETA_CAP` (the config actually
+behind the `0.09` submission directly above), since the two branches
+diverged from a common ancestor and were never merged. Merged them via
+`git merge stage6-novelty-aware-beta` -- one real conflict, in
+`choose_action`'s beta-computation block, resolved by keeping the
+novelty-beta-cap lines and dropping a dead greedy-argmax variable
+initialization from the pre-softmax-fix version of the file (already
+unconditionally overwritten by the softmax sampling code a few lines
+below, so keeping it would've been inert, not incorrect -- still correct
+to drop rather than leave stale dead code). `TEST_TIME_ADAPT` (also
+merged in from the same `1ff435e` ancestor both branches share) stays off
+by default (`HYPOTHESIS_TEST_TIME_ADAPT` env var, unset on Kaggle) --
+this submission does not include test-time adaptation. Checkpoint
+lineage unchanged (`encoder_moe.pt`/`moe_predictor.pt`/`value_head.pt`/
+`game_vocab_moe.json` -- the recurrent-predictor checkpoints from this
+session's separate `bp35`/`ka59` investigation, see
+`experiments/stage6_recurrent_exploration.md` and
+`experiments/stage6_bp35_ka59_mechanics.md`, are not used by `Hypothesis`
+at all). Verified with a real local 25-game sanity pass before spending
+the daily quota (`combined_submission_candidate_sanity`, no crashes,
+1/183 levels in one pass -- a real end-to-end smoke test, not a
+statistical validation) and a clean free kernel test push (kernel v15,
+no tracebacks) before submitting. Neither individual fix has ever been
+tested in combination with the other at the agent level before this
+submission -- treat the resulting score with the same n=1 caution as
+every other new-config submission in this section.
+
 Everything needed to reproduce the submission from scratch on a new
 machine is in `kaggle_submission/` (checked into git) plus the steps
 below. This section is the reproduction guide; the dated blow-by-blow
