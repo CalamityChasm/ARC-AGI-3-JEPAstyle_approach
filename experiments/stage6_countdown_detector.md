@@ -180,6 +180,56 @@ the mechanics-level diagnosis (no sense of direction, not no sense of
 urgency) still stands as the best explanation for why these two
 specifically see zero effect from either condition.
 
+## Retraction: the n=8 cn04/r11l signal did not survive n=30
+
+Per this project's own established standard (an n=8 result is not trusted
+until re-checked at higher n -- see CLAUDE.md's novelty-aware-beta
+retraction, which hit the identical pattern), reran `cn04` and `r11l`
+specifically at n=30 each (120 runs total, ~30min via 4-way parallel
+batching by game x condition). One operational note: all four batches
+failed on the first attempt with the anonymous `ARC_API_KEY` having
+expired again mid-session (the same short-lived-key gotcha CLAUDE.md
+already documents) -- refreshed via `https://three.arcprize.org/api/games
+/anonkey`, verified with one clean run, then relaunched cleanly.
+
+| game | condition | total levels (n=30) | mean score |
+|---|---|---|---|
+| `cn04` | off | 0 | 0.0000 |
+| `cn04` | on | 0 | 0.0000 |
+| `r11l` | off | 12 | 0.6371 |
+| `r11l` | on | 12 | 0.1830 |
+
+**Both n=8 signals evaporated completely.** `cn04`'s +2-level edge for
+`on` is gone -- zero completions on *either* condition across 30 runs
+each, meaning the original difference was two lucky rolls out of 8, not a
+real effect. `r11l`'s completion count is now *exactly tied* (12 vs 12,
+same number of runs reaching >=1 level for both conditions) -- the
+earlier +3 was the same kind of small-sample artifact.
+
+**One new, real-looking difference surfaced at n=30 that wasn't visible
+at n=8, worth flagging honestly rather than ignoring since it cuts the
+wrong way:** despite identical completion counts, `r11l`'s mean *score*
+is markedly lower with `TIMER_AWARE` on (0.183) than off (0.637) --
+suggesting that when a level does get completed, it happens less
+action-efficiently with the feature on. Not confirmed further this round
+(could be which specific runs happened to complete quickly vs. slowly,
+rather than a systematic effect) -- but it's the opposite direction from
+anything hoped for, and worth checking before ever considering this
+feature for real deployment, not just setting aside as noise by default
+the way the completion-count numbers reasonably can be.
+
+**Overall verdict, combining all three rounds of testing this session**
+(`bp35`/`ka59` at n=8: 0/16 both conditions; full 25-game sweep at n=8:
+mixed, inconclusive; `cn04`/`r11l` at n=30: fully retracted, one
+concerning efficiency signal): **`TIMER_AWARE` has not demonstrated a
+real benefit anywhere it's been tested.** The detector itself remains
+real, validated, reusable infrastructure (see below) -- but the specific
+"scale EPSILON down as urgency rises" consumer of its signal does not
+currently look worth keeping enabled, let alone as a serious candidate
+for a real submission. If revisited, a different consumer of the signal
+(see the two directions below) is more likely to be worth the effort than
+further tuning of this one.
+
 ## What's real and worth keeping regardless
 
 The detector itself is genuine, validated, reusable infrastructure,
