@@ -33,21 +33,15 @@ def _load_frame_lines(path: Path) -> list:
     return lines
 
 
-def load_all_transitions(repo_root: Path) -> list:
-    """Returns a list of (frame_t, action_id, x, y, frame_t+1, changed, game_id) tuples.
-
-    `changed` is a cheap pixel-level flag (frame_t != frame_t+1). A large
-    fraction of random-policy transitions are exact no-ops (action had no
-    visible effect), which a naive latent-MSE loss/average can drown in --
-    it's exposed here so training can rebalance towards informative
-    transitions instead of mostly learning "predict no change".
-
-    `game_id` matters more than it might look: the same action id means a
-    completely different effect in each of the 25 games, so a predictor
-    that can't tell which game it's in is being asked to fit 25
-    mutually-inconsistent action->effect mappings at once.
+def load_transitions_from_dir(recordings_dir: Path) -> list:
+    """Same tuple format as `load_all_transitions`, but parameterized on an
+    arbitrary recordings directory instead of the fixed
+    `<repo_root>/ARC-AGI-3-Agents/recordings` path -- lets other corpora
+    that use the same `*.recording.jsonl` schema (e.g. a curated harvest of
+    winning-episode-only recordings, see
+    `scripts/extract_winning_transitions.py`) be loaded with the exact same
+    parsing logic, not a re-derived copy of it.
     """
-    recordings_dir = repo_root / RECORDINGS_DIR
     transitions = []
     for path in sorted(recordings_dir.glob("*.recording.jsonl")):
         frames = _load_frame_lines(path)
@@ -64,6 +58,23 @@ def load_all_transitions(repo_root: Path) -> list:
                 (cur["frame"], action_id, x, y, nxt["frame"], changed, game_id)
             )
     return transitions
+
+
+def load_all_transitions(repo_root: Path) -> list:
+    """Returns a list of (frame_t, action_id, x, y, frame_t+1, changed, game_id) tuples.
+
+    `changed` is a cheap pixel-level flag (frame_t != frame_t+1). A large
+    fraction of random-policy transitions are exact no-ops (action had no
+    visible effect), which a naive latent-MSE loss/average can drown in --
+    it's exposed here so training can rebalance towards informative
+    transitions instead of mostly learning "predict no change".
+
+    `game_id` matters more than it might look: the same action id means a
+    completely different effect in each of the 25 games, so a predictor
+    that can't tell which game it's in is being asked to fit 25
+    mutually-inconsistent action->effect mappings at once.
+    """
+    return load_transitions_from_dir(repo_root / RECORDINGS_DIR)
 
 
 def build_game_vocab(transitions: list) -> dict:
