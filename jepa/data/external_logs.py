@@ -34,7 +34,7 @@ def _game_id_from_entry(name: str) -> str:
 
 
 def load_external_transitions(
-    repo_root: Path, max_per_game: int | None = 2000, seed: int = 0
+    repo_root: Path, max_per_game: int | None = 2000, seed: int = 0, exclude_games: list | None = None
 ) -> list:
     """Returns a list of (frame_t, action_id, x, y, frame_t1, changed, game_id)
     tuples in the same shape `trajectories.TransitionDataset` expects.
@@ -54,6 +54,12 @@ def load_external_transitions(
     much bigger than the local corpus this is meant to supplement).
     Returns `[]` if the zip hasn't been pulled locally (this dataset is
     optional supplementary data, not a hard dependency).
+
+    `exclude_games` (stage6-game-holdout addition): short game codes
+    (e.g. `["r11l", "bp35"]`) whose per-game JSONL entry should be
+    skipped entirely -- this dataset covers the same 25 ARC games as the
+    local recordings, so a leave-some-games-out experiment must exclude
+    them here too, not just from `trajectories.load_all_transitions`.
     """
     zip_path = repo_root / EXTERNAL_LOGS_ZIP
     if not zip_path.exists():
@@ -65,6 +71,8 @@ def load_external_transitions(
         names = sorted(n for n in zf.namelist() if n.endswith(".jsonl"))
         for name in names:
             game_id = _game_id_from_entry(name)
+            if exclude_games is not None and any(game_id.startswith(f"{g}-") for g in exclude_games):
+                continue
             reservoir = []
             with zf.open(name) as f:
                 for i, raw in enumerate(f):
