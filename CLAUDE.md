@@ -2139,6 +2139,73 @@ this). Full write-up in `experiments/stage6_meta_learning.md` on branch
 of the high-dose checkpoint specifically before drawing an agent-level
 conclusion either way.
 
+**Genuinely ARC-3-*shaped* synthetic puzzles as a pretraining source,
+finally testing the one data-diversity direction left untried: also
+negative, at matched scale (`experiments/stage6_arc_synthetic_puzzles.md`).**
+Every prior data-diversity attempt (MiniGrid, Sokoban, MinAtar, Procgen,
+a 26-game OpenSpiel roster) borrowed an existing game engine from a genre
+only loosely related to ARC-3's own puzzle-logic character. Built
+`jepa/data/arc_synthetic_data.py`: five hand-built procedural puzzle
+families -- `arcsyn_route` (token routing through walls to a goal,
+echoing `ka59`/`r11l`/`bp35`, visually inspected via
+`scripts/render_frames_png.py` before designing this), `arcsyn_toggle`
+(ACTION6-click Lights-Out-style local cause-effect), `arcsyn_match`
+(ACTION6-click color/object matching + counting), `arcsyn_symmetry`
+(one-shot mirror-completion of a half-drawn pattern), `arcsyn_enclosure`
+(cursor + flood-fill gated on spatial containment) -- each its own
+`game_id` (applying the MinAtar per-sub-game-id lesson from the start),
+67,200 transitions total, matched to MiniGrid's own default pretrain
+corpus size for a clean like-for-like comparison. Wired in via
+`--pretrain-source {minigrid,arc_synthetic}` on
+`jepa/train_moe_predictor.py` (mutually exclusive with MiniGrid in the
+pretrain phase, not additive).
+
+**Result on fold 1 (the established `r11l,bp35,m0r0,tr87,ka59` split),
+both checkpoints trained fresh this session on the identical local-only
+corpus, 40 finetune epochs (see below for why 40, not 60):**
+held-out changed-patches **-0.26%** (arc-synthetic pretrain) vs. **-0.03%**
+(matched no-diversity baseline trained the same session). Both sit inside
+the same near-zero noise band 13+ prior interventions already established
+(no-diversity 5-fold mean -0.30%+/-0.66%; MiniGrid baseline +0.01%;
+OpenSpiel width=1.0/2.0 -1.22%/+0.02%) -- worse than MiniGrid and
+OpenSpiel-width-2, better than OpenSpiel-width-1, unremarkable either way.
+**Does not close the gap.** A trained-games sanity check confirms the run
+is real, not degenerate: arc-synthetic pretraining clearly helped on
+*familiar* games (+12.96% vs. the matched baseline's -0.08%) -- the same
+"helps trained games, doesn't transfer to unseen ones" pattern every
+other diversity source in this investigation has shown, now including one
+built directly out of ARC-3's own mechanic vocabulary rather than
+borrowed from elsewhere. Only fold 1 was tested this round (not the full
+5 folds) -- flagged as a real limitation, a second-fold confirmation is
+the natural next check before trusting this over a single data point, the
+same standard OpenSpiel's own fold-1/fold-2 pair was held to.
+
+**Methodology note, disclosed for the numbers above:** used 40 finetune
+epochs (not the established 60) because this session's background training
+tasks hit a real environment wall-clock kill limit somewhere north of
+~45 minutes -- a first from-scratch `--pretrain-epochs 20 --epochs 60` run
+was killed mid-epoch with zero code error (confirmed via direct process
+inspection: the run was actively training right up to the kill). Its
+`--checkpoint-every`-saved progress (full pretrain phase + 20/60 finetune
+epochs) was recovered rather than discarded via a new `--resume-from` flag
+added to `train_moe_predictor.py` this session (loads weights + exact
+game_vocab from an existing checkpoint dir, skips the completed pretrain
+phase, resumes finetune from the recorded epoch count -- reusable for any
+future interrupted run in this environment, not specific to this
+experiment). The 40-epoch target was applied symmetrically to both the
+treatment and the freshly-trained baseline, so the comparison itself isn't
+biased, just not directly comparable in absolute terms to older 60-epoch
+numbers elsewhere in this doc. Also found and fixed a real, avoidable
+slowdown along the way: at this project's typical small-corpus scale (tens
+of thousands of transitions), `num_workers=4, persistent_workers=False`
+respawns 4 fresh DataLoader worker processes *every single epoch* (each
+re-importing the whole training module including `gym_sokoban`) -- direct
+timing showed `JEPA_NUM_WORKERS=0` (the existing override, previously
+documented only for a much-larger-corpus memory gotcha) is no slower
+per-epoch at this scale while avoiding that respawn overhead entirely;
+worth reaching for by default at this project's usual data sizes, not just
+after hitting the larger-corpus problem the flag was originally added for.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
@@ -2554,6 +2621,36 @@ above to narrow it down without spending more of the daily quota.
 
 ## Gotchas learned the hard way (don't re-discover these)
 
+- **This dev session's background training tasks get killed by the
+  environment at some wall-clock limit somewhere north of ~45 minutes --
+  budget for it, don't assume a long run will simply finish.** Hit this
+  directly training the ARC-synthetic-puzzles checkpoint (see Stage 6
+  addendum): a `--pretrain-epochs 20 --epochs 60` run (~80 min expected
+  at the ~1 min/epoch observed on this box) was killed mid-epoch with
+  zero error in its own log -- confirmed via direct process inspection
+  (the training process was gone from `Get-Process`, and `nvidia-smi`/CPU
+  checks immediately before the kill showed it actively training, not
+  hung) that this was an external kill, not a crash. Mitigate with
+  `--checkpoint-every N` (already existed) *and* `--resume-from` (added
+  this session specifically because of this) on
+  `jepa/train_moe_predictor.py` so an interruption costs at most N epochs
+  rather than the whole run -- or just plan any single long-running
+  background command to comfortably undercut ~45 minutes and split
+  longer work into multiple resumable legs from the start.
+- **At this project's typical small-corpus scale (tens of thousands of
+  transitions), `num_workers=4, persistent_workers=False` DataLoaders
+  are needlessly slow, not needlessly fast.** They respawn 4 fresh worker
+  processes *every single epoch* (each re-importing the whole training
+  module, including `gym_sokoban`, which is why a long run's log fills
+  with repeated "Gym has been unmaintained..." warnings -- one burst per
+  worker-spawn, not a sign of anything wrong). Direct timing this session
+  (arc_synthetic pretraining + finetune) found `JEPA_NUM_WORKERS=0` (the
+  existing override, previously documented only for the much-larger
+  hundreds-of-thousands-plus-transition OpenSpiel-scale memory gotcha
+  below) ran no slower per-epoch at this smaller scale while eliminating
+  the respawn overhead entirely. Worth reaching for by default at this
+  project's usual data sizes, not only after hitting the large-corpus
+  problem the flag was originally added for.
 - **`ARC-AGI-3-Agents/recordings/` (gitignored, fully regenerable) grows
   without bound and will eventually fill the disk if nothing ever cleans
   it up.** Hit this directly (2026-07-17): a backtest sweep and a
