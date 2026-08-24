@@ -28,11 +28,16 @@ Usage:
 import argparse
 import json
 import os
+import re
 from pathlib import Path
 
 import torch
 from torch.utils.data import DataLoader, WeightedRandomSampler, random_split
 
+from .data.arc_synthetic_data import (
+    ALL_GAME_IDS as ARC_SYNTHETIC_GAME_IDS,
+    generate_transitions as generate_arc_synthetic_transitions,
+)
 from .data.external_logs import load_external_transitions
 from .data.minigrid_data import DEFAULT_ENV_NAMES, GAME_ID as MINIGRID_GAME_ID, generate_transitions
 from .data.sokoban_data import (
@@ -208,12 +213,49 @@ def train(
     exclude_games: list | None = None,
     recording_substrings: list | None = None,
     checkpoint_every: int = 0,
+    pretrain_source: str = "minigrid",
+    arc_synthetic_episodes_per_type: int = 168,
+    arc_synthetic_steps_per_episode: int = 80,
+    resume_from: Path | None = None,
 ) -> None:
     device = get_device()
     gating = f"top-{top_k} noisy" if top_k is not None else "dense softmax"
     print(f"training on {device}, {num_experts} experts, {gating} gate, contrast_weight={contrast_weight}")
     if exclude_games:
         print(f"excluding games from all local/external corpora: {exclude_games}")
+
+    # --resume-from: pick up a run that got interrupted mid-finetune (e.g. by
+    # a background-task time limit -- this environment killed a from-scratch
+    # 20-pretrain+60-finetune-epoch run at ~45 min wall-clock, ~40/80 epochs
+    # in, taking the surviving --checkpoint-every-saved weights with it
+    # rather than losing that progress). Loads the encoder/predictor state
+    # dicts and game_vocab straight from an existing checkpoint dir, skips
+    # the pretrain phase entirely (assumed already complete -- this script
+    # never checkpoints mid-pretrain-phase resume, only phase-boundary-or-
+    # later), and resumes the finetune phase from the epoch count recorded
+    # in that dir's moe_training_meta.json checkpoint_tag. Optimizer state
+    # (Adam momentum) is NOT preserved -- a fresh AdamW is fine for a
+    # resume this coarse-grained, just a small warm-up blip, not worth the
+    # extra bookkeeping.
+    resume_start_epoch = 0
+    resume_game_vocab = None
+    if resume_from is not None:
+        meta = json.loads((resume_from / "moe_training_meta.json").read_text())
+        resume_game_vocab = json.loads((resume_from / "game_vocab_moe.json").read_text())
+        tag = meta.get("checkpoint_tag", "")
+        m = re.search(r"arc-finetune-epoch(\d+)", tag)
+        if m:
+            resume_start_epoch = int(m.group(1))
+        elif "arc-finetune" not in tag and "final" not in tag:
+            raise ValueError(
+                f"--resume-from checkpoint_tag={tag!r} doesn't look like a finetune-phase "
+                f"checkpoint -- this script only supports resuming the finetune phase "
+                f"(pretrain phase is assumed complete already)."
+            )
+        print(
+            f"resuming from {resume_from} (tag={tag!r}): skipping pretrain phase, "
+            f"starting finetune at epoch {resume_start_epoch + 1}/{epochs}"
+        )
 
     arc_transitions = load_all_transitions(
         REPO_ROOT, name_substrings=recording_substrings, exclude_games=exclude_games
@@ -240,17 +282,37 @@ def train(
             )
 
     minigrid_transitions = []
+    arc_synthetic_transitions = []
     sokoban_transitions = []
-    if pretrain_epochs > 0:
-        minigrid_transitions = generate_transitions(
-            env_names=DEFAULT_ENV_NAMES,
-            episodes_per_env=minigrid_episodes_per_env,
-            steps_per_episode=minigrid_steps_per_episode,
-        )
-        print(
-            f"generated {len(minigrid_transitions)} MiniGrid transitions "
-            f"across {len(DEFAULT_ENV_NAMES)} environments"
-        )
+    if pretrain_epochs > 0 and resume_from is None:
+        if pretrain_source == "minigrid":
+            minigrid_transitions = generate_transitions(
+                env_names=DEFAULT_ENV_NAMES,
+                episodes_per_env=minigrid_episodes_per_env,
+                steps_per_episode=minigrid_steps_per_episode,
+            )
+            print(
+                f"generated {len(minigrid_transitions)} MiniGrid transitions "
+                f"across {len(DEFAULT_ENV_NAMES)} environments"
+            )
+        elif pretrain_source == "arc_synthetic":
+            # stage6-arc-synthetic-puzzles: genuinely ARC-3-shaped procedural
+            # puzzles (jepa/data/arc_synthetic_data.py) instead of a borrowed
+            # game engine from an unrelated genre -- see that module's
+            # docstring and experiments/stage6_arc_synthetic_puzzles.md for
+            # the motivation. Deliberately mutually exclusive with MiniGrid
+            # in the pretrain phase (not additive) so this is a clean,
+            # matched-scale swap for a controlled comparison, not a scale-up.
+            arc_synthetic_transitions = generate_arc_synthetic_transitions(
+                episodes_per_type=arc_synthetic_episodes_per_type,
+                steps_per_episode=arc_synthetic_steps_per_episode,
+            )
+            print(
+                f"generated {len(arc_synthetic_transitions)} ARC-synthetic-puzzle transitions "
+                f"across {len(ARC_SYNTHETIC_GAME_IDS)} puzzle types"
+            )
+        else:
+            raise ValueError(f"unknown pretrain_source={pretrain_source!r} (expected 'minigrid' or 'arc_synthetic')")
         if sokoban_episodes_per_config > 0:
             sokoban_transitions = generate_sokoban_transitions(
                 configs=SOKOBAN_DEFAULT_CONFIGS,
@@ -261,20 +323,35 @@ def train(
                 f"generated {len(sokoban_transitions)} Sokoban transitions "
                 f"across {len(SOKOBAN_DEFAULT_CONFIGS)} room configs"
             )
-    synthetic_transitions = minigrid_transitions + sokoban_transitions
+    synthetic_transitions = minigrid_transitions + arc_synthetic_transitions + sokoban_transitions
 
     # One shared vocabulary across both phases -- built from the union of
     # ARC game_ids and (if pretraining) whichever synthetic-source
     # game_ids were actually generated, so the game-embedding table is the
     # same size/meaning in both phases and weights carry over cleanly.
-    synthetic_game_ids = {t[6] for t in synthetic_transitions}
-    game_ids = sorted({t[6] for t in arc_transitions} | synthetic_game_ids)
-    game_vocab = {g: i for i, g in enumerate(game_ids)}
+    # When resuming, reuse the exact vocab the checkpoint was trained
+    # with instead of rebuilding it -- must match index-for-index or the
+    # loaded game-embedding weights would silently point at the wrong games.
+    if resume_game_vocab is not None:
+        game_vocab = resume_game_vocab
+    else:
+        synthetic_game_ids = {t[6] for t in synthetic_transitions}
+        game_ids = sorted({t[6] for t in arc_transitions} | synthetic_game_ids)
+        game_vocab = {g: i for i, g in enumerate(game_ids)}
     print(f"{len(game_vocab)} distinct games in the shared vocab")
 
-    online, target, predictor = build_models(
-        encoder_path, num_games=len(game_vocab), num_experts=num_experts, device=device, top_k=top_k
-    )
+    if resume_from is not None:
+        online, target, predictor = build_models(
+            None, num_games=len(game_vocab), num_experts=num_experts, device=device, top_k=top_k
+        )
+        online.load_state_dict(torch.load(resume_from / "encoder_moe.pt", map_location=device))
+        predictor.load_state_dict(torch.load(resume_from / "moe_predictor.pt", map_location=device))
+        target = make_ema_target(online)  # re-derived from the resumed online weights, not separately saved
+        print(f"loaded encoder + predictor weights from {resume_from}")
+    else:
+        online, target, predictor = build_models(
+            encoder_path, num_games=len(game_vocab), num_experts=num_experts, device=device, top_k=top_k
+        )
     opt = torch.optim.AdamW(list(online.parameters()) + list(predictor.parameters()), lr=lr)
 
     def _save(tag: str) -> None:
@@ -287,7 +364,9 @@ def train(
                 {
                     "epochs": epochs,
                     "pretrain_epochs": pretrain_epochs,
+                    "pretrain_source": pretrain_source,
                     "n_minigrid_transitions": len(minigrid_transitions),
+                    "n_arc_synthetic_transitions": len(arc_synthetic_transitions),
                     "n_sokoban_transitions": len(sokoban_transitions),
                     "num_experts": num_experts,
                     "top_k": top_k,
@@ -308,11 +387,21 @@ def train(
         print(f"[checkpoint] saved encoder + MoE predictor + game vocab to {out_dir} (tag={tag})")
 
     def _checkpoint_cb(epoch_1_indexed: int, phase: str) -> None:
-        _save(f"{phase}-epoch{epoch_1_indexed}-inprogress")
+        # Offset by resume_start_epoch so a checkpoint saved partway through
+        # a resumed run's remaining epochs still records the TRUE cumulative
+        # finetune-epoch count (matching what a fresh, uninterrupted run's
+        # tag would say), not a count that restarts at 1 each resume --
+        # otherwise a second resume off of this one would parse the wrong
+        # start epoch out of the tag.
+        true_epoch = epoch_1_indexed + (resume_start_epoch if phase == "arc-finetune" else 0)
+        _save(f"{phase}-epoch{true_epoch}-inprogress")
 
-    if pretrain_epochs > 0:
+    if pretrain_epochs > 0 and resume_from is None:
         mg_train_loader, mg_val_loader = _make_loaders(synthetic_transitions, game_vocab, batch_size, device)
-        phase_name = "synthetic-pretrain" if sokoban_transitions else "minigrid-pretrain"
+        if arc_synthetic_transitions:
+            phase_name = "synthetic-pretrain" if sokoban_transitions else "arc-synthetic-pretrain"
+        else:
+            phase_name = "synthetic-pretrain" if sokoban_transitions else "minigrid-pretrain"
         _run_epochs(
             online, target, predictor, opt, mg_train_loader, mg_val_loader, device, pretrain_epochs, phase_name,
             contrast_weight=contrast_weight, checkpoint_cb=_checkpoint_cb, checkpoint_every=checkpoint_every,
@@ -321,11 +410,16 @@ def train(
         if checkpoint_every > 0:
             _save(f"{phase_name}-complete")  # cheap insurance at the phase boundary regardless of the interval
 
-    arc_train_loader, arc_val_loader = _make_loaders(arc_transitions, game_vocab, batch_size, device)
-    _run_epochs(
-        online, target, predictor, opt, arc_train_loader, arc_val_loader, device, epochs, "arc-finetune",
-        contrast_weight=contrast_weight, checkpoint_cb=_checkpoint_cb, checkpoint_every=checkpoint_every,
-    )
+    remaining_finetune_epochs = epochs - resume_start_epoch
+    if remaining_finetune_epochs <= 0:
+        print(f"resume_start_epoch={resume_start_epoch} >= epochs={epochs}: nothing left to do")
+    else:
+        arc_train_loader, arc_val_loader = _make_loaders(arc_transitions, game_vocab, batch_size, device)
+        _run_epochs(
+            online, target, predictor, opt, arc_train_loader, arc_val_loader, device,
+            remaining_finetune_epochs, "arc-finetune",
+            contrast_weight=contrast_weight, checkpoint_cb=_checkpoint_cb, checkpoint_every=checkpoint_every,
+        )
 
     _save("final")
 
@@ -459,6 +553,53 @@ if __name__ == "__main__":
             "a shared/contended GPU can cost."
         ),
     )
+    parser.add_argument(
+        "--pretrain-source",
+        type=str,
+        default="minigrid",
+        choices=["minigrid", "arc_synthetic"],
+        help=(
+            "Which synthetic source to use for the pretrain phase (only "
+            "matters when --pretrain-epochs > 0). 'minigrid' (default) "
+            "reproduces the original Stage 4 recipe. 'arc_synthetic' swaps "
+            "in jepa/data/arc_synthetic_data.py's procedural ARC-3-shaped "
+            "puzzles INSTEAD of MiniGrid (mutually exclusive, not additive "
+            "-- a controlled like-for-like swap, not a scale-up). Sokoban "
+            "(--sokoban-episodes-per-config) can still be added on top of "
+            "either source."
+        ),
+    )
+    parser.add_argument(
+        "--arc-synthetic-episodes-per-type",
+        type=int,
+        default=168,
+        help=(
+            "Episodes per ARC-synthetic puzzle type (5 types). Default 168 "
+            "* 80 steps/episode * 5 types = 67,200 transitions, matched to "
+            "minigrid_data.py's own default total (40 episodes * 80 steps * "
+            "21 envs = 67,200) for a fair pretrain-phase sample-count "
+            "comparison. Only used when --pretrain-source arc_synthetic."
+        ),
+    )
+    parser.add_argument(
+        "--arc-synthetic-steps-per-episode",
+        type=int,
+        default=80,
+        help="Steps per episode for ARC-synthetic puzzle rollouts (see --arc-synthetic-episodes-per-type).",
+    )
+    parser.add_argument(
+        "--resume-from",
+        type=Path,
+        default=None,
+        help=(
+            "Resume the finetune phase from an existing checkpoint dir (must have "
+            "encoder_moe.pt, moe_predictor.pt, game_vocab_moe.json, moe_training_meta.json -- "
+            "e.g. one saved by --checkpoint-every). Skips the pretrain phase entirely (assumed "
+            "already complete) and continues finetune from the epoch count recorded in the "
+            "checkpoint's checkpoint_tag. Built for recovering from an interrupted long run "
+            "(e.g. a background-task time limit) without losing the completed pretrain phase."
+        ),
+    )
     args = parser.parse_args()
     train(
         args.epochs,
@@ -473,4 +614,8 @@ if __name__ == "__main__":
         exclude_games=args.exclude_games.split(",") if args.exclude_games else None,
         recording_substrings=args.recording_substrings.split(",") if args.recording_substrings else None,
         checkpoint_every=args.checkpoint_every,
+        pretrain_source=args.pretrain_source,
+        arc_synthetic_episodes_per_type=args.arc_synthetic_episodes_per_type,
+        arc_synthetic_steps_per_episode=args.arc_synthetic_steps_per_episode,
+        resume_from=args.resume_from,
     )

@@ -17,6 +17,8 @@ dist/
 /checkpoints_smoke_test/
 /checkpoints_recurrent_holdout/
 /checkpoints_meta_recurrent_holdout/
+/checkpoints_arc_synthetic_fold1/
+/checkpoints_holdout_baseline_fold1/
 /runs/
 *.log
 recordings/
