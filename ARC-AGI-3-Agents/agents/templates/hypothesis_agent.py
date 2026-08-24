@@ -51,11 +51,13 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
+from jepa.countdown_detector import CountdownBarDetector  # noqa: E402
 from jepa.device import get_device  # noqa: E402
 from jepa.grid import CANVAS, PATCH, arc3_frame_to_tensor  # noqa: E402
 from jepa.hypothesis_bundle import HypothesisBundle, info_gain  # noqa: E402
 from jepa.memory import TransitionGraph  # noqa: E402
 from jepa.models import CNNEncoder, MoEPredictor, ValueHead  # noqa: E402
+from jepa.test_time_adapter import TestTimeAdapter  # noqa: E402
 
 _CHECKPOINT_DIR = _REPO_ROOT / "checkpoints"
 _PATCHES_PER_SIDE = CANVAS // PATCH  # 8
@@ -80,6 +82,24 @@ class Hypothesis(Agent):
     # same rationale as Curiosity's PATCH_SAMPLE_TEMPERATURE (see that
     # agent's own _sample_click). Not swept here either.
     PATCH_SAMPLE_TEMPERATURE = 0.1
+    # Softmax temperature for TOP-LEVEL action selection (a1 vs a2 vs ...),
+    # replacing what used to be a hard argmax over Q(s,a). Found via a
+    # live-trace diagnostic on the held-out games that never get solved
+    # under any world-model condition (bp35, tr87, ka59 -- see CLAUDE.md's
+    # Stage 6 addendum): Q margins between candidate SIMPLE actions are
+    # routinely tiny (e.g. 0.098/0.105/0.104/0.097) but consistently favor
+    # the same one turn after turn, so a hard argmax locks onto ONE action
+    # for essentially the entire episode (100% of greedy decisions, not
+    # just most of them, on all three games checked) -- unlike a
+    # click-only game like r11l, where even always picking ACTION6 still
+    # gets real behavioral diversity for free from _sample_click's own
+    # softmax over WHERE to click. Simple actions have no such parameter
+    # to vary, so this was the one form of the "deterministic argmax on a
+    # near-flat map defaults to the same index" bug (see this project's
+    # own Gotchas entry) that was never actually fixed here -- only
+    # _sample_click and Curiosity's analogous version were. Same value as
+    # PATCH_SAMPLE_TEMPERATURE for consistency; not independently swept.
+    ACTION_SAMPLE_TEMPERATURE = 0.1
     # None (default) uses the real entropy-driven beta from HypothesisBundle.
     # Set to a fixed float (0.0 = pure InfoGain/explore, 1.0 = pure
     # value-greedy/exploit) to ablate the Q-blend itself -- isolates
@@ -105,6 +125,81 @@ class Hypothesis(Agent):
     # no other diagnostic signal available. Off by default.
     DIAG_MODE = os.getenv("HYPOTHESIS_DIAG_MODE") == "1"
 
+    # Test-time adaptation (stage6-test-time-adaptation-agent, see
+    # jepa/test_time_adapter.py and experiments/
+    # stage6_test_time_adaptation_agent.md for the full sweep this operating
+    # point was chosen from). Off by default -- a clean on/off flag so this
+    # can be A/B tested against the un-adapted baseline and disabled
+    # instantly if it ever causes a problem in a real scored run.
+    TEST_TIME_ADAPT = os.getenv("HYPOTHESIS_TEST_TIME_ADAPT") == "1"
+    # Adapt every TTA_K observed (non-RESET) transitions, TTA_STEPS AdamW
+    # steps each, at TTA_LR -- see jepa/test_time_adapter.py's module
+    # docstring for which parameter subset this actually touches (~33.8K
+    # params, never the encoder or embeddings). Defaults are the winning
+    # point of the coordinate-descent sweep in
+    # experiments/stage6_test_time_adaptation_agent.md
+    # (scripts/sweep_test_time_adaptation.py, K in {5..200} x STEPS in
+    # {1..12} x LR in {1e-5..4e-4}, scored on mean held-out-game gain minus
+    # a mild penalty on trained-game interference): K=5/STEPS=8/LR=5e-5
+    # gave +0.84% mean held-out changed-patches improvement (4 of 5 held-
+    # out games positive) at a mild ~1.6pp trained-games cost (+58.7% ->
+    # +57.3% pooled) -- comfortably short of the much larger interference
+    # seen at higher LRs (e.g. LR=4e-4 nearly triples the held-out gain but
+    # costs 21pp of trained-game accuracy, a bad trade).
+    TTA_K = int(os.getenv("HYPOTHESIS_TTA_K", "5"))
+    TTA_STEPS = int(os.getenv("HYPOTHESIS_TTA_STEPS", "8"))
+    TTA_LR = float(os.getenv("HYPOTHESIS_TTA_LR", "5e-5"))
+
+    # Novelty-aware beta cap (stage6-novelty-aware-beta). CLAUDE.md's Stage
+    # 6 addendum established that the *gated* MoE prediction -- what the
+    # value head's inputs are built on, and (per the "does InfoGain
+    # collapse too?" follow-up) what the confidence-entropy beta signal
+    # implicitly tracks via *observed* per-expert error -- collapses to
+    # near-identity on any game outside the training vocab, while the raw,
+    # *ungated* per-expert disagreement (InfoGain) does not (held-out/
+    # trained ratio 0.999, scripts/diagnose_infogain_holdout.py). The
+    # entropy-driven beta has no a priori awareness of this: on an
+    # unfamiliar game, a collapsed-to-no-change predictor can look
+    # "reliable" (low, consistent observed error across experts) purely
+    # because the game itself doesn't change much under exploration
+    # either -- false confidence that hands control to the value head
+    # exactly where its own conditioning is least trustworthy.
+    # `self.game_id not in game_vocab` (see `_init_models`, the same
+    # lookup already used for `self.game_idx`) is a much cheaper, more
+    # reliable a priori signal for "this is a genuinely unfamiliar game"
+    # than anything derived from in-episode observed error -- and it's
+    # exactly the condition that will hold for essentially every real
+    # hidden Kaggle game. When true, caps (never raises) beta toward
+    # InfoGain: `beta = min(beta, NOVELTY_BETA_CAP)`, so the confidence
+    # signal can still push beta *lower* than the cap if it wants to, but
+    # can never push it above the cap on a game the model has never
+    # trained on. Deliberately does not touch `FORCE_BETA` ablation runs
+    # (those already pin beta directly for a different purpose) or
+    # familiar-game behavior at all -- Stage 5 follow-up 2 already
+    # validated the full adaptive blend as the right design there.
+    # 1.0 = no effect (pre-this-change behavior). See
+    # experiments/stage6_novelty_aware_beta.md for the sweep/backtest this
+    # value was chosen from.
+    NOVELTY_BETA_CAP = float(os.getenv("HYPOTHESIS_NOVELTY_BETA_CAP", "0.15"))
+
+    # Timer-aware exploration (stage6-countdown-detector). A classical-CV,
+    # non-learned detector (jepa/countdown_detector.py) watches the board's
+    # four edges for a depleting bar -- built after directly confirming
+    # (scripts/diagnose_countdown_bar_prediction.py) that the recurrent
+    # world model does NOT transfer this pattern to held-out games, despite
+    # it being common across many ARC-3 games (the model's game-id-
+    # conditioned residual has no representation of "bars near an edge
+    # shrink" independent of which specific game this is) -- a detector
+    # that works directly on raw pixels sidesteps that failure mode
+    # entirely, at the cost of only ever giving a coarse "how much time is
+    # left" signal, not a goal-directed one. When a bar is confidently
+    # detected, scales EPSILON down as urgency rises -- less random
+    # exploration, more commitment to the current best-scoring action, as
+    # the detected budget runs out. Off by default (same on/off-flag
+    # pattern as TEST_TIME_ADAPT) so this can be A/B tested cleanly and
+    # disabled instantly if it ever misbehaves on a real scored run.
+    TIMER_AWARE = os.getenv("HYPOTHESIS_TIMER_AWARE") == "1"
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         # self._rng must exist unconditionally -- it's what _safe_fallback_action
@@ -112,6 +207,12 @@ class Hypothesis(Agent):
         # even when everything below fails.
         self._rng = random.Random()
         self._init_failed = False
+        # Overwritten in _init_models once game_vocab is actually loaded;
+        # defaults False here so a failed init (routed straight to
+        # _safe_fallback_action, which never reads this) can't leave it
+        # unset.
+        self._is_novel_game = False
+        self._timer = CountdownBarDetector()
 
         try:
             self._init_models()
@@ -140,6 +241,7 @@ class Hypothesis(Agent):
         self._prev_action_id: int | None = None
         self._prev_xy: tuple[int, int] | None = None
         self._prev_state_key: str | None = None
+        self._prev_raw_frame: list | None = None
 
     def _init_models(self) -> None:
         self.device = get_device()
@@ -155,6 +257,7 @@ class Hypothesis(Agent):
         if vocab_path.exists():
             game_vocab = json.loads(vocab_path.read_text())
         self.game_idx = game_vocab.get(self.game_id, 0)
+        self._is_novel_game = self.game_id not in game_vocab
         num_games = max(len(game_vocab), 1)
 
         self.predictor = MoEPredictor(num_games=num_games, num_experts=8).to(self.device)
@@ -177,6 +280,18 @@ class Hypothesis(Agent):
 
         self.graph = TransitionGraph()
         self.hypotheses = HypothesisBundle(num_hypotheses=self.num_experts, tau=self.TAU)
+
+        self.adapter: TestTimeAdapter | None = None
+        if self.TEST_TIME_ADAPT:
+            self.adapter = TestTimeAdapter(
+                self.predictor,
+                self.encoder,
+                self.device,
+                game_idx=self.game_idx,
+                k=self.TTA_K,
+                n_steps=self.TTA_STEPS,
+                lr=self.TTA_LR,
+            )
 
     def is_done(self, frames: list[FrameData], latest_frame: FrameData) -> bool:
         try:
@@ -266,6 +381,22 @@ class Hypothesis(Agent):
             errors = (expert_preds - feat[0].unsqueeze(0)).pow(2).mean(dim=(1, 2, 3)).cpu()  # (K,)
         self.hypotheses.update(errors)
 
+        if self.adapter is not None and self._prev_raw_frame is not None:
+            # Isolated in its own try/except (separate from choose_action's
+            # outer heartbeat) so a training-step hiccup degrades to
+            # "skip this turn's adaptation" rather than "fall back to a
+            # fully random action for this turn" -- adaptation is a bonus
+            # signal on top of the real Q-scoring path, not a dependency
+            # of it.
+            try:
+                self.adapter.observe(
+                    self._prev_raw_frame, self._prev_action_id, self._prev_xy, latest_frame.frame
+                )
+            except Exception:
+                logger.exception(
+                    f"{self.game_id} - hypothesis agent: test-time adaptation step raised, skipping it"
+                )
+
     def _score_action(
         self, feat: torch.Tensor, action_id: int, beta: float
     ) -> tuple[float, tuple[int, int] | None]:
@@ -346,6 +477,20 @@ class Hypothesis(Agent):
         action.reasoning = "hypothesis agent: safe fallback after internal error"
         return action
 
+    def _effective_epsilon(self) -> float:
+        """self.EPSILON, scaled down toward 0 as detected time pressure
+        rises (TIMER_AWARE only) -- less random exploration, more
+        commitment to the current best-scoring action, as the detected
+        countdown/hazard bar depletes. Falls back to the plain constant
+        whenever TIMER_AWARE is off or nothing has been confidently
+        detected yet."""
+        if not self.TIMER_AWARE:
+            return self.EPSILON
+        urgency = self._timer.urgency()
+        if urgency is None:
+            return self.EPSILON
+        return self.EPSILON * (1.0 - urgency)
+
     def _choose_action_inner(
         self, frames: list[FrameData], latest_frame: FrameData
     ) -> GameAction:
@@ -358,6 +503,8 @@ class Hypothesis(Agent):
             self._prev_action_id = None
             self._prev_xy = None
             self._prev_state_key = None
+            self._prev_raw_frame = None
+            self._timer.reset()
             # Experiment-designer opening probe: try every simple action
             # once before trusting the hypothesis bundle's own confidence
             # weights, matching PressOnce's "press each action once" idea.
@@ -368,6 +515,8 @@ class Hypothesis(Agent):
 
         feat = self._encode(latest_frame)
         self._update_hypotheses(feat, latest_frame)
+        if self.TIMER_AWARE:
+            self._timer.observe(latest_frame.frame)
 
         if latest_frame.levels_completed > self._last_levels_completed:
             self._exploit_remaining = self.EXPLOIT_REPEATS
@@ -401,7 +550,7 @@ class Hypothesis(Agent):
                 xy = None
                 action = GameAction.from_id(action_id)
                 action.reasoning = "hypothesis agent: experiment-designer opening probe"
-            elif self._rng.random() < self.EPSILON:
+            elif self._rng.random() < self._effective_epsilon():
                 action_id = self._rng.choice(available)
                 xy = None
                 action = GameAction.from_id(action_id)
@@ -412,17 +561,37 @@ class Hypothesis(Agent):
                 action.reasoning = "hypothesis agent: epsilon-random fallback"
             else:
                 beta = self.FORCE_BETA if self.FORCE_BETA is not None else self.hypotheses.beta()
-                best_q, best_action_id, best_xy = -1e18, available[0], None
+                if self.FORCE_BETA is None and self._is_novel_game:
+                    beta = min(beta, self.NOVELTY_BETA_CAP)
                 trace = []
+                xy_by_candidate = {}
                 for candidate in available:
                     q, xy_candidate = self._score_action(feat, candidate, beta)
                     trace.append((candidate, q))
-                    if q > best_q:
-                        best_q, best_action_id, best_xy = q, candidate, xy_candidate
+                    xy_by_candidate[candidate] = xy_candidate
+                # Temperature-weighted softmax sample over Q(s, candidate),
+                # not a hard argmax -- see ACTION_SAMPLE_TEMPERATURE's own
+                # docstring. A hard argmax here reproduces, for simple
+                # (non-ACTION6) actions, exactly the "deterministic argmax
+                # on a near-flat map always picks the same index" bug
+                # _sample_click already had to fix for click location: live
+                # traces on bp35/tr87/ka59 showed the greedy branch picking
+                # the SAME single action on 100% of decisions all episode,
+                # because tiny Q margins (e.g. 0.098/0.105/0.104/0.097)
+                # still have one candidate consistently, if barely, ahead.
+                qs = [q for _c, q in trace]
+                max_q = max(qs)
+                weights = [
+                    pow(2.718281828, (q - max_q) / self.ACTION_SAMPLE_TEMPERATURE) for q in qs
+                ]
+                candidates = [c for c, _q in trace]
+                best_action_id = self._rng.choices(candidates, weights=weights, k=1)[0]
+                best_q = dict(trace)[best_action_id]
+                best_xy = xy_by_candidate[best_action_id]
                 if logger.isEnabledFor(logging.DEBUG):
                     trace_str = " ".join(f"a{c}:{q:.5f}" for c, q in trace)
                     logger.debug(
-                        f"{self.game_id} - hypothesis trace: beta={beta:.3f} {trace_str} -> chosen a{best_action_id}"
+                        f"{self.game_id} - hypothesis trace: beta={beta:.3f} {trace_str} -> sampled a{best_action_id}"
                     )
                 action_id, xy = best_action_id, best_xy
                 action = GameAction.from_id(action_id)
@@ -436,4 +605,5 @@ class Hypothesis(Agent):
         self._prev_action_id = action_id
         self._prev_xy = xy
         self._prev_state_key = state_key
+        self._prev_raw_frame = latest_frame.frame
         return action
