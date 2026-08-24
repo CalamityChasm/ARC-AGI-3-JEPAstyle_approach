@@ -33,8 +33,12 @@ def _load_frame_lines(path: Path) -> list:
     return lines
 
 
-def load_all_transitions(repo_root: Path) -> list:
-    """Returns a list of (frame_t, action_id, x, y, frame_t+1, changed, game_id) tuples.
+def load_transitions_from_dir(recordings_dir: Path) -> list:
+    """Same parsing as `load_all_transitions`, generalized to an arbitrary
+    directory of `*.recording.jsonl` files -- e.g. a future search-harvested
+    "winning round" corpus that isn't at the default `ARC-AGI-3-Agents/
+    recordings/` path. `load_all_transitions` is a thin wrapper around this
+    for the default location.
 
     `changed` is a cheap pixel-level flag (frame_t != frame_t+1). A large
     fraction of random-policy transitions are exact no-ops (action had no
@@ -47,7 +51,6 @@ def load_all_transitions(repo_root: Path) -> list:
     that can't tell which game it's in is being asked to fit 25
     mutually-inconsistent action->effect mappings at once.
     """
-    recordings_dir = repo_root / RECORDINGS_DIR
     transitions = []
     for path in sorted(recordings_dir.glob("*.recording.jsonl")):
         frames = _load_frame_lines(path)
@@ -64,6 +67,14 @@ def load_all_transitions(repo_root: Path) -> list:
                 (cur["frame"], action_id, x, y, nxt["frame"], changed, game_id)
             )
     return transitions
+
+
+def load_all_transitions(repo_root: Path) -> list:
+    """Returns a list of (frame_t, action_id, x, y, frame_t+1, changed, game_id)
+    tuples from the default local recordings directory. See
+    `load_transitions_from_dir` for the doc on the shape/semantics -- this
+    is just that function pointed at `repo_root / RECORDINGS_DIR`."""
+    return load_transitions_from_dir(repo_root / RECORDINGS_DIR)
 
 
 def build_game_vocab(transitions: list) -> dict:
