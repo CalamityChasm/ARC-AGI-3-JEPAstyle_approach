@@ -2353,6 +2353,115 @@ whether this specific change moves real scores would need more
 same-config submissions, which at 1/day is a multi-day undertaking, not
 something this single data point can resolve on its own.
 
+**Note on a gap in this doc's own record: master had fallen behind what
+was actually being submitted.** A 7th submission (ref `55470338`,
+2026-08-13, scored `0.18`) combined the argmax-softmax action-selection
+fix (`ACTION_SAMPLE_TEMPERATURE`, replacing a hard argmax over `Q(s,a)`
+that locked onto one action for a whole episode on games with only
+simple actions) with `NOVELTY_BETA_CAP` for the first time -- but this
+was done on a branch (`stage6-test-time-adaptation-agent`, which had
+also accumulated `jepa/test_time_adapter.py` and a countdown-bar
+detector along the way) that was never merged or otherwise reflected
+back into master's own `hypothesis_agent.py` or this doc. Master's copy
+of the agent code was, until the update below, missing both fixes behind
+that real `0.18` score. Flagging this as a process gap, not re-deriving
+the numbers here -- see that branch's own commit history and
+`experiments/stage6_test_time_adaptation_agent.md` for the full
+argmax-softmax validation (14/5 total-levels/distinct-games vs.
+Curiosity's 11/4 at n=8x25) if a future session wants the details.
+
+**Update (2026-08-24): 8th real submission, ref `55728242`, enables
+test-time adaptation for the first time in a scored run.** Test-time
+adaptation (`jepa/test_time_adapter.py`) has been, across this whole
+Stage 6 investigation, the single lever with any real positive
+representation-level signal on held-out games (see the addendum above) --
+but every agent-level backtest of it, at every dose tried, came back an
+exact or near-exact tie with TTA off (n=8, 5 held-out games each time).
+Given this project has now hit that same "component measurably improved,
+n=8 backtest can't detect it" pattern *three separate times this session*
+(novelty-aware beta's n=8-vs-n=30 reversal, and twice with a
+countdown-bar-detector feature not otherwise documented in this file),
+local backtesting was judged unreliable enough for this specific question
+that the more informative next step was a real scored submission, not
+another local sweep.
+
+Pulled master's `hypothesis_agent.py` up to the `stage6-test-time-
+adaptation-agent` lineage first (see the note just above) -- master was
+missing `ACTION_SAMPLE_TEMPERATURE`, `NOVELTY_BETA_CAP`, and TTA/timer
+wiring entirely, so this submission is really two things at once: (1)
+master catching up to the code already behind the real `0.18` score, and
+(2) turning TTA on for the first time. `TIMER_AWARE` (the countdown-bar
+detector) stays off -- it was already found to give no agent-level win
+on `bp35`/`ka59` and its own n=8 signal on `cn04`/`r11l` evaporated at
+n=30, so there's no reason to add a second untested variable to this
+submission.
+
+**Dose: `HYPOTHESIS_TTA_K=5`, `HYPOTHESIS_TTA_STEPS=25`,
+`HYPOTHESIS_TTA_LR=2e-4`** -- higher than `hypothesis_agent.py`'s own
+baked-in defaults (`STEPS=8`/`LR=5e-5`, an 8-9x lower dose). Chosen
+because `experiments/stage6_test_time_adaptation_agent.md`'s own
+follow-up section found the conservative default was originally picked
+to bound a *cross-game* interference cost that was later confirmed
+(directly, by reading `ARC-AGI-3-Agents/agents/swarm.py: Swarm.main()`,
+not assumed) to be structurally impossible in real play -- `Swarm`
+constructs one fresh `Hypothesis` (and therefore one fresh
+`TestTimeAdapter`, from the pristine checkpoint) per `game_id`, and each
+instance only ever plays that one game, confirmed again independently
+this session by reading the same loop. At the higher dose, held-out
+changed-patches improvement measured ~+5.5% mean (vs. the conservative
+dose's +0.79%, a ~7x larger representation-level gain), with 4 of 5
+held-out games improving and InfoGain confirmed *not* collapsing (ratio
+1.077, so the gain isn't coming from quietly disarming exploration). The
+agent-level backtest at this dose (n=8) still tied exactly with TTA off
+on levels-completed (3/8 both conditions, both only ever solving `r11l`)
+-- consistent with, not contradicting, the reasoning above: this project
+has no local evidence this evaluation protocol can detect an effect of
+this size, at any dose, so the backtest tying is not read as "the higher
+dose doesn't help" so much as "n=8 still can't tell either way here."
+
+**Wiring detail, verified rather than assumed:**
+`Hypothesis.TEST_TIME_ADAPT`/`TTA_K`/`TTA_STEPS`/`TTA_LR` are read via
+`os.getenv(...)` at class-definition time (import time), and the
+notebook's rerun-gated setup cell runs `main.py` as a *subprocess*
+(`subprocess.run([sys.executable, "main.py", ...], env={**os.environ,
+"MPLBACKEND": "agg"}, ...)`) -- meaning the env vars had to be set via
+`os.environ.setdefault(...)` (not a local Python variable) *before* that
+line, so they're present in `os.environ` when `{**os.environ, ...}` gets
+evaluated fresh at the call site. Added the four `os.environ.setdefault`
+calls right after the placeholder-submission write, with a comment
+explaining exactly this mechanism so a future edit doesn't accidentally
+move them below the subprocess call or reintroduce a local-variable
+version that silently never reaches the child process. Verified locally
+(not just read on paper) before spending the submission: a standalone
+script constructing `Hypothesis` with these env vars set confirmed
+`TEST_TIME_ADAPT=True`/`TTA_K=5`/`TTA_STEPS=25`/`TTA_LR=0.0002`, and a
+direct `TestTimeAdapter` construction + 30x `observe()` call test showed
+real, nonzero parameter movement (33,800 adapted params, matching the
+documented ANIL-style subset size) -- not a silent no-op. Also ran
+`main.py --agent=hypothesis` locally end-to-end on `r11l` and `bp35`
+(full 300-action episodes, TTA on) with zero exceptions in the log,
+before touching Kaggle. The free (non-scored) kernel test push (v16)
+also came back clean (only benign pre-existing pip dependency-resolver
+warnings, no tracebacks) -- though as this doc's own gotcha notes, that
+push never exercises the `KAGGLE_IS_COMPETITION_RERUN`-gated code where
+the actual env-var-threading logic lives, so it's confirmatory, not a
+substitute for the direct local verification above.
+
+Submitted with `MAX_ACTIONS=300` unchanged (the current default) and the
+same checkpoint lineage as the `0.18` submission -- TTA is the only new
+variable versus that score. Status was `SubmissionStatus.PENDING` at
+submission time; check `kaggle competitions submissions -c
+arc-prize-2026-arc-agi-3 --csv` for the resolved score. **Same standard
+as every other first-of-a-kind submission in this section: this is n=1,
+and per this project's own established noise floor (`0.00`-`0.23` on
+otherwise-identical code), a single score cannot cleanly separate "TTA
+helped," "TTA hurt," and "TTA did nothing" from ordinary run-to-run
+variance** -- worth reading alongside, not instead of, the local
+representation-level evidence above. A same-config resubmission (or,
+cheaper, a second submission with TTA off on this exact codebase for a
+same-day paired comparison) would be needed to say more, and at 1/day
+that's multi-day work, not something this single submission resolves.
+
 Everything needed to reproduce the submission from scratch on a new
 machine is in `kaggle_submission/` (checked into git) plus the steps
 below. This section is the reproduction guide; the dated blow-by-blow
