@@ -1754,6 +1754,391 @@ rebalanced -- 4 data attempts, if counted separately, all negative). The
 1 success, test-time adaptation, remains the most promising lever
 identified today and the natural next thing to build out further.
 
+**Test-time adaptation built out into the real agent (`stage6-test-time-
+adaptation-agent`): the prediction-quality win did not translate into a
+real gameplay win.** Widened the earlier diagnostic's sweep across all 5
+held-out games (K in {5..200}, steps in {1..12}, LR in {1e-5..4e-4}) and
+confirmed the monotonic tradeoff dial holds up broadly, not just on
+`r11l` -- picked a deliberately conservative operating point (K=5,
+STEPS=8, LR=5e-5: +0.84% mean held-out changed-patches, -1.6pp
+trained-game interference). Built `jepa/test_time_adapter.py`
+(`TestTimeAdapter`): snapshots the ~33.8K-param ANIL-style subset,
+restorable via `reset()`, persists across RESETs of the same game (not
+each RESET -- mirrors `TransitionGraph`'s own persistence choice) and
+only resets on a genuinely new game (already enforced for free -- one
+fresh `Hypothesis` instance per `game_id`). Wired into
+`hypothesis_agent.py` behind `HYPOTHESIS_TEST_TIME_ADAPT=1` (default
+off); per-turn latency measured directly at ~17ms, negligible next to a
+real network round-trip.
+
+**Agent-level backtest -- the test that actually matters, run for the
+first time today:** n=8 on the 5 held-out games, n=4 on a 25-game trained
+sweep. **No detectable benefit on held-out games** (TTA on: 0.375 mean
+levels/3 total; off: 0.500/4 total, both only ever solving `r11l`; the
+raw score gap was driven by two outlier fast completions, not a
+systematic effect) **and no detectable regression on trained games**
+(ON/OFF within noise of each other). A real, independently-verified
+representation-level improvement did not show up in actual play at this
+sample size -- the same "world model got measurably better, agent win
+count didn't move" pattern this project has already hit twice before
+(Stage 2's post-bugfix Curiosity re-test, Stage 5's teacher-policy value
+head) -- not a contradiction, just a reminder that small-sample
+agent-level metrics need much more power to detect a real but modest
+effect than a direct representation-level measurement does. **Verdict:
+not a submission candidate on its own merits yet, but safe to ship
+disabled-by-default** (zero regression, negligible latency, unit-tested
+reset logic) -- worth revisiting with a larger backtest sample or a
+larger adaptation budget if a future session wants a more decisive
+answer, rather than concluding the mechanism doesn't work at all.
+
+**The biggest single test of the day: scaling model capacity and
+pretraining diversity together (`stage6-scaled-world-model`) -- a
+real, well-reasoned hypothesis, tested properly, still negative.** Every
+data-diversity attempt above added one modest source (33-67k
+transitions) at unchanged model capacity. A genuinely different, larger
+test: build a real roster of dozens of distinct game mechanics --
+6 OpenSpiel board/strategy games (`connect_four`, `tic_tac_toe`,
+`othello`, `checkers`, `pig`, `mancala` -- board-game moves represented
+as (x,y) click-style transitions, reusing the same mechanism ARC-3's own
+ACTION6 already has xy-conditioning for; `backgammon` was evaluated and
+dropped, its 1,352-action combined-sub-move space wasn't practical to
+decompose in the time available) plus hand-rolled Snake and Pong for
+real-time physics -- each game given its own distinct `game_id`
+(applying the per-sub-game-id lesson from the MinAtar retry above from
+the start, not re-discovering it), totaling **~358k synthetic pretrain
+transitions, a genuine order-of-magnitude step up** from any single prior
+source. Paired this with re-testing model width (1x vs. 2x,
+`--width-mult`) -- the actual untested combination, since the earlier
+`stage6-capacity-sweep` ablation tested capacity alone on the small
+original data and found no benefit there.
+
+**Width=1.0 (diversity alone, no extra capacity): a clean, well-powered
+negative.** Held-out fold-1 changed-patches: **+0.10%**, statistically
+indistinguishable from the established baseline (+0.01%) and well inside
+the existing 5-fold noise band. No Procgen-style curriculum collapse this
+time (pretrain epochs were deliberately sized to hold total
+samples-seen roughly constant relative to the proven recipe, learning
+directly from that earlier mistake) -- a trustworthy null result, not a
+confounded one. ~5.3x more pretraining data spanning genuinely different
+mechanics, by itself, does not move the held-out-games number.
+
+**Width=2.0 (diversity + capacity together): inconsistent, and where it
+moved, it moved the wrong way.** Fold 1: **-88.29%** -- a dramatic
+regression, every one of the 5 held-out games individually worse, paired
+with the *best* trained-games result of the whole day (+69.11%) --
+textbook capacity-enabled overfitting, not generalization. Validated on
+fold 2 before treating fold 1 as conclusive (this project's own standing
+lesson about not trusting one fold): fold 2 came back **-0.03%**, near
+parity with fold 2's own baseline (+0.11%) and the *weakest* trained-fit
+of the three runs (+5.26%) -- fold 1's collapse did not replicate. Both
+folds agree on the answer that actually matters, though: neither shows
+capacity turning this diverse data into better held-out generalization,
+and the inconsistency between folds (severe regression vs. near-neutral)
+is itself a real finding -- capacity scaling on top of this data regime
+is unpredictable, not a reliable lever, with a real downside risk and no
+observed upside.
+
+**Working read:** the reasoning behind this hypothesis was sound and
+targeted the right thing (capacity and data need to scale together;
+today's other diversity attempts genuinely were "light" pretraining at
+unchanged capacity) -- but at the data scale actually achievable on this
+project's hardware (~358k transitions, nowhere near real foundation-model
+scale), adding capacity seems to widen the model's ability to fit its
+*whole* training manifold (including the ARC-finetune games) more
+precisely, which sometimes bleeds into worse generalization rather than
+better -- the classic capacity-without-proportionally-more-data risk,
+not evidence the underlying idea is wrong at a truly large scale, just
+evidence it doesn't close the gap at the scale this project can actually
+reach. **This is the 11th independent intervention against the
+held-out-games gap today, and the 10th failure** -- test-time adaptation
+remains the only lever that showed any real, positive, dialable signal.
+Full roster reasoning, per-fold tables, and methodology in
+`experiments/stage6_scaled_world_model.md` on branch
+`stage6-scaled-world-model` (not merged to master).
+
+**Checked whether finetuning an existing open-source world model beats
+training from scratch: no viable candidate exists.** A real, current web
+search (not relying on stale training-data knowledge) checked Genie/
+Genie 2/3 (proprietary, no public weights), DIAMOND and IRIS (public
+weights, but each checkpoint is a *single-Atari-game specialist* trained
+on ~100k frames -- fine-tuning one buys a differently-pretrained
+single-game model, not cross-game generalization, which doesn't address
+the actual problem), WHAM/Microsoft Muse (single-game, non-commercial
+research license), Oasis (Minecraft-only, MIT, but inference-only --
+no training/fine-tune code was ever released), and V-JEPA2/Matrix-Game
+(genuinely large-scale and diverse, but either wrong-domain -- realistic
+video vs. this project's flat 16-color grids -- or requires 24GB+ VRAM
+neither the local RTX 2070 nor Kaggle's free-tier GPUs have). Notably,
+this reconfirms a decision `architecture.md`'s own "Discarded-for-
+Complexity Ideas" footnote already made before this session started --
+V-JEPA-family and Atari-benchmark models were considered and shelved for
+the same reasons found again today. The from-scratch, diverse-synthetic-
+pretraining approach this project is already running remains the more
+defensible path; no shortcut via an existing checkpoint is available.
+
+**MinAtar retry with per-sub-game ids and Procgen's own scale-up attempts
+weren't the last word on data diversity -- a genuine roster expansion via
+OpenSpiel, still negative (`stage6-expanded-roster`).** OpenSpiel actually
+has **123 registered games**, not the 6 used in `stage6-scaled-world-model`
+-- programmatically categorized all 123 by dynamics/information type
+(not hand-inspected) before deciding anything: 42 are `SEQUENTIAL` +
+`PERFECT_INFORMATION` (the eligible pool, matching how ARC-3's own turns
+work), 20 are simultaneous-move (excluded -- no single well-defined
+"current player's action" to log), 46 are imperfect-information (excluded
+-- can't render an honest fully-observable grid for a state a player
+doesn't fully see), 4 are mean-field/population-level (excluded, wrong
+paradigm entirely), 11 fail to load without extra wrapper params
+(excluded as meta-games, not directly playable). **Went from 6 to 26
+OpenSpiel games** -- a genuine "dozens more" expansion, not a token
+increase -- for **~2.14M total pretrain transitions** (~6x the prior
+attempt's 358k), sized via directly-measured generation throughput
+(4.59M transitions in ~7.2 minutes standalone) rather than a guess, with
+pretrain epochs deliberately kept to 1 to hold total samples-seen in the
+established curriculum-balance band (learning directly from the Procgen
+imbalance mistake, not re-discovering it).
+
+**Real infrastructure lesson found along the way**: Windows' `DataLoader`
+worker-spawn (`num_workers>0`) pickles the *entire* dataset object to
+each spawned subprocess -- fine at the ~55k-transition scale this
+project's `num_workers=4` default was tuned for, but catastrophically
+slow past roughly the hundreds-of-thousands range (a worker burned
+1,200-1,900+ CPU-seconds without completing one batch on the 2.14M
+corpus). Fixed via the existing `JEPA_NUM_WORKERS=0` override (originally
+added for an unrelated memory gotcha) -- worth defaulting to for any
+future corpus at this scale, not reaching for only after something else
+fails first.
+
+**Fold-1, width=1.0 result (real, clean run, ~78 min wall-clock):
+still negative, and if anything very slightly worse than the smaller
+attempt.** Held-out changed-patches: **-1.22% overall, every one of the
+5 held-out games individually negative** (not a mixed picture -- `r11l`'s
+-13.04% is the small-absolute-denominator artifact this doc already
+warns about, checked directly rather than assumed). This sits at or
+slightly below the established 5-fold no-diversity baseline band
+(-0.30% +/- 0.66%), and is *worse* than the prior 6-game/358k attempt's
++0.10% -- **~4.3x more OpenSpiel games and ~6x more total pretrain
+transitions did not move this number in a positive direction.**
+Trained-games sanity check is healthy (+18.34%), confirming real,
+non-degenerate learning happened from the much larger corpus -- it
+simply doesn't transfer to genuinely unseen ARC games, the same pattern
+every one of the 10 prior interventions already established. **This is
+the 11th consistent negative result against the held-out-games gap.**
+
+**Width=2.0 retest on this same expanded corpus -- the direct test of
+whether proportional capacity fares differently on genuinely more data:
+still no benefit, but a real, useful secondary finding.** Fold 1:
+**+0.02%** (essentially exact parity, not a real effect either way).
+Fold 2 (validation): **-0.05%**, confirming fold 1's story rather than
+contradicting it. **12th-13th consistent negative results.** The
+secondary finding: `stage6-scaled-world-model`'s severe fold-1
+capacity-instability (-88.29%, textbook capacity-enabled overfitting on
+the smaller 358k corpus) **did not replicate at this larger data scale,
+in either fold** -- width=2.0 is safe here (no regression risk), it
+simply still isn't beneficial. That's a genuine, useful data point on
+its own: more data does appear to remove the *downside* risk of scaling
+capacity, even though it hasn't yet produced an *upside*. Real,
+reusable infrastructure outlasts this negative result regardless:
+`jepa/data/openspiel_data.py` now has three generic, reusable handler
+families (cell-index placement, destination-click parsing, direct-
+action-id) instead of bespoke per-game code, so adding further OpenSpiel
+games in a future session is mostly config work, not new engineering.
+Full per-game exclusion reasoning and per-fold tables in
+`experiments/stage6_expanded_roster.md` on branch `stage6-expanded-roster`
+(not merged to master).
+
+**Running tally after this whole diverse-data investigation: 13
+independent interventions against the held-out-games gap, 12 failures,
+1 modest success (test-time adaptation).** Across conditioning fixes,
+architecture changes, and now five separate data-diversity attempts at
+increasing scale (MinAtar x2, Procgen x2, a 358k-transition 29-game mix,
+and a 2.14M-transition 26-OpenSpiel-game roster), nothing has closed the
+gap. The pattern is now consistent enough across enough independently-
+designed interventions that it's reasonable to treat this as this
+project's hardware/data ceiling for zero-shot generalization via
+pretraining alone, not a specific unfound bug -- test-time adaptation
+(real gradient updates during play, not a frozen forward pass) remains
+the only mechanism that has shown any real, positive, dialable signal
+across this entire investigation.
+
+**Color-permutation augmentation (`stage6-augmentation`): the 14th
+intervention, and the 13th failure -- with a real cost this time, not
+just a null result.** Every prior attempt targeted the predictor's
+conditioning or the training data's diversity; this targeted something
+different -- whether the model was overfitting to the *specific* color
+statistics of the 25 local games (directly evidenced by the
+object-identity checkpoint's contrastive-loss collapse earlier in this
+section). Added a `--color-augment` flag (`jepa/data/trajectories.py`)
+applying a fresh random permutation of all 16 ARC colors per training
+example, identically to `frame_t` and `frame_t1` so the causal
+action-effect relationship stays truthful -- color 0 deliberately
+included in the permutation (no cross-game convention establishes it as
+background in ARC-3 specifically, unlike classic ARC puzzles).
+
+**Result: no improvement on held-out games (+0.01% baseline -> -0.19%,
+both inside the established 5-fold noise band) and a real regression on
+trained games (+7.97% -> -1.76%),** corroborated by the training run's
+own validation curve eroding steadily from +2.4% at epoch 1 to -0.5% at
+epoch 60 -- not a fluke. This rules out "stop the model from relying on
+specific color ids" as sufficient on its own, and the trained-game
+regression is itself informative: color identity was a real, exploitable
+shortcut the model was using to do well on familiar games, and removing
+access to it didn't buy back any transfer to unfamiliar ones -- just cost
+accuracy on the games it already handled.
+
+**Spatial (rotation/flip) augmentation was investigated and deliberately
+not attempted**, a good example of catching a correctness risk before it
+could produce a misleading result: `rules.md`'s own Action Space section
+states that simple-action semantics "vary per game and must be
+discovered through exploration -- not documented in advance." Since
+there's no reliable way to know whether a given game's action ids carry
+a fixed spatial meaning (e.g. "move up") that a rotation/flip would need
+to relabel to keep training examples truthful, implementing it risked
+planting subtly incorrect training signal rather than genuine
+augmentation -- correctly judged not worth the risk without a way to
+verify it first.
+
+**Novelty-aware beta override (`stage6-novelty-aware-beta`): the most
+encouraging agent-level result of the whole investigation, though still
+n=8.** Every fix above targeted the world model itself; this instead
+changes the *agent's* strategy to work around a known weakness rather
+than fix it. The agent already has a direct, deterministic signal for
+"this game is genuinely unfamiliar" -- `self.game_id not in game_vocab`,
+the same lookup already used for the fallback embedding index -- which is
+more reliable than the existing Bayesian confidence-entropy `beta`
+signal, since that confidence is built from *observed* per-expert error
+and could look artificially "confident" on a collapsed, unfamiliar-game
+prediction (consistently predicting no-change looks like agreement even
+when it's not informative). Added `NOVELTY_BETA_CAP`
+(`hypothesis_agent.py`): when the current game is outside the trained
+vocabulary, `beta = min(beta, NOVELTY_BETA_CAP)`, biasing the Q-blend
+toward InfoGain (the signal already shown not to collapse on held-out
+games) instead of the value head. Familiar-game behavior is untouched --
+the existing adaptive blend was already validated as the right design
+there (Stage 5 follow-up 2).
+
+**Cap value (0.15) chosen from real evidence**: replaying held-out-game
+episodes through the confidence-tracking logic showed beta sitting in a
+narrow 0.12-0.40 band there (mean 0.245, 99.7% of mass above 0.15) --
+0.15 gives a real, consistent nudge toward InfoGain rather than a
+near-no-op.
+
+**Agent-level backtest (n=8, `MAX_ACTIONS=300`, the 5 held-out games):
+cap ON leads on every metric.** Mean score 0.0603 vs. 0.0113, mean
+levels 0.50 vs. 0.38, total levels 4 vs. 3 (`r11l` solved 4/8 vs. 3/8) --
+unlike test-time adaptation's more mixed agent-level picture, this one
+favors the change across the board, including the outlier-resistant
+levels-completed comparison. A trained-games sanity check initially
+looked alarming (mean score 0.0047 vs. 0.4762) but was traced directly to
+one game's identical fast-solve path landing 3/5 times under the old
+default vs. 0/5 under the cap -- unseeded-RNG variance, not a real
+effect, confirmed by the cap being structurally inert on all 6 trained
+games checked (each present in the training vocabulary, so the override
+never fires there).
+
+**Honest caveat, same standard as every other result today:** n=8 on a
+sparse binary metric is real, encouraging evidence -- not proof. Worth a
+larger backtest before treating this as validated, but it's the first
+result all day that's positive on every agent-level metric at once,
+rather than a representation-level win that didn't clearly show up in
+play. Full write-up in `experiments/stage6_novelty_aware_beta.md` on
+branch `stage6-novelty-aware-beta` (not merged to master).
+
+**Correction (`stage6-novelty-beta-largescale`): the n=8 result did not
+replicate at n=30 -- it was noise, and the "most encouraging result"
+framing above is retracted.** Rerunning the identical comparison at n=30
+per condition (60 total runs): levels-completed, the more robust metric,
+came back **exactly tied** (13 vs. 13, an identical 43.3% solve rate on
+`r11l`, the only game either version ever solved across all 60 runs).
+The mean-score gap didn't just shrink, it **reversed direction** (n=8
+favored cap ON 0.060 vs. 0.011; n=30 favors cap OFF 0.094 vs. 0.029),
+fully explained by two high-scoring outlier runs on the cap-OFF side --
+exactly the kind of small-sample artifact this project has hit before
+(see the earlier `+64.9%` game-id-ablation result that also evaporated
+on reseeding). Mann-Whitney U tests found no significant difference in
+per-run score (p=0.86) or solve efficiency (p=0.59). This is the third
+time this session a real, mechanistically well-motivated component-level
+idea (after the teacher-policy value head and test-time adaptation) has
+failed to produce a statistically detectable agent-level effect at
+practical sample sizes on these 5 held-out games -- not necessarily
+because the mechanism is wrong, but because this evaluation protocol
+doesn't have the power to tell a real small effect apart from noise.
+**Recommendation: keep the cap enabled by default** (it's still
+structurally inert on trained games -- zero regression risk -- and there
+is still no evidence it hurts), **but do not treat it as a validated
+improvement.** This retraction is consistent with, not contradicted by,
+the real Kaggle submission below (`0.09`, itself unremarkable against the
+established noise floor) -- two independent tests, the larger local
+backtest and the one real submission, now agree there's no detectable
+benefit, where a single small local sample had briefly suggested one.
+
+**MAX_ACTIONS=900 + test-time adaptation, combined (`stage6-budget-tta-
+combo`): a structurally interesting n=8 signal, explicitly not trusted
+yet given the lesson just above.** Two levers that each showed modest
+individual promise -- a longer action budget (helps every checkpoint
+tested) and test-time adaptation (real but small representation-level
+gain) -- had never been tested together. Four-condition backtest (n=8,
+5 held-out games, `stage6-game-holdout` fold-1 checkpoint): baseline
+0.500 mean levels (4/8 total), budget-900-alone 0.750 (6/8), TTA-alone
+0.375 (3/8), **combo 1.000 mean levels -- every one of 8 repeats
+completed at least one level, the first zero-zero-completion-run
+condition in this project's entire Stage 6 backtest history.** Naive
+addition of the two individual effects predicts ~5/8; observed is 8/8,
+suggesting real compounding rather than two independent small effects.
+**Important limits, not glossed over**: mean *score* (as opposed to
+levels) is still outlier-driven and not trusted on its own; breadth did
+not improve -- all four conditions, including the combo, only ever
+solved `r11l`, so this is a reliability gain on a game already
+partially solvable, not new generalization to a harder game. And given
+the novelty-aware beta override *just* showed an equally clean-looking
+n=8 win across every metric that completely evaporated at n=30, **this
+result is explicitly flagged as preliminary, not validated** -- a
+25-30-repeat confirmatory backtest is the recommended next step before
+it influences any submission decision, not an immediate green light.
+
+**A Reptile meta-learning objective (`stage6-meta-learning`): the
+biggest build attempted today, and it produced this investigation's
+first *dosage-confirmed* representation-level improvement -- amplifying
+test-time adaptation itself, not just matching it -- though still no
+detected agent-level effect.** Every fix so far started from a normally-
+trained checkpoint and hoped it happened to be adaptable. This instead
+built a first-order (Reptile) meta-training objective explicitly
+optimizing the predictor for *post-adaptation* performance: the same
+~33.8K-param ANIL-style head `TestTimeAdapter` uses at real eval time,
+periodically nudged during training via real inner-loop adaptation steps
+on sampled training-pool games (`jepa/train_meta_predictor.py`).
+
+**A real bug found and fixed first**: the textbook ANIL design (freeze
+the head from ordinary training, update it only via the Reptile nudge)
+caused catastrophic representation collapse -- with the head unable to
+produce meaningful residuals during normal training, the encoder learned
+to make transitions look trivially identical rather than learn real
+dynamics. Fixed by keeping the head in ordinary joint training *and*
+layering the Reptile nudge on top, verified via a smoke test before any
+full run.
+
+**Standard-dose Reptile was a clean negative** -- post-adaptation
+held-out improvement (+0.57%/+0.42%) was *worse* than the plain
+baseline checkpoint's own post-adaptation improvement (+0.78%/+0.66%,
+`stage6-test-time-adaptation-agent`'s own number). **High-dose Reptile
+(3x more updates/epoch, no epsilon annealing) reversed this: +0.98%/
++1.28% vs. the same +0.78%/+0.66% baseline** -- a real, directionally
+consistent gain concentrated on 3 of the 5 held-out games, confirming
+the standard-dose result was a dosing artifact, not a ceiling on the
+approach itself. This is the first result in this whole investigation
+that measurably improves on test-time adaptation's own already-real
+effect, not just matches or fails to match it.
+
+**Preliminary agent-level backtest (n=8, since the high-dose result
+looked promising): levels-completed came back exactly tied with the
+already-published baseline+TTA-on numbers** (3 total, 0.375 mean, all on
+`r11l`) -- the same "component measurably improved, small real-play
+sample couldn't detect it" pattern this project has now hit three times
+today (teacher-policy value head, test-time adaptation itself, and now
+this). Full write-up in `experiments/stage6_meta_learning.md` on branch
+`stage6-meta-learning` (not merged to master) -- worth a larger backtest
+of the high-dose checkpoint specifically before drawing an agent-level
+conclusion either way.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
@@ -1978,6 +2363,115 @@ no tracebacks) before submitting. Neither individual fix has ever been
 tested in combination with the other at the agent level before this
 submission -- treat the resulting score with the same n=1 caution as
 every other new-config submission in this section.
+
+**Note on a gap in this doc's own record: master had fallen behind what
+was actually being submitted.** A 7th submission (ref `55470338`,
+2026-08-13, scored `0.18`) combined the argmax-softmax action-selection
+fix (`ACTION_SAMPLE_TEMPERATURE`, replacing a hard argmax over `Q(s,a)`
+that locked onto one action for a whole episode on games with only
+simple actions) with `NOVELTY_BETA_CAP` for the first time -- but this
+was done on a branch (`stage6-test-time-adaptation-agent`, which had
+also accumulated `jepa/test_time_adapter.py` and a countdown-bar
+detector along the way) that was never merged or otherwise reflected
+back into master's own `hypothesis_agent.py` or this doc. Master's copy
+of the agent code was, until the update below, missing both fixes behind
+that real `0.18` score. Flagging this as a process gap, not re-deriving
+the numbers here -- see that branch's own commit history and
+`experiments/stage6_test_time_adaptation_agent.md` for the full
+argmax-softmax validation (14/5 total-levels/distinct-games vs.
+Curiosity's 11/4 at n=8x25) if a future session wants the details.
+
+**Update (2026-08-24): 8th real submission, ref `55728242`, enables
+test-time adaptation for the first time in a scored run.** Test-time
+adaptation (`jepa/test_time_adapter.py`) has been, across this whole
+Stage 6 investigation, the single lever with any real positive
+representation-level signal on held-out games (see the addendum above) --
+but every agent-level backtest of it, at every dose tried, came back an
+exact or near-exact tie with TTA off (n=8, 5 held-out games each time).
+Given this project has now hit that same "component measurably improved,
+n=8 backtest can't detect it" pattern *three separate times this session*
+(novelty-aware beta's n=8-vs-n=30 reversal, and twice with a
+countdown-bar-detector feature not otherwise documented in this file),
+local backtesting was judged unreliable enough for this specific question
+that the more informative next step was a real scored submission, not
+another local sweep.
+
+Pulled master's `hypothesis_agent.py` up to the `stage6-test-time-
+adaptation-agent` lineage first (see the note just above) -- master was
+missing `ACTION_SAMPLE_TEMPERATURE`, `NOVELTY_BETA_CAP`, and TTA/timer
+wiring entirely, so this submission is really two things at once: (1)
+master catching up to the code already behind the real `0.18` score, and
+(2) turning TTA on for the first time. `TIMER_AWARE` (the countdown-bar
+detector) stays off -- it was already found to give no agent-level win
+on `bp35`/`ka59` and its own n=8 signal on `cn04`/`r11l` evaporated at
+n=30, so there's no reason to add a second untested variable to this
+submission.
+
+**Dose: `HYPOTHESIS_TTA_K=5`, `HYPOTHESIS_TTA_STEPS=25`,
+`HYPOTHESIS_TTA_LR=2e-4`** -- higher than `hypothesis_agent.py`'s own
+baked-in defaults (`STEPS=8`/`LR=5e-5`, an 8-9x lower dose). Chosen
+because `experiments/stage6_test_time_adaptation_agent.md`'s own
+follow-up section found the conservative default was originally picked
+to bound a *cross-game* interference cost that was later confirmed
+(directly, by reading `ARC-AGI-3-Agents/agents/swarm.py: Swarm.main()`,
+not assumed) to be structurally impossible in real play -- `Swarm`
+constructs one fresh `Hypothesis` (and therefore one fresh
+`TestTimeAdapter`, from the pristine checkpoint) per `game_id`, and each
+instance only ever plays that one game, confirmed again independently
+this session by reading the same loop. At the higher dose, held-out
+changed-patches improvement measured ~+5.5% mean (vs. the conservative
+dose's +0.79%, a ~7x larger representation-level gain), with 4 of 5
+held-out games improving and InfoGain confirmed *not* collapsing (ratio
+1.077, so the gain isn't coming from quietly disarming exploration). The
+agent-level backtest at this dose (n=8) still tied exactly with TTA off
+on levels-completed (3/8 both conditions, both only ever solving `r11l`)
+-- consistent with, not contradicting, the reasoning above: this project
+has no local evidence this evaluation protocol can detect an effect of
+this size, at any dose, so the backtest tying is not read as "the higher
+dose doesn't help" so much as "n=8 still can't tell either way here."
+
+**Wiring detail, verified rather than assumed:**
+`Hypothesis.TEST_TIME_ADAPT`/`TTA_K`/`TTA_STEPS`/`TTA_LR` are read via
+`os.getenv(...)` at class-definition time (import time), and the
+notebook's rerun-gated setup cell runs `main.py` as a *subprocess*
+(`subprocess.run([sys.executable, "main.py", ...], env={**os.environ,
+"MPLBACKEND": "agg"}, ...)`) -- meaning the env vars had to be set via
+`os.environ.setdefault(...)` (not a local Python variable) *before* that
+line, so they're present in `os.environ` when `{**os.environ, ...}` gets
+evaluated fresh at the call site. Added the four `os.environ.setdefault`
+calls right after the placeholder-submission write, with a comment
+explaining exactly this mechanism so a future edit doesn't accidentally
+move them below the subprocess call or reintroduce a local-variable
+version that silently never reaches the child process. Verified locally
+(not just read on paper) before spending the submission: a standalone
+script constructing `Hypothesis` with these env vars set confirmed
+`TEST_TIME_ADAPT=True`/`TTA_K=5`/`TTA_STEPS=25`/`TTA_LR=0.0002`, and a
+direct `TestTimeAdapter` construction + 30x `observe()` call test showed
+real, nonzero parameter movement (33,800 adapted params, matching the
+documented ANIL-style subset size) -- not a silent no-op. Also ran
+`main.py --agent=hypothesis` locally end-to-end on `r11l` and `bp35`
+(full 300-action episodes, TTA on) with zero exceptions in the log,
+before touching Kaggle. The free (non-scored) kernel test push (v16)
+also came back clean (only benign pre-existing pip dependency-resolver
+warnings, no tracebacks) -- though as this doc's own gotcha notes, that
+push never exercises the `KAGGLE_IS_COMPETITION_RERUN`-gated code where
+the actual env-var-threading logic lives, so it's confirmatory, not a
+substitute for the direct local verification above.
+
+Submitted with `MAX_ACTIONS=300` unchanged (the current default) and the
+same checkpoint lineage as the `0.18` submission -- TTA is the only new
+variable versus that score. Status was `SubmissionStatus.PENDING` at
+submission time; check `kaggle competitions submissions -c
+arc-prize-2026-arc-agi-3 --csv` for the resolved score. **Same standard
+as every other first-of-a-kind submission in this section: this is n=1,
+and per this project's own established noise floor (`0.00`-`0.23` on
+otherwise-identical code), a single score cannot cleanly separate "TTA
+helped," "TTA hurt," and "TTA did nothing" from ordinary run-to-run
+variance** -- worth reading alongside, not instead of, the local
+representation-level evidence above. A same-config resubmission (or,
+cheaper, a second submission with TTA off on this exact codebase for a
+same-day paired comparison) would be needed to say more, and at 1/day
+that's multi-day work, not something this single submission resolves.
 
 Everything needed to reproduce the submission from scratch on a new
 machine is in `kaggle_submission/` (checked into git) plus the steps

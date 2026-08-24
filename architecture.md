@@ -1,105 +1,268 @@
-# ARC-AGI-3 Agent: Architecture Spec
- 
-## Design Philosophy
- 
-The agent treats every game as a **belief-refinement problem under a 9-hour training budget and a fixed action interface**: a small set of discrete actions (≤7, some with grid coordinates) whose effects are unknown at the start of each game, sparse score/WIN/GAME_OVER feedback, and levels that compound earlier mechanics. The core bet is that a JEPA-style latent world model, combined with a small population of structured hypotheses about *what the buttons and on-screen elements do*, can out-perform pure exploration baselines by being directed rather than random — without requiring an LLM or internet access at eval time.
- 
+# ARC-AGI-3 Agent: Architecture (as actually built)
+
+This describes what's actually implemented and running on `master` today,
+not the original plan. The original planning spec (Mamba recurrent core,
+16-24 experts, a combiner network, separate reward/termination heads,
+test-time-training at level transitions, a symbolic representation bank)
+is preserved in git history and in `notes.md`'s narrative account of how
+and why each piece diverged from that plan during implementation --
+mostly "smaller/simpler worked as well or better and was cheaper to get
+right," per `plan.md`'s own guiding principle of not adding a component
+until a measured bottleneck demands it. See `CLAUDE.md` for the current,
+continuously-updated status and experiment log; this file is the static
+"what is the shape of the system" reference.
+
 ---
- 
-## High-Level Pipeline
- 
+
+## Design philosophy
+
+Every ARC-3 game is treated as a belief-refinement problem: a small,
+per-game-unknown set of discrete actions (≤8, one with a grid (x, y)
+coordinate) whose effects have to be discovered through play, sparse
+score/WIN/GAME_OVER feedback, and no natural-language instructions. The
+agent is a small JEPA-style world model (encode → predict-next-latent)
+combined with a Bayesian bundle of hypotheses about "what the actions do"
+and an exact memory of states already seen, rather than an LLM or a
+hand-coded heuristic engine. Belief-refinement, not language reasoning,
+is the core mechanism.
+
+---
+
+## High-level pipeline
+
 ```
-Raw frame (grid) ──► CNN/patch encoder ──► latent state s_t
-                                              │
-                          ┌───────────────────┴────────────────────┐
-                          │         MAMBA RECURRENT CORE            │
-                          │   (carries episode + level history)     │
-                          └───────────────────┬────────────────────┘
-                                              │
-                    ┌─────────────────────────┼─────────────────────────┐
-                    │                         │                         │
-            MoE PREDICTOR              SALIENCE MAP              DECOUPLED HEADS
-       (gated experts + combiner)   (per-region pred. error)   (value / reward / done)
-                    │                         │                         │
-                    └───────────► HYPOTHESIS BUNDLE ◄───────────────────┘
-                          (Bayesian confidence, entropy → β_t)
-                                       │
-                               ACTION EXPERT
-                  Q(s,a) = (1-β)·InfoGain(a) + β·V(ŝ_{t+1}(a))
-                                       │
-                                  Environment
-                                       │
-                          feedback ──► all components above
+Raw frame (64x64 grid, 16 ARC colors + pad) ──► CNN encoder ──► feat (C, 8, 8)
+                                                                      │
+                        ┌─────────────────────────────────────────────┤
+                        │                                             │
+              exact-memory lookup                          MoE predictor
+        TransitionGraph: has this exact                (8 experts, action/xy/
+        frame been seen before, with a               game-conditioned gate)
+        known winning action?                                       │
+                        │                          ┌──────────────────┴───────────────┐
+                 yes ──►│ take it, skip            │                                   │
+                 the rest of this turn      predict_all_experts             gated forward
+                 entirely                   (ungated, per-expert)         (real next-feat
+                        │                            │                     prediction)
+                        no                    InfoGain(a) = variance             │
+                        │                     across experts, per candidate   ValueHead
+                        │                     action -- also doubles as the      │
+                        │                     ACTION6 click-location map         │
+                        │                            │                           │
+                        │                    HypothesisBundle: Bayesian     V(next_state)
+                        │                    confidence over the 8 experts        │
+                        │                    as "hypotheses," entropy → β         │
+                        │                            │                           │
+                        └──────────────► Q(s,a) = (1-β)·InfoGain(a) + β·V(a) ◄────┘
+                                                       │
+                                          ε-random fallback (25%),
+                                          temperature-weighted click
+                                          sampling for ACTION6
+                                                       │
+                                                  chosen action
+                                                       │
+                                                  Environment
+                                                       │
+                              observed outcome ──► TransitionGraph.record(),
+                                                    HypothesisBundle.update()
 ```
- 
+
 ---
- 
-## Component Detail
- 
-### 1. Perception / Encoder
-- Small CNN (or patch-based ViT) — frames are small, low-color grids, so this is lightweight.
-- Object-level tokenization via connected-component analysis kept as a thin auxiliary signal (position/color/shape/size per object), feeding the salience and attribution mechanisms — **not** a full parallel symbolic subsystem.
-- EMA target encoder (standard JEPA) used only for computing prediction error after the fact.
-### 2. JEPA World Model — Predictor
-- **Mamba recurrent core**: carries compressed history across the episode (and across level transitions, modulo TTT consolidation — see below). This replaces frame-stacking-style memory.
-- **Mixture-of-gated-experts**: `ŝ_{t+1} = Σ_k g_k(s_t, a_t) · E_k(s_t, a_t)`
-  - Each expert `E_k` is a small MLP representing one atomic causal pattern (translate, rotate/reflect, recolor, increment/decrement-a-tracked-value, trigger-on-spatial-overlap, etc.).
-  - Each gate `g_k` is a small MLP learning **what context activates** expert k — action identity, counter state, spatial overlap, or any combination — discovered during pretraining rather than hand-categorized.
-  - **K = 16–24 experts** as the planning default, with a load-balancing loss that penalizes total collapse without forcing perfectly even utilization. K is treated as a cheap empirical sweep (12/24/48) early in the pipeline, not a fixed decision.
-- **Combiner network**: small MLP that blends pairs of expert/gate outputs to represent compound, per-game mechanics (e.g., "moves right AND recolors") as learned interpolations rather than requiring a dedicated expert per compound effect.
-### 3. Hypothesis Bundle (Belief State)
-- N parallel hypotheses = candidate (action/meter/tile → expert+gate) assignments, each predicting a full trajectory, not just one step.
-- Bayesian confidence update: `p(Hᵢ) ∝ p(Hᵢ) · exp(-prediction_error_i / τ)`.
-- Entropy monitor over the hypothesis distribution → `β_t` (learned, not scheduled), driving the explore/exploit blend.
-- **Core vs. level-local split**:
-  - *Core mechanics* (confidently confirmed) consolidate into the base model via lightweight test-time training (TTT) at level transitions, and stop being actively tested.
-  - *Level-local* hypotheses reset at each level transition; only the **diff** from the previous level (new objects, changed tiles, new salience) is re-probed.
-### 4. Salience Map / Areas of Interest
-- Per-region (per-token) prediction error between predictor output and target encoder output.
-- Serves two roles: (a) **attribution** — gradient sensitivity of expert gates to action/counter/position inputs, used to localize *why* a region surprised the model; (b) **prioritization** — persistently-surprising regions seed new hypotheses and become experiment-designer targets.
-### 5. Action Expert
-- **Phase blending**: `Q(s_t,a) = (1-β_t)·InfoGain(a) + β_t·V(ŝ_{t+1}(a))`
-  - `InfoGain(a)` = disagreement across hypothesis-conditioned predictions (KL divergence between predicted next-latents).
-  - `V(·)` = learned critic (decoupled small head).
-- **Experiment designer**: opening probes are "press each action once," "Wait and observe" (for meters), "step on each visually-distinct tile type" (for spatial triggers, seeded by salience). Later probes follow attribution: ablate one factor at a time (repeat action / vary position / vary timing) when attribution is ambiguous.
-- **Cost-weighted hypotheses (EFE-style)**: hypotheses whose effect-code is "global reset/fail" (life-counter-type) are down-weighted for *active* testing — confirmed opportunistically from data collected anyway, not deliberately triggered.
-- **Wait/no-op** is a first-class action, especially valuable for detecting time-based (meter) dynamics.
-### 6. Decoupled Heads
-- Small separate MLPs off the shared latent for: value (critic), reward (score delta), and termination/death prediction. Kept separate from the main predictor by design — same rationale as DIAMOND's decoupled reward/termination networks, just applied to a latent rather than pixels.
-### 7. Training Regimen
-- **Phase 1**: self-play pretraining of encoder + MoE predictor + gates + combiner across the ~25 public ARC-AGI-3 games (no synthetic puzzle generator — relies on real game diversity).
-- **Phase 2**: belief state calibration (confidence should match empirical accuracy) — frozen world model.
-- **Phase 3**: experiment-designer + action-ranker tuning, using the public human trajectory dataset for "what probes were informative" signal.
-- **Phase 4**: joint fine-tune with `R_total = R_epistemic + R_instrumental + R_calibration`.
-- **At eval time**: TTT between levels consolidates confirmed core hypotheses into base weights; per-game hypothesis bundles re-initialize at game start.
-- All pretrained components (and any external open-weight checkpoints) are attached as Kaggle datasets — allowed under "no internet, but freely available pretrained models OK."
+
+## Component detail
+
+### 1. Encoder (`jepa/models/encoder.py: CNNEncoder`)
+
+Deliberately small: 4 stride-2/stride-1 convolutions (GroupNorm + GELU),
+`(17, 64, 64)` one-hot grid → `(C, 8, 8)` feature map, `C = 64` by
+default (a `width_mult` scaling knob exists and has been tested up to
+2x-4x; wider consistently failed to improve held-out-game generalization
+and once caused real capacity-enabled overfitting, so `C = 64` remains
+the deployed default -- see `CLAUDE.md`'s Stage 6 addendum). An EMA
+target copy (`make_ema_target`, momentum 0.996) exists only for computing
+a fair, non-drifting training/eval signal, never used at inference.
+
+No connected-component/object-tokenization subsystem was built; object
+identity is left entirely to the encoder's learned representation. A
+same-color contrastive loss was tried as an explicit push toward
+object-identity representations (`--contrast-weight`) -- a real, large
+local win that was later shown not to generalize past the games it was
+trained on (see `CLAUDE.md`'s object-identity checkpoint history).
+
+### 2. Dynamics predictor (`jepa/models/moe_predictor.py: MoEPredictor`)
+
+`s_hat_{t+1} = feat + Σ_k g_k(feat, action, xy, game) · E_k(feat, action, xy, game)`
+
+- `K = 8` experts by default (the original plan's 16-24 assumed a much
+  larger, more diverse pretraining corpus than this project has had at
+  any point; higher K without that data risks the "expert collapse"
+  failure mode observed directly in early attempts -- see `CLAUDE.md`
+  Stage 4).
+- Each expert is a small per-patch pointwise-conv network. The gate is a
+  dense softmax over all K experts by default; a noisy top-k gating
+  variant exists (`top_k` param) but was a documented regression, not
+  adopted.
+- Conditioning: action id (embedding), normalized `(x, y)` (only
+  meaningful for the click action), and a per-game id (embedding,
+  `game_vocab.get(game_id, 0)` fallback for any game outside the trained
+  vocabulary -- this fallback, and whether to condition on game identity
+  at all, was extensively re-investigated in Stage 6; ablating it
+  entirely does not fix the held-out-game generalization gap and is not
+  the deployed configuration).
+- The combiner network the original plan called for (blending pairs of
+  experts for compound effects) was explicitly deferred and never built
+  -- the dense gate's own soft blend already covers this informally.
+- `predict_all_experts` exposes the *ungated* per-expert predictions
+  separately -- this is what `InfoGain` and the Bayesian hypothesis
+  bundle below consume; it is a different, and empirically more
+  robust-to-novelty, signal than the gated forward pass (see Stage 6:
+  gated prediction collapses to near-identity on unseen games, but raw
+  per-expert disagreement does not).
+
+### 3. Value head (`jepa/models/value_head.py: ValueHead`)
+
+One small decoupled MLP off a pooled summary of `feat`, predicting
+expected discounted future progress (`GAMMA = 0.95` Monte Carlo return
+target, see `jepa/data/value_targets.py`). The original plan's separate
+reward and termination heads were never built -- one combined value
+signal proved sufficient for what the action-selection formula needs.
+Trained on a corpus that is ~98% zero-target (`levels_completed` deltas
+are rare under any policy), with oversampling (`NONZERO_WEIGHT = 25`) to
+keep the rare positive examples from being drowned out.
+
+### 4. Hypothesis bundle (`jepa/hypothesis_bundle.py: HypothesisBundle`)
+
+The "N parallel hypotheses" from the original plan are, concretely, the
+predictor's own 8 MoE experts -- each treated as one hypothesis about
+"what a given action does," reusing the already-trained experts rather
+than a separate hypothesis-search structure.
+
+- Bayesian confidence: `p(H_i) *= exp(-error_i / τ)` per observed
+  transition, `τ = 0.01`, renormalized (softmax over log-weights).
+- Geometric forgetting (`decay = 0.8`) prevents runaway certainty from
+  accumulating over a long episode -- an earlier undecayed version left
+  the agent "confident" (and therefore trusting the value head) for
+  most of every episode regardless of whether that confidence was still
+  earned.
+- `entropy() / max_entropy()` → `β`: high entropy (experts still
+  disagree about recent accuracy) → low `β` → trust `InfoGain`; low
+  entropy (one expert has clearly been right) → high `β` → trust `V`.
+- `InfoGain(a)` = variance across the 8 experts' raw predicted
+  next-features for candidate action `a`. For the click action, a
+  top-k-patch mean (`TOP_K_PATCHES = 8` of 64) is used instead of a flat
+  mean or flat max over all patches -- both flat reductions were found to
+  systematically mis-rank the click action relative to simple actions.
+
+### 5. Exact memory (`jepa/memory.py: TransitionGraph`)
+
+A plain hash-keyed dict (`blake2b` digest of exact frame content) →
+`(action, xy) → next_state`, built up during play and persisted for an
+agent's whole lifetime on one game (every RESET, not just one level
+attempt -- ARC-3 resets return to the same starting frame, so prior
+discoveries are exactly replayable). If the current exact frame has a
+previously-recorded winning action, the agent takes it immediately, no
+re-exploration. Also tracks which `(action, xy)` pairs have already been
+tried from the current exact state, to guarantee local coverage
+independent of the Bayesian/InfoGain ranking.
+
+### 6. Action selection (`ARC-AGI-3-Agents/agents/templates/hypothesis_agent.py: Hypothesis`)
+
+`Q(s, a) = (1 - β)·InfoGain(a) + β·V(next_state(a))`, greedy argmax, with:
+
+- Exact-recall short-circuit (above) checked first, every turn.
+- `EPSILON = 0.25` uniform-random fallback before the greedy argmax --
+  without it the agent locks onto a single action or click location for
+  a whole episode once it stops looking surprising, even if it was never
+  productive.
+- Click-location sampling: temperature-weighted softmax over the 64
+  per-patch InfoGain values (`PATCH_SAMPLE_TEMPERATURE = 0.1`), then a
+  uniform-random pixel within the chosen patch -- a hard argmax here was
+  found to default to the same low-index patch whenever the map is flat,
+  which is common, not rare.
+- Opening-probe plan: try every simple action once at episode start
+  before trusting the bundle's own confidence weights.
+- `MAX_ACTIONS = 300` per game (the real Kaggle default; a 900-action
+  variant was locally validated as broadly helpful across checkpoints
+  but has not been adopted as the default pending further confirmation).
+- A top-level `try/except` around `choose_action`/`is_done`
+  ("heartbeat") falls back to a genuinely random legal action on any
+  unexpected exception (e.g. a hidden game with an unexpected frame
+  shape), rather than crashing the whole scored run.
+
+### 7. Training pipeline
+
+Two-phase, per checkpoint:
+
+1. **Synthetic pretrain**: encoder + MoE predictor trained on a growing
+   roster of non-ARC data sources for mechanic diversity -- MiniGrid
+   (navigation-themed, 21 environments, one shared `game_id`), and an
+   evolving set of further sources tried across Stage 6 (MinAtar,
+   Procgen, OpenSpiel board/strategy games, hand-rolled Snake/Pong) at
+   various scales up to ~2.14M synthetic transitions. Each genuinely
+   distinct game/environment gets its own `game_id` -- pooling
+   mechanically-dissimilar sources under one shared id was measured to
+   actively hurt. Pretrain epoch count is sized to hold total
+   samples-seen roughly constant relative to the corpus size, learned
+   the hard way after a curriculum-imbalance bug caused an unrecovered
+   representation collapse on one over-sized, under-epoched attempt.
+2. **ARC-3 finetune**: the same encoder/predictor continue training on
+   local ARC-3 recordings (`~12k` local + up to `2000/game` from a larger
+   external random-policy corpus), patch-level change-weighted loss
+   (8x upweight on patches that actually changed -- a plain mean-MSE
+   loss is dominated by the mostly-static majority otherwise) plus a
+   Switch-Transformer-style load-balance auxiliary loss on the gate.
+
+The value head is trained separately, after the predictor, against
+whichever encoder is being deployed (encoder/value-head latent-space
+mismatch was a real, once-diagnosed bug -- retrain the value head
+whenever the encoder changes).
+
 ---
- 
-## Known Weak Points and Mitigations
- 
-| Weakness | Why it happens | Mitigation already designed in |
-|---|---|---|
-| **Cold start** | First few actions of a new game have a near-uniform hypothesis bundle and high InfoGain everywhere — close to undirected exploration regardless of sophistication. | Experiment designer's fixed opening sequence (probe every action, then Wait) shrinks this window as fast as possible; unavoidable in principle. |
-| **Genuinely novel mechanics** | A mechanic with no good fit in the expert/gate/combiner space produces uniformly high error with no clean attribution. | Falls back to RND-style novelty-seeking exploration — graceful degradation to "as good as the simple baselines," not a hard failure. |
-| **Expert collapse / data dilution** | Too many experts (e.g., 64) spreads ~25 games' worth of pretraining data too thin; a few popular experts dominate, rest are undertrained noise. | K = 16–24 default, load-balancing loss tolerant of unevenness but penalizing total collapse, with an early empirical sweep across K values. |
-| **Compounding rollout error** | Any multi-step planner compounds per-step prediction error; long-horizon plans become unreliable. | Effectively caps useful planning horizon — favors shorter lookahead / more frequent re-planning over long open-loop plans. No silver bullet; treat as a known ceiling. |
-| **Compound/overlapping triggers** | If one action fires multiple gates at once (movement + counter decrement + tile effect simultaneously), salience lights up everywhere and attribution becomes ambiguous. | Experiment designer's "ablate one factor at a time" probes (repeat vs. vary action/position/timing) are the main lever; full disambiguation isn't guaranteed for highly entangled mechanics. |
-| **Risk calibration needs prior data** | Cost-weighting life-counter hypotheses requires *some* basis for "this looks bad," which doesn't exist before any death has occurred. | First death is treated as informative-by-default (opportunistic confirmation) rather than something to avoid pre-emptively; acceptable one-time cost. |
-| **9-hour training budget** | Tighter than originally assumed (was scoped around 12h). | Architecture kept to small CNN + Mamba + small MLP experts/gates/heads — no component individually expensive; K-sweep and phase structure designed to be interruptible/prioritizable if time runs short. |
-| **~50% test data on current leaderboard** | Current standings have real variance; final ranking may shift. | No architectural mitigation — just a reminder not to over-fit design decisions to current leaderboard gaps. |
- 
----
- 
-## Footnote: Discarded-for-Complexity Ideas (kept for future reference)
- 
-These were evaluated and set aside **specifically because of implementation complexity relative to benefit**, not because they're bad ideas. Worth revisiting if early results show a specific bottleneck matching one of these.
- 
-- **V-JEPA 2 / V-JEPA 2-AC pretrained encoder**: strong action-conditioned world-model recipe (frozen encoder + small AC predictor, ~300M params), but encoder pretrained on natural internet video — large domain gap to flat-colored sprite grids. Revisit if from-scratch encoder pretraining underperforms badly and a natural-video prior turns out to transfer better than expected.
-- **Atari-pretrained world models (DreamerV3 / IRIS / STORM / DIAMOND) as the base**, rather than training JEPA from scratch: better visual/action-structure match than V-JEPA 2, smaller (DIAMOND's dynamics model is ~4.4M params), and "no internet, pretrained models OK" makes this legal. Revisit if from-scratch pretraining on ~25 public games proves too data-starved.
-- **DIAMOND's EDM-based diffusion predictor**: the *lesson* (action-determined components should be unambiguous; few-step iterative generation can be stable with the right formulation) is already folded into the gated-expert design. The diffusion machinery itself — full pixel-space generation — was discarded as unnecessary overhead given JEPA operates in latent space already.
-- **OpenVLA / Pi0-style VLA**: language-conditioning machinery is dead weight (ARC-AGI-3 gives no instructions), and 3-7B backbones eat the compute budget. The one transferable idea — a small specialized "action expert" network — is already present in your action expert/ranker.
-- **SIMA 2's two-tier cognitive/control split**: conceptually validated the "lightweight planner over a learned world model" shape, but SIMA 2 itself (Gemini-based, closed weights) isn't usable. Revisit if a small local open-weight model (a few hundred M params) becomes worth adding as an explicit high-level planner above the world model.
-- **Full LLM-driven executable world models** (GPT-5.5-style refactoring loop, 15/25 public games solved): strongest published result in the ARC family, but requires a frontier LLM at inference — incompatible with no-internet eval. The general "refinement loop: explore → verify → iterate" shape is already present via the hypothesis bundle's falsification/recombination cycle.
-- **Synthetic puzzle generators for pretraining/adversarial hardening (original Phases 1 & 5)**: building a generator capable of producing arbitrarily novel-but-coherent interactive rule systems is itself close to "solve the underlying problem." Replaced with self-play on real public games. Revisit only if self-play pretraining data proves insufficient *and* a scoped-down generator (e.g., simple parameterized toy grids with known action semantics) seems tractable as a side project.
-- **Full symbolic Representation Bank** (persistent object IDs, semantic role inference like "red has moved twice → red is agent color", explicit static/mobile classification): risks duplicating what the JEPA encoder should learn implicitly, and is a second major subsystem competing for engineering time. Kept only the lightweight per-object position/color/shape/size tokens needed for salience/attribution. Revisit if post-hoc inspection shows the latent space *isn't* capturing object identity/roles well.
-- **Free-form mid-episode hypothesis generation** (vs. codebook search + combination): generating genuinely novel structured hypotheses on the fly is close to circular (it's the capability ARC-AGI-3 tests for). Replaced with search-and-combine over a pretrained finite codebook + combiner. This is a fundamental ceiling, not just a complexity tradeoff — flagged here mainly as a reminder of *why* the codebook approach was chosen, not as something to "add back" later.
+
+## What was planned but is not in production
+
+- **No recurrent (Mamba or otherwise) core carrying history across the
+  episode.** A GRU-based recurrent predictor was built (`jepa/models/
+  recurrent_predictor.py`) as the Mamba substitute the original plan
+  called for (a local CUDA-toolkit/torch-build mismatch made real Mamba
+  impractical on this hardware), and its own Stage 3 milestone was met
+  -- but the deployed `Hypothesis` agent uses the plain MoE predictor,
+  not the recurrent one. When tested for held-out-game generalization in
+  Stage 6, the recurrent hidden state did not generalize better than the
+  stateless predictor, so there was no reason to add the complexity back
+  in for the currently deployed agent.
+- **No combiner network** for blending pairs of experts (deferred at
+  Stage 4, never revisited).
+- **No test-time-training at level transitions** consolidating confirmed
+  hypotheses into base weights mid-episode, as the original plan
+  described. A related but distinct idea -- real gradient-step adaptation
+  using a hidden game's own observed transitions during play
+  (`TestTimeAdapter`, an ANIL-style ~33.8K-param restricted parameter
+  subset) -- was built and validated as the one mechanism in Stage 6's
+  entire generalization investigation that shows genuine, dialable
+  positive signal. It is not yet merged to `master` (see below).
+- **No symbolic representation bank** (persistent object IDs, semantic
+  role inference) -- left entirely to the encoder's learned features.
+- **No LLM or language-conditioning component anywhere** -- deliberate,
+  for full offline/no-internet eval compatibility.
+
+## Active R&D, not yet in production (see `CLAUDE.md`'s Stage 6 addendum)
+
+A large, still-unmerged body of Stage 6 work exists on `stage6-*`
+branches, investigating why the deployed model has no measurable
+zero-shot prediction advantage over identity on any game it wasn't
+trained on -- the central open problem for real Kaggle performance, since
+the ~110 hidden competition games are almost entirely of this kind.
+Fifteen-plus independent interventions (conditioning changes,
+architecture changes, five separate data-diversity attempts up to
+dozens of new games and millions of synthetic transitions, data
+augmentation, capacity scaling) have failed to close this gap and are
+treated as having established it as a real data/hardware ceiling, not a
+specific unfound bug. Two mechanisms show real, if still modest,
+promise: `TestTimeAdapter` (real gradient-step adaptation during play)
+and a Reptile-style meta-learning training objective explicitly
+optimizing for post-adaptation performance (`jepa/train_meta_predictor.py`,
+branch `stage6-meta-learning`) -- neither has yet cleared a real
+agent-level backtest at a trustworthy sample size. `CLAUDE.md` is the
+authoritative, continuously-updated source for exactly what's been tried
+and what the current best next step is.
