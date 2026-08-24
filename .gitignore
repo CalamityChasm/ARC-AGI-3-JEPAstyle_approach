@@ -12,6 +12,8 @@ dist/
 /logs/
 /checkpoints/
 /checkpoints_ablation/
+/checkpoints_scaled/
+/checkpoints_scaled_smoketest*/
 /runs/
 *.log
 recordings/
