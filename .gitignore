@@ -13,6 +13,7 @@ dist/
 /checkpoints/
 /checkpoints_ablation/
 /checkpoints_arc_synthetic_fold1/
+/checkpoints_holdout_baseline_fold1/
 /runs/
 *.log
 recordings/
