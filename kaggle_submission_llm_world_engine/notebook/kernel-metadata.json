@@ -1,0 +1,26 @@
+{
+  "id": "calamitychasm/llm-world-engine-submission",
+  "id_no": 133368099,
+  "title": "llm-world-engine-submission",
+  "code_file": "llm-world-engine-submission.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "keywords": [],
+  "dataset_sources": [
+    "calamitychasm/llm-world-engine-agent"
+  ],
+  "kernel_sources": [],
+  "competition_sources": [
+    "arc-prize-2026-arc-agi-3"
+  ],
+  "model_sources": [
+    "google/gemma-3/Transformers/gemma-3-12b-it/1",
+    "qwen-lm/qwen3-coder/Transformers/30b-a3b-instruct/1"
+  ],
+  "docker_image": "gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461",
+  "machine_shape": "NvidiaRtxPro6000"
+}
