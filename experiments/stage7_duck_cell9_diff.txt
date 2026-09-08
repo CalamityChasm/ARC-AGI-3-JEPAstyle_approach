@@ -1,0 +1,41 @@
+--- cell9/source (before)
++++ cell9/source (after)
+@@ -43,6 +43,38 @@
+         bm.n_passes = 1
+         bm.game_weights = None
+ 
++        # --- stage7-duck-budget-fix ----------------------------------------
++        # Inherited concurrency=28 / max_runtime_s_per_game=7920.0 (from the
++        # pickled bundle, tuned for a 6-game x 4-pass Preview shape) does not
++        # fit the real ~110-game competition rerun: every game observed in a
++        # real run burns its entire per-game cap rather than finishing early
++        # (verified: 25/25 games ended `gave_up` at >=7900s in our own fork's
++        # run), so ceil(110/28)=4 waves x 7920s = 8.80h -- plus ~394s measured
++        # setup and up to 600s of rerun-only gateway wait -- against a 9h hard
++        # cap with no soft deadline in this branch (_soft_end_time() returns
++        # None here). Recompute max_runtime_s_per_game from the live game
++        # count and elapsed wall-clock instead of using the inherited
++        # constant, so the last wave has a chance to fit. No-op on the public
++        # path (only reachable when true_submission is True). See
++        # experiments/stage7_duck_budget_fix.md and
++        # kaggle_submission_duck/duck_budget.py (unit-tested standalone
++        # version of this same arithmetic) for the full derivation.
++        _n_games = len(bm.games)
++        _elapsed_s = time.time() - NOTEBOOK_START_EPOCH
++        _conc = int(getattr(bm.solver, "concurrency", 28) or 28)
++        _waves = max(1, -(-_n_games // _conc))  # ceil division, no math import
++        _remaining_s = 9 * 3600 - _elapsed_s - 900.0  # 15-minute safety margin
++        _per_game_raw_s = _remaining_s / _waves
++        _per_game_s = max(600.0, _per_game_raw_s)  # floor: never collapse to ~0
++        if hasattr(bm.solver, "max_runtime_s_per_game"):
++            bm.solver.max_runtime_s_per_game = _per_game_s
++        print(
++            f"rerun budget: n_games={_n_games}, conc={_conc}, waves={_waves}, "
++            f"per_game={_per_game_s:.0f}s, remaining={_remaining_s:.0f}s",
++            flush=True,
++        )
++        # --- end stage7-duck-budget-fix ------------------------------------
++
+     try:
+         await bm.run(
+             soft_end_time=soft_end,
