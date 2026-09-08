@@ -14,6 +14,104 @@ refinement rather than an LLM. Side project / portfolio piece and a JEPA
 learning vehicle -- see `plan.md`'s "Framing & goals" for what "success"
 means here (not leaderboard-topping).
 
+## CURRENT STATUS (2026-09-07) -- strategic reset; read this before anything below
+
+**Everything from "## Status" down to the Gotchas section is still accurate as a
+record of what was tried, but it is no longer the plan.** Three findings
+established on 2026-09-07 supersede it. Full analysis:
+`experiments/stage7_strategy_reset.md`; backlog is now tracked in GitHub Issues.
+
+### 1. We were optimizing the wrong objective
+
+The competition metric is **RHAE**, not levels-completed:
+
+```
+per level:        S_l = min(1.15, h_l / a_l)^2      h = upper-median best-human action count
+per environment:  E_e = min( Sum_solved w_l / Sum_all w_n ,  Sum w_l*S_l / Sum w_l ),  w_l = l
+final:            T   = mean over environments, as a PERCENTAGE (0-100)
+```
+
+Efficiency is **squared** (2x human action count => 1/4 score; 10x => ~1%) and
+completion is a **hard ceiling** weighted toward deep levels. `GraphExplorerAgent`'s
+coverage-first sweep is therefore scored near zero *even on levels it wins* -- which
+finally explains the paradox documented at length below: 46 local level-completions
+producing a real score of 0.10-0.25.
+
+**A substantial part of the Stage 6 "held-out-game generalization gap" (13+
+interventions, 12 failures) was measuring the wrong thing, not a generalization
+failure.** Any future local backtest must use RHAE. See GitHub issue #2.
+(Formula source: ARC Prize technical report arXiv:2603.24621. The Kaggle Evaluation
+page is a JS SPA and could not be read at source -- high confidence, not confirmed.)
+
+### 2. Non-LLM approaches are not competitive at the target rank
+
+Top 10% = **2.99** (rank 287 / 2,870 teams; #1 = 11.04). Verified from the live
+leaderboard. The best **non-LLM** notebook in the entire public field scores **0.46**
+-- and it is far more elaborate than anything here (beam/IDA*/MCTS against a cloned
+simulator, PER buffer, attention CNN). ~40 of the top 50 public notebooks are forks of
+one LLM harness (Tufa Labs' "Duck": a 27B model served by vLLM in-kernel, driving the
+game through a Python REPL tool).
+
+**Stop JEPA held-out-generalization work and coverage-first exploration as scoring
+strategies.** This answers the open question left below in the GraphExplorerAgent
+section ("is the held-out gap even the right problem to keep attacking"): no.
+
+### 3. Corrected submission ledger
+
+The record below documents 9 submissions and is wrong in several places -- notably it
+states the gateway `retry-max-time` fix was "not yet re-submitted for real scoring"
+when it **was submitted and scored 0.18** (`56043778`, 2026-09-06). The competition
+API returns **20**:
+
+| date | ref | kernel | score |
+|---|---|---|---|
+| 2026-07-16 | 54751735 | hypothesis | 0.06 |
+| 2026-07-17 | 54771115 | hypothesis | 0.22 |
+| 2026-07-20 | 54840911 | hypothesis | 0.16 |
+| 2026-07-21 | 54864554 | hypothesis | 0.08 |
+| 2026-07-22 | 54889426 | hypothesis | 0.00 |
+| 2026-08-02 | 55195099 | hypothesis | 0.09 |
+| 2026-08-13 | 55470338 | hypothesis | 0.18 |
+| 2026-08-24 | 55728242 | hypothesis | 0.09 |
+| **2026-08-25** | **55769792** | **duck fork (not our code)** | **1.77** |
+| 2026-08-28 | 55843700 | hypothesis | 0.15 |
+| 2026-08-29 | 55858509 | graph-explorer | 0.10 |
+| 2026-08-30 | 55901265 | graph-explorer-learned | ERROR |
+| 2026-08-30 | 55901513 | graph-explorer-learned | ERROR |
+| 2026-08-31 | 55902368 | graph-explorer-learned | ERROR |
+| 2026-08-31 | 55921318 | graph-explorer | 0.25 |
+| 2026-09-01 | 55926701 | graph-explorer-learned | 0.08 |
+| 2026-09-04 | 56003465 | graph-explorer-learned | 0.15 |
+| 2026-09-05 | 56022267 | graph-explorer-learned | 0.05 |
+| 2026-09-06 | 56043778 | graph-explorer-learned | 0.18 |
+| 2026-09-07 | 56084133 | llm-world-engine (CodeWorldAgent) | 0.00 |
+
+**Nineteen submissions of our own code never exceeded 0.25.** One run of a forked LLM
+harness scored 1.77 -- our team's best by 7x, and it is not our work (verified
+byte-identical to `foysalemonshanto/lb-9-arc3-duck-v12-with-qwen-3-8-27b`, 11/11 cells).
+
+*Open discrepancy:* the leaderboard CSV reports 22 submissions for our team; the API
+returns 20. Unresolved.
+
+### 4. Two assets that CLAUDE.md did not previously mention
+
+- **`CodeWorldAgent`** (`kaggle_submission_llm_world_engine/`, 1,433 lines): an LLM
+  writes the Python source of a world model, an LLM-free beam search plans against it.
+  This is exactly the mechanism of published SOTA (arXiv:2605.05138 reports 58.12% mean
+  RHAE with it). Scored 0.00 for five diagnosed, mostly-fixable reasons -- GitHub issue
+  #3. **It existed only on Kaggle**, in no local copy and no git history, until rescued
+  on 2026-09-07.
+- **The Duck fork's real ceiling is ~2.0-2.6, not 9.** The "LB 9" in that notebook's
+  title is not a measured score: its author is rank 102 with a best of **3.58 over 103
+  submissions**, and only 1 of 2,870 teams scores >= 9.0. Hardware, model mount and
+  vLLM boot were all verified working; the one real defect found is that the rerun's
+  time budget (`concurrency=28` x `max_runtime_s_per_game=7920`) needs ~8.8 h for 110
+  games against a 9 h hard cap, with no soft deadline. GitHub issue #4.
+
+**Reaching 2.99 is therefore genuinely hard and not a config fix.** The plan is to run
+both tracks: a corrected Duck fork for a rank floor, and `CodeWorldAgent` as the real
+deliverable.
+
 ## Repo / branch layout
 
 - `master` -- Stage 0 (harness) is complete and stable here. Don't rebase
@@ -2139,6 +2237,928 @@ this). Full write-up in `experiments/stage6_meta_learning.md` on branch
 of the high-dose checkpoint specifically before drawing an agent-level
 conclusion either way.
 
+## GraphExplorerAgent: a training-free, ported reproduction of external work (separate from JEPA)
+
+**Decision, stated upfront:** given the difficulty closing Stage 6's held-
+out-game generalization gap (13 independent interventions, 12 failures --
+see above) and given a directly relevant, independently-scored external
+result exists on this exact benchmark, this project paused JEPA-track work
+to reproduce that external result first, on its own, before considering
+any integration with the JEPA world model. This section covers that
+reproduction; it is deliberately self-contained (no shared code, no
+shared checkpoints with `jepa/`) so it can be evaluated and submitted on
+its own merits.
+
+**Source and attribution.** Ported from Evgenii Rudakov, Ryan Shock, and
+Nathan Cowley, *"Graph-Based Exploration for ARC-AGI-3 Interactive
+Reasoning Tasks"* (AAAI 2026 Workshop on AI for Scientific Research,
+[arXiv:2512.24156](https://arxiv.org/abs/2512.24156)), original code at
+[github.com/dolphin-in-a-coma/arc-agi-3-just-explore](https://github.com/dolphin-in-a-coma/arc-agi-3-just-explore),
+MIT-licensed (compatible with this project's own MIT license; the
+required upstream copyright notice/license text is carried forward
+verbatim in `ARC-AGI-3-Agents/agents/templates/graph_explorer_THIRD_PARTY_LICENSE`).
+Their system placed **3rd on the ARC-AGI-3 Preview Challenge private
+leaderboard** using training-free, exact-state graph exploration --
+no learned model, no gradient descent, at all. The method has two parts:
+a **Frame Processor** (segments each frame into connected same-color
+components via flood-fill, detects and masks probable status bars via a
+rule-based edge/ratio/twin-count heuristic, and buckets click-target
+candidates into 5 visual-salience priority tiers) and a **Level Graph
+Explorer** (exact-state hashing + a directed graph over observed
+transitions, with BFS-maintained shortest-path distances from every
+explored node to the nearest node still holding an untested edge --
+"frontier-distance routing" -- so action selection always has a concrete
+coverage target, not just a reactive win-recall check). This is
+mechanistically the single biggest difference from this project's own
+`jepa/memory.py: TransitionGraph.lookahead_best_path` (see
+`experiments/stage6_graph_lookahead.md`): that mechanism is gated on a
+win having already happened (`cum_delta > 0`), so it measurably never
+fired across 90,000 real decisions in this project's own backtest, while
+frontier-distance routing needs zero reward signal to be useful at all --
+it drives systematic coverage from the very first action.
+
+**Port scope**: `ARC-AGI-3-Agents/agents/templates/graph_explorer_core.py`
+(`GraphExplorer`/`NodeInfo` -- the exploration graph engine, algorithm
+logic unchanged from upstream) and `graph_explorer_agent.py`
+(`FrameProcessor`/`GraphExplorerAgent` -- frame segmentation, status-bar
+detection, and the agent itself). Registered as `graphexploreragent`.
+Adaptations from upstream (all documented in the module docstrings, not
+just here): this repo's vendored `arcengine` has 8 actions (RESET +
+ACTION1-7) vs. upstream's local framework snapshot's 7 (RESET +
+ACTION1-6) -- `SIMPLE_ACTION_ID2GAME_ACTION` is built dynamically from
+`GameAction` so ACTION7 isn't silently dropped; `FrameData` here uses
+`levels_completed`/`win_levels` fields, not upstream's `score` field;
+upstream's `HeuristicAgent.main()` override (which did level-up detection
+inline in its own main loop) was restructured into `choose_action` itself
+since this project's other agents all rely on the shared base `Agent.main()`
+rather than per-agent overrides -- behaviorally identical, just relocated;
+a top-level try/except with a safe fallback was added to `choose_action`
+(no `main()` override to put it in, and matches this project's own
+established "heartbeat" pattern from `hypothesis_agent.py`); matplotlib-
+dependent debug/visualization methods (upstream wrote PNGs for the paper's
+own figures) were dropped -- not needed for headless offline/Kaggle runs
+and would add a dependency this project doesn't otherwise need.
+
+**A real port bug found and fixed, not just upstream's.** First full local
+sweep hit a real crash rate (`falling back` warnings on ~11% of decisions,
+one game -- `bp35` -- specifically showing 76 occurrences, 59 of them a
+hard `AssertionError: Edge result must be untested before recording a
+test`). Root-caused by direct traceback inspection, not guesswork: my own
+port's defensive fallback branch (`if hashed_frame not in
+self.graph_explorer._nodes: record_test(...)`) hardcoded
+`suspicious_transition=False`, while upstream's equivalent line passes the
+*real* `suspicious_transition` value through. That value is what gates
+upstream's own "ignore until 3 consistent observations" protection
+(`GraphExplorer.suspicious_transitions`/`suspicious_transitions_threshold`
+-- the exact mechanism upstream's own README credits with fixing their
+pre-evaluation RESET-loop bug). Hardcoding `False` bypassed that
+protection specifically for GAME_OVER-adjacent transitions (the
+`GameState.GAME_OVER` branch short-circuits *before* recording the edge
+that led there, by design, matching upstream -- `last_transition_suspicious`
+exists precisely to flag the next real transition as unconfirmed), letting
+a single, possibly-wrong transition get permanently recorded on its first,
+unconfirmed observation -- which later crashed when the same edge was
+genuinely retested and produced a different, correct result conflicting
+with the bad cached one. Fixed by threading the real `suspicious_transition`
+value through instead of a hardcoded default (`graph_explorer_agent.py`,
+`_choose_action_inner`). Verified directly on the same game (`bp35`):
+AssertionErrors 59 -> 0; total fallbacks 76 -> 16. A residual ~6-7%
+fallback rate remains (almost entirely a `KeyError` from `choose_edge`
+being called on a still-"suspicious"/unconfirmed node) -- traced this to
+code that is *structurally identical* to upstream's own (same call site,
+same guard, same outer try/except-and-repeat-last-action pattern) rather
+than a further divergence, so it was left as-is rather than "improved"
+past what the reproduction is meant to test.
+
+**Local test results (no repeats yet beyond a handful of single 25-game
+passes -- see "Next steps" below):**
+
+| run | pooled score | total levels | distinct games | AssertionErrors | notes |
+|---|---|---|---|---|---|
+| pre-fix sweep | 0.179 | 6 | 5 (`r11l`,`lp85`,`tu93`,`vc33`,`sp80`) | 59 (concentrated on `bp35`) | `suspicious_transition` bug present, ~11% fallback rate |
+| post-fix sweep A | 0.255 | 6 | 5 (`r11l`,`lp85`,`m0r0`,`vc33`,`sp80`) | 28 (spread across 25 games) | bug fixed, ~9% fallback rate |
+| post-fix sweep B | 0.162 | 7 | 5 (`r11l`,`lp85`,`tu93`,`vc33`,`sp80`) | 0 | bug fixed, ~3.6% fallback rate |
+
+Both single-pass, `MAX_ACTIONS=300`, all 25 local games, matching this
+project's own established protocol elsewhere (pooled score is the same
+real Kaggle-scoring-formula metric `main.py`'s own scorecard already
+computes, not an approximation). `tu93` (2 of 3 runs) is a game none of
+this project's own JEPA-based agents (`Hypothesis`/`Memory`/`Curiosity`/
+`Random`) have been documented solving anywhere in this file -- a
+genuinely different exploration profile, consistent with this being a
+structurally different (coverage-driven, not reward-driven) algorithm.
+`r11l`, `lp85`, `vc33`, `sp80` recur in all three runs; `tu93`/`m0r0`
+swap in/out as the 5th -- expected run-to-run variance (unseeded RNG,
+same pattern already documented throughout this project's own agent
+comparisons), not yet enough samples for a precise pooled-score estimate.
+What *is* clear across all three: the post-fix runs' AssertionError count
+(28, then 0) trends toward zero as expected, and pooled score/total
+levels stay in a tight, plausible band (0.162-0.255, 6-7 levels) with no
+recurrence of the pre-fix crash pattern -- consistent with "the bug fix
+produced a real, directionally consistent improvement," not proof of an
+exact score by itself.
+
+**First real Kaggle submission: resolved, `0.10`.** Ref `55858509`,
+submitted 2026-08-29, `MAX_ACTIONS=300`, standalone dataset/kernel (no
+JEPA involvement), submitted before the n=8x25 backtest below existed
+(only 3 local single-pass samples behind it at submission time).
+`SubmissionStatus.COMPLETE`, public score **0.10**. This sits inside
+production `Hypothesis`'s own established real-score range (0.00-0.23,
+`0.10` close to that range's median) -- **not a clear win over
+`Hypothesis` on real hidden games**, despite dramatically outscoring
+every JEPA-based agent's *local* 25-game backtest (see immediately
+below). This is a real, honest, non-trivial finding, not a contradiction
+to explain away: GraphExplorerAgent's coverage-first exploration
+thoroughly dominates the *local, in-distribution* 25-game roster, but
+that local dominance did not (at n=1) translate into a real edge on
+Kaggle's mostly-novel hidden games -- consistent with this project's own
+Stage 6 finding that the local 25 games and genuinely novel games are a
+different regime entirely, just demonstrated here from an unexpected
+angle (a training-free agent, not a checkpoint-generalization problem).
+Per this project's own established discipline for every first submission,
+treat `0.10` as n=1 -- informative, not conclusive -- but it does mean
+the very large local margin over `Hypothesis` should NOT be read as "this
+agent will also dominate the real leaderboard" without more real
+submissions to check.
+
+**Follow-up: "is `0.10` a submission-mechanism crash, or genuine?" --
+directly checked, not assumed.** A real user catch: given the pure agent
+scored 3-4x lower on the real submission than its local mean (0.242), it
+was worth directly ruling out a silent setup/mechanism failure before
+accepting "held-out-game generalization" as the explanation. Built a
+standalone diagnostic kernel (`kaggle_submission_graph_explorer/
+notebook_diag/`, reusable going forward, same free-unconditional-cell
+trick this doc already documents for the Hypothesis submission) that
+mirrors the *real* submission notebook's exact setup order (copy harness
+-> copy agent files -> overwrite `agents/__init__.py` with the minimal
+version -> import) on Kaggle's actual environment, then goes one step
+further than the original Hypothesis diagnostic ever did: constructs a
+real `GraphExplorerAgent` instance (via `__new__` + manual attribute
+setup, since a diagnostic push has no live `arc_env`) and calls its real
+`choose_action()` against a synthetic 64x64 frame end-to-end. **Result:
+`ALL FRAMEPROCESSOR DIAGNOSTICS PASSED` and `END-TO-END DIAGNOSTIC
+PASSED`** -- `segment_frame`, `identify_status_bars`,
+`frame_segments_to_action_groups`, `hash_frame`, and a full
+`choose_action()` call all ran cleanly on Kaggle's real `numpy==2.0.2`,
+`python==3.12.13` (vs. this project's own dev box: `numpy==2.3.2`,
+`python==3.13.14`) and returned a genuine, sensible action
+(`GameAction.ACTION6`), not a crash.
+
+**Why this specifically mattered to check:** `choose_action`'s own
+top-level try/except means that if the classical-CV pipeline threw on
+*every* real decision (e.g. some numpy-version behavior difference), the
+agent would silently fall back to `self.last_action_object` every time --
+which starts at `GameAction.RESET` and is only ever updated on a
+*successful* decision, so a total, silent failure here would look exactly
+like "the agent just spams RESET forever," landing near or even below the
+random-agent floor without ever showing up as a Kaggle `ERROR` status
+(the run still "plays," just does nothing useful). This diagnostic
+directly rules that specific failure mode out for the setup/classical-CV
+layer. What it can *not* rule out: the real live gateway interaction
+(network timing, the real multi-game harness) -- a free test push has no
+gateway access, so that's the one thing only a real scored submission
+exercises, and this remains unverified.
+
+**Net read on `0.10`:** most likely genuine, not a crash artifact --
+three independent, concrete reasons, not just "generalization gaps are a
+thing": (1) the diagnostic above directly rules out the specific silent-
+failure mode that would produce a near-random score for an unrelated
+reason; (2) **even on the familiar local 25-game roster, this agent never
+solved 17 of 25 games (68%) across all 8 backtest repeats** -- pooling
+across Kaggle's much larger, mostly-novel hidden set (this project's own
+Stage 6 work references ~110 games) would plausibly dilute the average
+further by simple arithmetic, no mechanism failure required; (3) the
+paper's own "3rd place" result is from a *different* evaluation (their
+ARC-AGI-3 Preview Challenge, 6 games/52 levels) -- their real-world
+success doesn't guarantee it transfers to this specific competition's
+hidden set. `0.10` also sits clearly above the established random-agent
+floor (`0.06`), consistent with real, functioning exploration having
+happened. Not 100% certain without a second same-config submission (this
+project's standard way of separating a real effect from a lucky/unlucky
+single roll) -- but the mechanism itself is now directly verified clean,
+not assumed.
+
+**Kaggle submission.** Given this is a from-scratch reproduction being
+tested on its own merits, it gets its own dataset/kernel, entirely
+separate from the JEPA `jepa-hypothesis-agent` dataset -- no checkpoints,
+no `jepa/` package, no torch/GPU dependency at all (`enable_gpu: false`),
+just the two ported agent files. Staged in
+`kaggle_submission_graph_explorer/` (`dataset_stage/`,
+`notebook/arc3-graph-explorer-submission.ipynb`,
+`notebook/kernel-metadata.json`) -- follows the exact same
+reproduction/submission steps this file's own Kaggle section documents
+below, pointed at the new dataset/kernel ids
+(`calamitychasm/graph-explorer-agent`,
+`calamitychasm/arc3-graph-explorer-submission`).
+
+**Real n=8x25 backtest (done, this project's own established protocol --
+`MAX_ACTIONS=300`, all 25 local games, 8 repeats): a decisive result.**
+
+| repeat | pooled score | levels | distinct games |
+|---|---|---|---|
+| 1 | 0.328 | 6 | 5 |
+| 2 | 0.227 | 7 | 6 |
+| 3 | 0.328 | 5 | 4 |
+| 4 | 0.348 | 7 | 6 |
+| 5 | 0.245 | 6 | 5 |
+| 6 | 0.124 | 5 | 4 |
+| 7 | 0.128 | 5 | 5 |
+| 8 | 0.210 | 5 | 4 |
+
+**Cumulative: 46 total levels completed, 8 distinct games ever solved**
+(`bp35`, `cd82`, `lp85`, `r11l`, `s5i5`, `sp80`, `tu93`, `vc33`), **mean
+pooled score 0.242** (range 0.124-0.348 across repeats -- real run-to-run
+variance from unseeded RNG, same as every other agent in this project,
+but every single repeat still clears 0.12).
+
+**This dramatically exceeds every JEPA-based agent's own 8x25-repeat
+numbers documented anywhere in this file**: `Hypothesis` (the current
+production agent, after every fix -- ACTION6 top-k, dead-end filtering,
+argmax-softmax) peaked at 14 total levels / 5 distinct games; `Memory` 10
+total / 5 distinct; `Curiosity` 8-11 total / 2-5 distinct across
+different rounds; `Random` 10 total / 2 distinct. GraphExplorerAgent's 46
+total levels is **more than 3x** the best any learned-model agent this
+project has built has ever reached on this same protocol, and 8 distinct
+games beats every one of them too. Zero training, zero GPU, zero
+checkpoints. This is the single clearest local result in this entire
+project's history for "does this approach reach more of the local game
+roster than what we've built" -- not close enough to attribute to noise
+the way several other n=8 results in this file have turned out to be
+(compare to the novelty-aware-beta cap's n=8 result, which evaporated at
+n=30 -- this result's margin over every other agent's own n=8 total is
+far too large for that same story to apply here).
+
+**What this does and doesn't say:** it says GraphExplorerAgent's
+coverage-first, training-free approach explores the *local* 25-game
+roster far more thoroughly than any world-model-driven agent this project
+has built. It says nothing yet about the held-out/novel-game
+generalization question Stage 6 spent so much effort on (`tu93`
+specifically -- and every other game here -- is a *trained* game for the
+JEPA agents' checkpoints in the sense that the whole local corpus is
+in-distribution for them; GraphExplorerAgent has no training at all, so
+"in-distribution" doesn't even apply the same way). The real Kaggle
+submission (below) is the only test that touches genuinely novel games --
+it has since resolved at `0.10`, inside `Hypothesis`'s own established
+range and not a clear win, confirming this local dominance did not (at
+n=1) carry over to real hidden games.
+
+**Next steps, not yet done:** (1) once the real submission below
+resolves, decide whether a second same-config submission is worth a
+future day's quota (n=1 cannot separate a real effect from noise, same
+standard as every other first submission in this file); (2) consider
+whether/how anything from this agent's design (frontier-distance routing
+especially) is worth folding into the JEPA track's own `TransitionGraph`
+-- tracked separately in `experiments/stage6_graph_lookahead.md`'s own
+"next steps" -- rather than merging the two agents' code; (3) given how
+large this local margin is, worth asking directly whether the *held-out-
+game* generalization gap Stage 6 fought all session (13 interventions, 12
+failures) is even the right problem to keep attacking with a learned
+world model at all, vs. leaning further into training-free, coverage-
+first exploration for whatever fraction of Kaggle's hidden games turn out
+to resemble the local roster closely enough for graph exploration alone
+to matter.
+
+### MAX_ACTIONS=300 was never a real Kaggle constraint -- and raising it surfaced a real, fixed bug
+
+**Why 300 was wrong for this agent specifically.** 300 matched this
+project's own established local-testing convention (`Hypothesis`/
+`Curiosity`/`Memory` all use it), not a real competition limit. Checked
+directly: `rules.md` documents a **9-hour run-time cap for the whole
+notebook** (not per-game), and `agents/swarm.py: Swarm.main()` -- read
+directly, not assumed -- spins up **one thread per game and starts them
+all together**, joining only once every thread finishes. Every one of the
+up to 110 real hidden games therefore gets close to the *entire* 9-hour
+window concurrently, not `9h / 110 games` divided. Upstream's own real
+default was `MAX_ACTIONS = 1000000` (effectively unbounded, gated by
+`TOTAL_TIME_ALLOWED = 7.9 hours`) -- not a small fixed count. `MAX_ACTIONS`
+is now `GRAPH_EXPLORER_MAX_ACTIONS`-overridable (default still 300, so
+existing comparisons elsewhere in this file are unaffected unless
+explicitly overridden).
+
+**Calibration run (`r11l`, `GRAPH_EXPLORER_MAX_ACTIONS=5000`, isolated --
+no 25-way CPU contention) found two things, one reassuring, one a real
+bug.** Reassuring: **~49 actions/sec sustained**, 5000 actions in ~102
+seconds, with fps *increasing* slightly and stabilizing over the run --
+no evidence the graph's own bookkeeping (`_rebuild_distances`'s BFS,
+`NodeInfo.edge_data`) gets meaningfully slower as it grows across
+thousands of actions. The bug: the agent completed its one level at
+**action 88**, then got stuck for the remaining **4912 of 5000 actions**
+-- 95 resets, ~90% of decisions hitting the graph's own "choose_edge
+called on a still-unconfirmed node" fallback, zero further progress.
+Root cause, found by reading `choose_action`'s own fallback path: on any
+exception it returns `self.last_action_object`, which only updates on a
+*successful* decision -- so once stuck, the agent replays the exact same
+action against the exact same stuck state forever, since repeating a
+failing action can never change whatever caused it to fail. Invisible at
+300 actions (just looked like "somewhat elevated fallback rate"); at
+5000 it's revealed as a real trap, not noise.
+
+**Fix**: track consecutive `choose_action` exceptions
+(`self._consecutive_fallbacks`); past `CONSECUTIVE_FALLBACK_ESCAPE_
+THRESHOLD` (3), stop repeating `last_action_object` and escape with a
+genuinely fresh random action (`_random_escape_action`, sampling from
+`latest_frame.available_actions` including a real random `(x, y)` for
+ACTION6) instead. Re-ran the identical `r11l` calibration: fallback count
+dropped **4484 -> 3141**, resets rose **95 -> 235** (more erratic, but no
+longer perpetually stuck on the exact same action) -- **but levels
+completed on this one game still capped at 1.** Read honestly: the fix is
+real and verified to change behavior (the literal infinite-repeat pattern
+is gone), but it did not, by itself, unlock further progress on this
+specific game in this one run -- whatever caused progress to stall after
+level 1 on `r11l` is evidently a separate, deeper issue than the
+repeat-loop mechanism alone. Not yet investigated further (n=1, one
+game) -- proceeding to the full 25-game sweep at the larger budget is the
+next real test of whether the fix (and the larger budget itself) helps
+broadly, rather than reading too much into one game's result.
+
+### "Urgency": exact multi-hop win-recall, reusing jepa/memory.py's TransitionGraph
+
+Motivated directly by the MAX_ACTIONS calibration finding above: a
+coverage-first algorithm with no notion of "I already know how to make
+progress here" pays a real, measured cost (the "coupon collector" effect)
+every time it has to rediscover a known-good move via undirected random
+exploration instead of just taking it. `GraphExplorerAgent` had no
+exact-recall mechanism at all (unlike Stage 3/5's `TransitionGraph`-based
+JEPA agents) -- this section adds one.
+
+**First attempt (single-hop) was cleanly negative, verified by direct
+measurement, not assumption.** Recorded `hashed_frame -> (action_id, xy)`
+for every transition observed to increase `levels_completed`, checked it
+on every decision. Result on a 5000-action `r11l` calibration: **zero
+recalls fired.** Root cause, found by instrumenting rather than guessing:
+`RESET` returns to the *level's own starting frame*, not the specific
+(often several-steps-downstream) frame where the winning action was
+actually taken -- a single remembered hop can't bridge that gap. This
+needed a real fix, not a bigger lookahead constant.
+
+**Second attempt: reuse `jepa/memory.py: TransitionGraph.lookahead_best_path`
+directly** (already built, already tested, already used by
+`Hypothesis`/`Memory` for exactly this kind of multi-hop exact recall).
+It's pure Python (`hashlib`/`dataclasses`/`collections.deque`, zero torch)
+-- reusing it doesn't compromise this agent's "no JEPA world model"
+isolation, it's just a proven, non-learned data structure. Records
+*every* observed transition (not just wins) so a full path can be
+reconstructed, not just the final hop; `self.transition_memory` is a
+separate, never-reset structure from `self.graph_explorer` (which still
+gets `reset()` on every level_up, unchanged).
+
+**A second bug, also found by instrumenting rather than assuming the fix
+worked:** still zero recalls after switching to multi-hop lookahead.
+Traced directly: `TransitionGraph`'s own default hashing works on the
+*raw, unmasked* frame (matching how `Hypothesis`/`Memory` already use it),
+but `GraphExplorerAgent` hashes the *status-bar-masked* frame specifically
+so repeat visits to the same logical state hash identically. Using two
+different hashing schemes for the same lookup meant states essentially
+never matched. Fixed by adding an optional `next_state_key` override to
+`TransitionGraph.record()` (backward-compatible -- existing positional
+callers in `Hypothesis`/`Memory` are unaffected, verified directly) and
+keying everything in `GraphExplorerAgent` off its own existing
+`hashed_frame` consistently.
+
+**With both fixes in place, direct instrumentation confirmed the
+mechanism works exactly as designed** -- states *are* recognized as
+revisits (`transition_memory` grows, `seen()` returns `True` on repeat
+visits), edges accumulate correctly, and the graph-size/fps profile from
+the earlier calibration still holds (no slowdown). But real recalls on
+`r11l` specifically *still* never fired, and this time the reason is not
+a bug: direct inspection of `levels_completed` across dozens of `RESET`
+events showed it **never reverts** -- it stays at `1` across the entire
+rest of the run. **ARC-3 checkpoints progress at the level boundary; a
+`RESET` returns you to the *current* (not-yet-won) level's own start, not
+the game's absolute beginning.** `r11l` reached level 2 once (around
+action 35) and has been stuck there -- never won even once, across every
+test run this session -- ever since. There is no second win anywhere in
+`transition_memory` for the mechanism to route back to; it isn't broken,
+it simply hasn't had an opportunity yet on this specific game. This also
+means the mechanism's real value is narrower than first framed: it helps
+when a GAME_OVER/RESET cycle returns to a state *within the current,
+not-yet-won level* that a past attempt already knows a productive
+continuation from -- not "re-crossing an already-permanently-passed
+earlier level," which apparently doesn't happen given how progress is
+checkpointed.
+
+**Full 25-game sweep at the same MAX_ACTIONS=5000 budget: the run itself
+crashed (disk-full, unrelated to the urgency logic), but the real result
+was still recoverable, and it's a clean negative -- the mechanism never
+fired once across the whole roster.**
+
+The sweep (all 25 games, started together at 17:15:06) hit
+`OSError: [Errno 28] No space left on device` partway through -- first in
+`Swarm.main()`'s own `logger.info(json.dumps(scorecard.model_dump()))`
+call, then in several agents' `recorder.record()` cleanup writes. The 13
+games whose "Finishing" line did make it into the log all show the exact
+same elapsed time (2964.2-2964.6s) despite very different action counts
+(1787-4930) -- strong evidence a shared I/O failure killed them together
+partway through, not that they legitimately hit a stopping condition
+independently. **This is the same "full disk" failure class this doc's
+own Gotchas section already warns about for `recordings/`** -- old
+recordings from this session's own single-hop/hash-mismatch debugging
+runs (13:0x-17:10 timestamps, several hundred MB each) were still sitting
+uncleaned when the final sweep started, and a 25-game x 5000-action sweep
+alone generates multiple GB more (individual recording files up to
+~600MB, frame-size-dependent, consistent with this doc's own
+already-documented per-file sizes at this scale).
+
+**Real per-game results were still recoverable directly from the 25
+recording files** (each one accumulates real `levels_completed`/
+`win_levels` per frame regardless of whether the final aggregate
+scorecard JSON ever got logged) -- parsed directly rather than trusting
+the crashed log:
+
+**17 total levels completed, 12 distinct games** (`ar25, cd82, dc22,
+ft09, lf52, lp85, m0r0, r11l, s5i5, sp80, tu93, vc33`) -- essentially
+flat against the pre-urgency 5000-action baseline (17 levels, 13 distinct
+games) elsewhere in this section. No detectable improvement, no
+detectable regression.
+
+**The urgency mechanism never fired once across all 25 games in this
+run** -- confirmed by grepping the full log for its own
+`logger.info(f"{self.game_id} - {reasoning}")` call (the same line
+verified to work correctly in the earlier isolated r11l diagnosis), not
+assumed from a null result alone. Consistent with, and now generalizing,
+the r11l-specific finding above: the condition it needs (revisiting an
+*exact* already-explored state that has a recorded, still-relevant
+productive path within `URGENCY_LOOKAHEAD_DEPTH=8` hops) is apparently
+rare across a single pass at this game roster's scale, not just
+specific to r11l's own stuck-at-level-2 situation. The mechanism itself
+was directly verified correct via instrumentation before this run (states
+recognized as revisits, edges accumulating, a real level-up recorded) --
+this is a "rarely gets a chance to matter in one pass," not "broken,"
+result, but it's still a clean, honest null on the actual question asked
+("does this help on the full roster") at this budget and this graph
+depth.
+
+**Working read:** exact multi-hop win-recall remains a theoretically
+sound mechanism (ARC-3's determinism means every recorded edge is a
+verified fact, not a prediction) but its practical payoff at
+`MAX_ACTIONS=5000`/depth=8 on a *single* pass through 25 games is
+essentially zero, because there's rarely enough repeat-visit structure
+within one pass for a multi-hop path to have already been recorded before
+it would matter. It would more plausibly pay off on a much longer-lived
+graph (e.g. `Memory`'s own persist-across-resets pattern given a much
+larger action budget, or a `TransitionGraph` seeded from a prior
+session's harvest rather than built from scratch each run) -- not
+verified this session, flagged as the natural next test if this is
+revisited, rather than iterated on further right now given the clear
+null result at this scale.
+
+**Housekeeping from this run**: `scripts/extract_level_up_transitions.py`
+crashed on a truncated final JSON line in one of the recording files (a
+direct consequence of the disk-full crash cutting a write off mid-line)
+-- fixed by skipping a malformed line instead of aborting the whole
+extraction (`json.JSONDecodeError` now caught in `_load_lines`, harmless
+for well-formed files). Ran the fixed extractor across the full
+`recordings/` directory (207 files, both this run's and the session's
+earlier stale debugging runs) before deleting anything: 45 level-up
+events, 2043 transitions preserved into `data/graph_explorer_harvest/`.
+Then deleted all raw recordings (freed ~8.9GB, C: went from ~5.9GB to
+~15GB free) -- this project's disk margin was already thin (documented
+elsewhere in this file) and a single large sweep plus leftover debug
+recordings was enough to exhaust it outright this time, not just come
+close.
+
+### GraphExplorerStructuralAgent: a purpose-built graph win-distance model, a clean negative result
+
+Follow-up to a design discussion about generalizing "the graph" beyond
+exact-hash lookup: does a small model trained on structural graph features
+(out-degree, in-degree, visit count, BFS depth from episode start, node
+candidate-richness) transfer across games to predict "hops to a known
+win from this exact state"? `jepa/graph_features.py:
+StructuralGraphTracker` + `scripts/train_graph_win_distance_model.py`
+(a small `GradientBoostingRegressor`, deliberately not a torch model).
+
+**Result: a clean, honest negative on the model's own validity check,
+before ever reaching a backtest.** Leave-games-out cross-validation (5
+folds, 13 games, 8096 labeled decisions) scored *worse* than a trivial
+constant baseline -- mean MAE 5.61 hops vs. 4.27 for predicting the
+training mean everywhere, correlation 0.137. Feature importances showed
+why: `depth` (48%) and `num_available_actions` (37%) dominated, both
+absolute, game-specific scales -- the model was mostly learning "which
+game's rough size is this," the same "memorize local statistics instead
+of a transferable feature" failure Stage 6's object-identity checkpoint
+already hit, just for graph structure instead of encoder features. Given
+the model failed its own honest validation, no agent-level backtest or
+submission was attempted for this design -- see the immediately following
+section for the design that replaced it.
+
+### GraphExplorerLearnedAgent: local click-effect prediction, a decisive local win, real submission still unresolved
+
+**Origin: a sharper version of "does the graph have exploitable local
+structure," reframed from graph topology to local pixel/object content.**
+A user-proposed diagnostic (`scripts/diagnose_state_similarity.py`) asked
+a narrower, safer question than global frame symmetry (deliberately
+rejected -- a puzzle could use symmetry as its actual mechanic, not
+decoration): do two *different* exact graph states that happen to share
+the same small local neighborhood around an ACTION6 click point show the
+same click *outcome*? Run against the win-adjacent harvest corpus (3,586
+click transitions, 12 games): **624 cross-state local-patch matches, with
+~100% frame-changed-outcome consistency in 9 of 12 games** (one group in
+`r11l` recurred across 14 distinct states, always with the same outcome).
+A weaker, position-invariant "same object, different location" version
+(120 matches) was much less consistent (0-100% depending on game) and not
+pursued further. Full method and numbers in that script's own output
+(`data/state_similarity_report.json`).
+
+**Design: pretrain across games, then test-time-adapt per game --
+deliberately the "higher-power" option over a cheap non-parametric
+nearest-neighbor upgrade, at explicit user request regardless of what the
+cheap version would have shown.** `jepa/click_effect_model.py:
+ClickEffectModel` -- a small CNN (7x7 local pixel patch, color-embedded)
++ MLP (5 segment shape/color/size features) fused into a shared trunk with
+two heads (P(frame changes), P(this click wins)). Pretrained on the same
+harvest corpus (`scripts/harvest_click_effect_data.py`,
+`scripts/train_click_effect_model.py`): leave-games-out CV mean AUC on
+`frame_changed` = **0.77** (3 of 4 folds clearly above chance, one
+near-chance) -- a real, if imperfect, signal, and a qualitatively
+different (much better) result than the structural model's above. Raw
+accuracy looked bad (0.573 vs. 0.861 majority-baseline) purely because
+per-game "does clicking change anything" base rates range 0%-100% across
+games -- AUC is the honest metric since the live agent recalibrates per
+game anyway via `jepa/click_effect_adapter.py: ClickEffectAdapter`
+(same ANIL-style restricted-subset test-time-adaptation recipe as
+`jepa/test_time_adapter.py`, the one lever in this project's whole Stage 6
+investigation that showed real positive cross-game signal -- see that
+section's own history): a ~600-param subset (trunk + both heads) gets a
+few real gradient steps every ~10 observed clicks using the *current*
+game's own data, persists across resets, resets fresh per new game.
+
+**Live integration is scoped to explore-mode only, on purpose, unlike
+`GraphExplorerJepaAgent`'s regression.** That earlier class biased both
+explore- and travel-mode using a signal later shown to be near-flat
+(InfoGain) and was a clear loss (34 vs 46 levels). This class only biases
+*which untested click to try next* (temperature-weighted softmax over
+predicted P(frame_changed), same z-normalized pattern as every other
+tie-break in this file) -- travel-mode stays untouched. The structural
+risk that any explore-mode bias can front-load GAME_OVER-triggering
+actions is real regardless of signal quality and was directly observed in
+a single-game smoke test (r11l, 150 actions): fallback rate 58% vs. the
+pure agent's 35% on identical budget -- flagged before the backtest, not
+after.
+
+**Real n=8x25 backtest result: decisive, not marginal.**
+
+| metric | pure GraphExplorerAgent | GraphExplorerLearnedAgent |
+|---|---|---|
+| total levels | 48 | **55** (+15%) |
+| distinct games ever | 8 | **9** |
+| mean pooled score | 0.179 | **0.674** (3.76x) |
+
+Every one of the 8 learned-agent repeats (0.51-0.77) scored higher than
+every one of the 8 pure-agent repeats (0.07-0.37) -- complete separation
+between the two distributions, not an overlapping-noise result. The
+elevated single-game fallback rate did not show up as a pooled-level
+cost. Mechanistically coherent, not just statistically clean: levels
+completed only rose modestly while pooled score (efficiency-weighted,
+squared) nearly quadrupled -- consistent with the model successfully
+skipping dead clicks rather than unlocking dramatically more content.
+
+**Real Kaggle submission: a real setup bug found and fixed, but still
+unresolved after two attempts.** Staged as
+`kaggle_submission_graph_explorer_learned/` (dataset
+`calamitychasm/graph-explorer-learned-agent`, kernel
+`arc3-graph-explorer-learned-submission`), following the same
+proven-pattern reuse as the pure GraphExplorerAgent's own submission
+pipeline. First submission (ref `55901265`) was made *before* waiting for
+an unconditional diagnostic push to finish (explicit user instruction:
+speed over caution) -- the diagnostic then found a real bug missed during
+staging: `graph_explorer_agent.py` imports `from jepa.memory import
+TransitionGraph` (for its own urgency/win-recall mechanism) but
+`jepa/memory.py` was never copied into the dataset. Fixed (dataset
+version 2), diagnostic re-run and confirmed clean (`MODEL DIAGNOSTICS
+PASSED`, `END-TO-END DIAGNOSTIC PASSED`, including a full simulated
+`choose_action` call exercising both the tie-break and
+`adapter.observe`/adaptation paths). **The first submission still
+resolved to `SubmissionStatus.ERROR`** (only Kaggle's generic "system
+error" message, no further detail via the API). A resubmission (ref
+`55901513`), made *after* the dataset fix landed, **also errored
+identically** -- same generic message, same underlying kernel version.
+Since the diagnostic (import + model load + a full simulated decision)
+now passes cleanly against the exact same fixed dataset, the remaining
+unverified surface is specifically the real gateway/multi-game harness
+execution during an actual scored rerun -- something this project's own
+free-diagnostic-push technique has never been able to reach (documented
+limitation, see the original Kaggle debugging saga earlier in this file).
+Per user instruction, retries are now spaced ~50 minutes apart rather
+than immediate, to avoid mistaking a transient platform issue for a real
+code bug (or vice versa).
+
+**A concrete but ultimately wrong hypothesis, tested and ruled out
+directly: `enable_gpu`.** Neither proven-working torch-based pattern in
+this project actually tests torch-with-`enable_gpu:false` -- the pure
+`GraphExplorerAgent` has no torch dependency at all (the flag is moot),
+and `Hypothesis` uses torch with `enable_gpu:true`. Switching this
+class's kernel to `enable_gpu:true` to match the one proven torch+GPU
+combination seemed like a well-reasoned next step. **It was wrong, and
+revealed a different real bug instead**: Kaggle's GPU pool for this
+kernel provisioned a Tesla P100 (CUDA capability sm_60), which the
+bundled PyTorch build's compiled kernels don't support (minimum sm_70) --
+every real tensor op on GPU threw `torch.AcceleratorError: CUDA error: no
+kernel image is available for execution on the device`, confirmed
+directly by toggling the flag on identical code via the diagnostic
+kernel. `torch.cuda.is_available()` returns `True` regardless (a GPU is
+physically present, just incompatible), so `jepa/device.py: get_device()`
+has no way to detect this ahead of time -- see this file's own Gotchas
+section for the durable version of this finding. Reverted to
+`enable_gpu:false` (the only config ever confirmed clean) for both the
+submission and diagnostic kernels.
+
+**Three submissions, three identical failures, still unresolved.** A
+third attempt (ref `55902368`) on the confirmed-CPU config, made with no
+new code change (there was nothing left to fix locally), also resolved to
+`SubmissionStatus.ERROR` with the same generic message and the same
+underlying kernel version as the first two -- the only notable difference
+was staying `PENDING` for ~64 minutes before erroring, versus a much
+faster resolution on the first two attempts, a real if inconclusive data
+point. Per direct user instruction, no fourth attempt was made
+automatically. **Everything a diagnostic push can reach is now confirmed
+clean**: file/path staging (audited byte-for-byte against two
+proven-working submission notebooks), model loading and a full simulated
+`choose_action` call, and 110-thread concurrent model construction +
+inference + live adaptation (both GPU and CPU-forced, mirroring Kaggle's
+real per-game-thread Swarm scale) all pass with zero errors. Three
+consistent, identical failures on an otherwise fully-verified setup is
+more consistent with something in the real online-mode gateway/multi-game
+harness execution -- the one path no free push can reach -- than with a
+remaining code bug, though this isn't provable from here without either
+Kaggle Support's own visibility or another submission attempt.
+**Resolved: a real score, on the 5th attempt -- and a real, sobering
+generalization gap, not just a submission-mechanism saga.** A CONTROL
+TEST (resubmitting the unchanged, already-proven pure `GraphExplorerAgent`
+kernel while the 3rd learned-agent error was still fresh) came back
+`SubmissionStatus.COMPLETE`, score **0.25** -- conclusively ruling out a
+platform-wide outage as the explanation for the 3 identical errors, since
+Kaggle's real infrastructure was demonstrably working normally at the
+same time. That refocused the search onto what's actually different
+between this project's two proven torch-based configs (pure
+`GraphExplorerAgent`: no torch, `enable_gpu:false`; `Hypothesis`: torch,
+`enable_gpu:true`) and this class's own original config (torch,
+`enable_gpu:false`) -- the one combination never proven anywhere in this
+project's history. A 4th attempt hit Kaggle's real daily submission quota
+(confirmed via the API's own `FAILED_PRECONDITION` error body, not
+assumed) -- errored submissions evidently still count against it, contra
+this project's earlier assumption. After waiting out the ~6-hour reset
+(confirmed precisely via the quota error's own countdown), a 5th attempt
+switched to `enable_gpu:true` (matching `Hypothesis`'s proven profile)
+while adding `GRAPH_EXPLORER_LEARNED_FORCE_CPU=1` (a new env-var lever,
+`graph_explorer_learned_agent.py: _init_model`) to keep this agent's own
+compute on CPU regardless -- avoiding the confirmed P100 incompatibility
+while still running on the one proven infrastructure profile. Diagnostic-
+verified clean first (`device: cpu`, no CUDA errors, both diagnostics
+passed), then submitted (ref `55926701`): **`SubmissionStatus.COMPLETE`,
+public score 0.08.**
+
+**Honest read: this does not look like the local backtest's 3.76x
+advantage transferring to real hidden games.** `0.08` sits *below* the
+pure agent's own two real scores from this exact investigation --
+`0.10` (an earlier submission) and `0.25` (today's own control test, on
+the same infrastructure, same day) -- despite the learned agent
+dominating the pure agent completely in every local backtest repeat
+(0.51-0.77 vs 0.07-0.37, zero overlap). Same standard as every other
+first-real-submission result in this project's history: this is n=1 for
+`GraphExplorerLearnedAgent` and cannot on its own distinguish "the local
+signal genuinely doesn't transfer" from "this one draw landed unlucky" --
+but the gap here is large, and it lands in the same direction as this
+project's own dominant, repeated finding elsewhere (Stage 6 addendum: 13+
+interventions on the JEPA world model, only test-time adaptation showed
+any real cross-game signal). A component-level win (patch-match
+consistency, AUC 0.77 cross-validated by game) and a massive local
+agent-level win did not clearly survive contact with genuinely novel
+games. Worth a second same-config submission before treating this as
+settled, per this project's own standard practice -- but the honest prior,
+given everything else this project has found about local-to-hidden-game
+transfer, should lean toward "another instance of the pattern," not
+"probably just unlucky."
+
+**Second data point (2026-09-04, ref `56003465`, identical config, no
+code changes): `SubmissionStatus.COMPLETE`, public score `0.15`.** Two
+real scores now: `0.08`, `0.15` (mean `0.115`). This does *not* confirm
+the first score was a stable low floor -- `0.15` is noticeably higher --
+but it also doesn't come close to reproducing the local backtest's 3.76x
+advantage: the pure agent's own two real scores from this same
+investigation (`0.10`, `0.25`, mean `0.175`) are still higher on average
+than the learned agent's two (`0.115`). At n=2 per side this is not a
+statistically clean comparison, and both learned-agent scores sit
+squarely inside this project's own long-established `0.00`-`0.25` real-
+score noise band -- but there is no signal yet that this agent's local
+dominance is showing up on hidden games. Verdict unchanged from the first
+data point: consistent with, not a refutation of, this project's dominant
+finding that local wins from a learned component don't reliably transfer
+to novel games. Before checking prior probabilities, checked directly
+whether a bug could explain the low scores (revert-to-random or similar)
+rather than assuming: a fresh local debug run (r11l, 300 actions, DEBUG
+logging) showed the tie-break scoring path firing 40 times with zero
+exceptions and varied, non-degenerate output; the Kaggle diagnostic
+already separately confirmed the same on the actual deployed checkpoint;
+and the real scores (`0.08`, `0.15`) sit above the documented random-
+agent floor (`0.06`), not collapsed onto it -- no positive evidence of a
+silent-failure bug, though real hidden-game content and real scored-run
+logs remain permanently unavailable to verify further from here.
+
+**Where this leaves the design, if revisited:** the most defensible next
+lever, per this project's own strongest cross-cutting finding, is pushing
+harder on `ClickEffectAdapter`'s live test-time adaptation (the untuned
+`k=10`/`lr=5e-4`/`n_steps=3` defaults, or seeding it with deliberate
+opening probe clicks) rather than trying to improve the frozen pretrained
+prior -- adaptation is the one mechanism that's shown real cross-game
+signal anywhere in this project's entire Stage 6 history. A broader
+pretraining corpus drawing on the same synthetic sources already built
+for the JEPA predictor (MiniGrid, Sokoban click-transitions, same
+patch/segment-feature framing) is untried for this specific narrower
+task and worth a shot, though "more of the same kind of data" has failed
+repeatedly elsewhere in this project. Capacity/architecture/augmentation
+changes are the least promising avenues -- all three shapes of that idea
+were tried on the JEPA side and were uniformly negative or harmful.
+
+**Follow-up: swept `ClickEffectAdapter`'s dose, the recommended next lever
+-- and it was a real, substantial win, component-level.**
+`scripts/sweep_click_effect_tta.py` (leave-games-out: pretrain on all-but-
+one game, adapt on that held-out game's own first ~70% of transitions in
+order, evaluate AUC on its last ~30%, never adapted on -- same discipline
+as every other cross-game check in this project). The original untuned
+defaults (`k=10, n_steps=3, lr=5e-4`) were never actually validated --
+just a reasonable-looking starting guess. Frozen (no adaptation) pooled
+AUC on held-out games: **~0.51, barely above chance.** The original
+defaults only reached **~0.54** -- adaptation was firing, but far too
+weakly to matter. A real, clean dose-response curve (two independent
+sweep runs): jumps sharply to **~0.77** at `k=5, n_steps=8, lr=2e-3`
+(one game, `ft09`, went from 0.07 -- worse than random -- to 0.99), then
+plateaus/wobbles in the 0.73-0.76 band for every higher dose tried (up to
+`k=1, n_steps=40, lr=2e-2`) -- confirming this isn't "more is always
+better," there's a real ceiling around the "aggressive" tier. One game
+(`m0r0`) never improved and slightly degraded at higher doses in both
+runs -- consistent enough to be a real per-game characteristic, not
+noise. Adopted `k=5, n_steps=8, lr=2e-3` as the new default. Verified
+locally afterward (fresh single-game run, r11l, 300 actions): stable,
+zero exceptions, ~24.7 fps sustained -- the heavier dose (n_steps 3->8,
+firing twice as often) doesn't introduce any latency or stability
+regression at this model's tiny size.
+
+**Same honest caveat as everywhere else in this file applies here too:**
+this component-level validation (leave-games-out AUC on the *local* 25
+games) is exactly the kind of local signal that has NOT reliably
+predicted real Kaggle scores for this agent so far (see the two real
+submissions above, 0.08 and 0.15, against a local backtest that predicted
+a 3.76x win). Confirmed via a fresh n=3 local backtest with the new dose
+(0.678 mean pooled score, consistent with the old dose's 0.674 at n=8 --
+no operational regression), then submitted for real scoring (ref
+`56022267`): **`SubmissionStatus.COMPLETE`, public score `0.05`.**
+
+**This is the lowest real score this agent has ever gotten, and it's
+actually below the documented random-agent floor (`0.06`).** Three real
+scores now: `0.08`, `0.15`, `0.05` (mean `0.093`) -- the tuned dose,
+despite a dramatically stronger *component-level* signal (pooled held-out
+AUC 0.54 -> 0.77, one game going from worse-than-random to near-perfect),
+produced this agent's worst real-world result yet, not its best. This
+directly answers the question this section's prior caveat posed: "was the
+adaptation just too weak before" is **not** the explanation for the
+disappointing real scores -- making adaptation dramatically stronger by
+every local measure available made the real score *worse*, not better.
+That rules out "insufficient dose" as the bottleneck and leaves the same
+explanation this project has landed on repeatedly elsewhere: a real
+local-to-hidden-game generalization gap, not a tunable hyperparameter.
+
+**Worth flagging as a real, if speculative, possibility rather than
+dismissing:** a more aggressive adaptation dose adapts *faster* to
+whatever local pattern it happens to observe early in an episode on an
+unfamiliar game -- if a hidden game's own click semantics don't resemble
+the 12 local games this model was pretrained on, faster/heavier
+adaptation could mean committing harder, and earlier, to a wrong read of
+that specific game, rather than staying appropriately uncertain. This
+would be a case where local-to-hidden-game transfer failure and stronger
+adaptation actively compound instead of the latter compensating for the
+former -- consistent with, but not proven by, this single real data
+point. Given three real scores now sit at `0.05`-`0.15` against the pure
+agent's own `0.10`/`0.25`, and the local backtest has now been shown
+twice in a row to not predict the real outcome (once for the base dose,
+once for the tuned dose, in opposite directions of "surprise"), further
+tuning of this specific mechanism is not recommended without first
+finding a way to validate against something more like real hidden-game
+conditions than the local 25-game roster -- the same conclusion Stage 6's
+JEPA-side investigation reached after 13+ attempts, now independently
+reproduced by a completely different, much simpler component.
+
+### GraphExplorerJepaAgent: built, backtested, and a clear negative result
+
+`graph_explorer_jepa_agent.py: GraphExplorerJepaAgent` subclasses
+`GraphExplorerAgent` unchanged and adds informed tie-breaking at the two
+places the pure algorithm has no basis for choice beyond uniform random:
+`mode="explore"` (which untested action to try next within the current
+priority tier) scores candidates via `jepa/hypothesis_bundle.py:
+info_gain` (the same MoE-expert-disagreement signal `Hypothesis` already
+uses); `mode="travel"` (navigating toward a known frontier once the
+current node has nothing left to explore) scores candidates via the
+value head against a frame cache (`self._frame_cache: dict[hash ->
+pixel array]`, populated as a side effect of every tie-break call, since
+`GraphExplorer` itself only ever stores hashes). `graph_explorer_core.py:
+GraphExplorer` grew an optional `tie_break_fn(node, mode, candidates) ->
+edge_idx` hook for this, called from `choose_edge` in place of
+`random.choice` when set; default `None` reproduces the pure agent's
+exact behavior (verified: existing unit tests still pass unchanged).
+Registered as `graphexplorerjepaagent` -- needed a manual
+`AVAILABLE_AGENTS` entry (`agents/__init__.py`), same as `ReasoningAgent`,
+since it subclasses `GraphExplorerAgent` rather than `Agent` directly.
+
+**A real bug found and fixed before backtesting, via direct evidence, not
+left as speculation.** The first draft's `r11l`-specific anomaly (179/301
+fallback actions vs. 0 for the pure agent on the same game) was
+originally written up as "consistent with InfoGain seeking disruptive
+actions" -- an unverified hypothesis. Checked directly instead of left
+that way: added DEBUG-gated per-decision logging (`.env`'s `DEBUG=True`),
+replayed `r11l`, and found the real story is different. Across 89 real
+explore-mode decisions, candidate InfoGain scores clustered within
+roughly 0.0002-0.0006 of each other on a ~0.017 baseline (near-flat, not
+meaningfully differentiated), and the chosen click location landed on
+just 2 of 39 distinct spots 22/89 times (~25%). This is the exact
+"deterministic argmax over a flat/near-flat map defaults to the same
+handful of indices" failure this project already hit and fixed twice
+before (`Curiosity._sample_click`, `Hypothesis`'s
+`PATCH_SAMPLE_TEMPERATURE`) -- newly discovered in a third context.
+Fixed the same way: replaced the hard `argmax` with temperature-weighted
+softmax sampling (`_weighted_sample`, `TIE_BREAK_TEMPERATURE = 0.5`,
+z-normalized so the temperature is scale-invariant across info_gain's
+and the value head's differing raw magnitudes).
+
+**Real n=8x25 backtest (this project's own established protocol,
+`MAX_ACTIONS=300`, all 25 local games, 8 repeats): a clear, decisive
+regression relative to the pure agent.**
+
+| repeat | pooled score | levels | distinct games |
+|---|---|---|---|
+| 1 | 0.156 | 4 | 4 |
+| 2 | 0.106 | 5 | 5 |
+| 3 | 0.114 | 3 | 3 |
+| 4 | 0.059 | 5 | 4 |
+| 5 | 0.115 | 4 | 4 |
+| 6 | 0.137 | 3 | 3 |
+| 7 | 0.114 | 5 | 5 |
+| 8 | 0.167 | 5 | 4 |
+
+**Cumulative: 34 total levels, 6 distinct games** (`bp35`, `lp85`, `r11l`,
+`sp80`, `tu93`, `vc33`), **mean pooled score 0.121** -- vs. the pure
+agent's own same-protocol **46 levels, 8 distinct games, mean 0.242** on
+identical code otherwise. Every single JEPA-augmented repeat's score sits
+below the pure agent's *worst* repeat (0.124). This is not noise: the
+margin (34 vs 46 levels, roughly half the mean pooled score) is far too
+large and far too consistent across all 8 repeats to be sampling
+variance -- unlike, say, the novelty-aware-beta cap's n=8 result
+elsewhere in this file, which evaporated at n=30 because its own n=8
+margin was already small and inconsistent.
+
+**Directly checked and ruled out the obvious explanation before accepting
+the result.** Given the first draft's `r11l` finding involved elevated
+exception/fallback rates, the natural hypothesis was "the JEPA variant
+just crashes into more fallback (i.e. effectively-random) decisions,
+wasting budget." Checked directly: total `falling back` events summed
+across all 8 repeats were **2796 for the JEPA-augmented agent vs. 5025
+for the pure agent** -- the JEPA variant actually has *fewer* exceptions
+overall, not more. So the regression is not an artifact of instability;
+it's the informed signal itself, working as designed (softmax-sampled,
+not degenerate), producing a worse policy than uniform random for this
+specific coverage-first algorithm.
+
+**Working read, not yet directly verified further:** the pure algorithm's
+whole mechanism of action is broad, roughly-uniform coverage of untested
+actions within a fixed budget -- any systematic bias in *which* untested
+action gets tried first, even a well-motivated one, changes *when* within
+an episode a given action (including any that happen to trigger
+GAME_OVER) gets tried, not just whether it eventually does. If informed
+selection front-loads certain actions earlier in an episode than uniform
+random would, and a meaningful fraction of untested actions are
+GAME_OVER-triggering, that could mean more, earlier resets and less depth
+reached per episode -- a real structural cost that a "smarter" per-step
+choice doesn't show up in until measured at the whole-episode level. This
+would explain why fallback *count* went down (fewer suspicious/unconfirmed-
+node hits, since informed choices may correlate with edges the graph
+already partially understands) while overall *outcome* still got worse
+(the something-lost is in exploration breadth/depth, not caught by the
+exception-rate metric at all). Consistent with, not proof of -- not
+verified with targeted per-episode instrumentation the way the argmax bug
+was.
+
+**Recommended next steps, in order, if this is picked back up:** (1)
+directly test the "front-loaded resets" hypothesis above by instrumenting
+episode-level "actions before first RESET" and "unique nodes discovered
+before first RESET" for both variants, matched-seed if possible; (2) if
+confirmed, the fix is likely to bias tie-breaking *toward* safer-looking
+candidates rather than toward high-uncertainty ones (the opposite of the
+current design) -- try scoring by *negative* value-head-predicted risk
+or by a fixed small epsilon-random floor to cap how much any one signal
+can dominate; (3) given how large and consistent this regression is,
+seriously consider whether *any* per-step informed bias helps this
+particular algorithm at all, vs. whether the JEPA world model's real
+contribution to this agent family should be something orthogonal to
+per-step action choice entirely (e.g. exact-recall/exploit-on-win layered
+on top once a win is found, which this class still doesn't have, rather
+than biasing exploration order itself).
+
+**Bottom line:** the pure, training-free `GraphExplorerAgent` remains the
+stronger local performer by a wide, now double-backtested margin (46 vs.
+34 levels; 0.242 vs. 0.121 mean score). This JEPA integration, as built,
+should not be treated as an improvement or submitted -- it's a real,
+useful negative result (a specific, well-understood algorithm where
+informed per-step bias hurts rather than helps), not a dead end for the
+broader idea of combining the two approaches.
+
 ## Kaggle competition submission: root cause found, real score obtained
 
 **Current status: the Stage 5 Hypothesis agent has four real, scored,
@@ -2353,6 +3373,86 @@ whether this specific change moves real scores would need more
 same-config submissions, which at 1/day is a multi-day undertaking, not
 something this single data point can resolve on its own.
 
+**Update (2026-08-28): 9th real submission, ref `55843700`, testing the
+`tried_actions` dead-end-avoidance fix (see
+`experiments/stage6_transition_graph_health.md`) -- `MAX_ACTIONS=300`
+unchanged, production checkpoint lineage unchanged, TTA/novelty-beta both
+off (neither is on master), the dead-end fix is the one isolated
+variable. Resolved `SubmissionStatus.COMPLETE`, public score `0.15`.**
+Local evidence behind this one was honestly mixed, not a clean local win
+being validated: a 5-fold, n=30 agent-level backtest found the fix's
+early folds (+3, +3 levels) decayed to noise by fold 5 (final cumulative
++3 levels, 29->32, and a *worse* avg-actions-to-first-completion) -- the
+same decay-to-noise shape as the novelty-aware-beta result already
+documented above. What's genuinely solid, independent of that agent-level
+noise, is the component-level measurement: `Hypothesis` never inherited
+`Memory`'s "avoid re-trying a known-unproductive action from this exact
+state" behavior when it was built in Stage 5, and restoring it cut
+exact-repeat waste 5-10x on every game tested (direct replay measurement,
+not agent-level noise). Submitted anyway on the same reasoning as prior
+ambiguous-local-result submissions in this project's history: it's
+low-risk (falls back to the full candidate set when nothing untried
+remains, doesn't touch ACTION6), and real submission data is the only
+thing that's ever actually resolved this project's noisy-small-sample-
+backtest problem before.
+
+**Real-score read: `0.15` sits squarely inside the established
+`0.00`-`0.23` noise band** -- above the floor (`0.00`, `0.06`, `0.09`x2),
+below the ceiling (`0.23`), close to search-harvest's own `0.16`. Same
+standard as every prior first-submission-for-a-new-candidate result in
+this project: n=1 cannot be told apart from ordinary run-to-run variance
+on identical code. This neither confirms nor refutes the fix helps real
+play -- but it's a coherent result, not a contradictory one: the local
+5-fold backtest already said "inconclusive," and this real submission
+says the same thing independently, rather than the two disagreeing.
+Given the fix is low-risk and the component-level improvement is real and
+directly measured, keep it regardless -- there's no evidence here or
+locally that it hurts.
+
+**Correction (2026-08-28, same day): the `55843700` submission above did
+NOT use the true production checkpoint -- it used a `stage6-game-holdout`
+fold-1 experimental checkpoint that had silently been sitting in
+`checkpoints/` in its place.** Found while a sibling investigation
+(`experiments/stage6_rollout_compounding_error.md`) loaded
+`checkpoints/moe_training_meta.json` and noticed `"exclude_games":
+["r11l","bp35","m0r0","tr87","ka59"]` and a 21-entry `game_vocab_moe.json`
+(20 ARC games + minigrid) -- the true production lineage has **26**
+entries (all 25 local games + minigrid, `n_games: 26`, no `exclude_games`
+field, dated 2026-07-08/09, matching the original Stage 4 item 6
+training). Since `checkpoints/` is gitignored (never version-controlled),
+there's no direct history of *when* this substitution happened or what
+overwrote it -- the wrong files are dated 2026-08-11, well before this
+session started, so it predates this conversation, not something done in
+it. Recovered the true production checkpoint from a still-intact sibling
+worktree (`.claude/worktrees/agent-a490cf638b9f81638/checkpoints/`,
+verified by exact file match on the 2026-07-08/09 dates and the 26-entry
+vocab) and restored it into `checkpoints/`; the wrong fold-1 files are
+preserved at `checkpoints_holdout_fold1_backup/` rather than deleted, in
+case anything needs to reference that specific experiment later.
+
+**What this means for the `0.15` score: it wasn't testing "dead-end fix
+on production," it was testing "dead-end fix on a checkpoint trained on
+20 of the 25 local games instead of 25"** -- two variables conflated in
+one submission, not the clean isolated-variable test the write-up above
+assumed. This doesn't retroactively make `0.15` meaningless (it's still
+a real score for the code that actually ran), but it can no longer be
+read as "the dead-end fix, holding the checkpoint constant at production"
+-- that comparison hasn't actually been made yet. **A clean resubmission
+(dead-end fix on the now-restored true production checkpoint, properly
+isolated) is the right next use of a daily submission slot**, not
+assumed to reproduce `0.15`.
+
+**Worth doing before trusting any local eval, benchmark, or diagnostic
+number produced anywhere in this project between whenever the
+substitution happened and 2026-08-28**: anything that loaded
+`checkpoints/encoder_moe.pt`/`moe_predictor.pt`/`value_head.pt`/
+`game_vocab_moe.json` by their default path during that window (not a
+`checkpoints_ablation/`-style explicit alternate path) was silently
+evaluating the fold-1 holdout checkpoint instead of production. No
+systematic audit of which specific results in this document were affected
+has been done -- flagging the risk rather than claiming it's been ruled
+out.
+
 Everything needed to reproduce the submission from scratch on a new
 machine is in `kaggle_submission/` (checked into git) plus the steps
 below. This section is the reproduction guide; the dated blow-by-blow
@@ -2554,6 +3654,116 @@ above to narrow it down without spending more of the daily quota.
 
 ## Gotchas learned the hard way (don't re-discover these)
 
+- **(2026-09-05) All three real submission notebooks had silently shrunk the
+  gateway-readiness wait from the official reference's proven 600s down to
+  90s -- found only by diffing our notebook against `arcprize/
+  ARC-AGI-3-Kaggle-Starter` (the official starter kit) and Kaggle's own
+  `inversion/arc3-sample-submission-stochastic-goose` sample notebook,
+  something never done before across this whole submission debugging saga.**
+  Every one of `kaggle_submission/`, `kaggle_submission_graph_explorer/`, and
+  `kaggle_submission_graph_explorer_learned/`'s notebooks ran the
+  gateway-sidecar readiness check (`curl ... http://gateway:8001/api/games`)
+  with `--retry-max-time 90`, reasoned about at the time as "if the gateway
+  isn't reachable in 90s it's very unlikely to become reachable in the time
+  remaining anyway" (see git history / this file's own prior wording). The
+  official reference notebook uses `--retry-max-time 600` -- a full 10
+  minutes -- confirmed by fetching its `scripts/build_notebook.py` directly.
+  This matters because **main.py's own initial `/api/games` check has only a
+  10s timeout and no retry loop of its own** (confirmed directly by reading
+  `main.py`) -- if the real gateway sidecar ever takes longer than 90s to
+  come up under real competition load (up to 110 games' worth of gateway
+  infrastructure spinning up, concurrently with every other team's own
+  kernel), our shortened window gives up, logs a warning, and launches
+  `main.py` against a gateway that may still not be ready -- with nothing
+  downstream able to recover, silently producing a near-empty run. This is
+  **exactly the kind of path no free diagnostic push can ever exercise or
+  disprove** (the `KAGGLE_IS_COMPETITION_RERUN` gate that runs this code
+  only fires during a real scored rerun), so it sat undiscovered through
+  every one of this project's real submissions across all three agent
+  families -- and would plausibly explain a real, if hard-to-quantify,
+  downward bias/added variance across every one of them (Hypothesis's own
+  0.00-0.23 spread; GraphExplorerLearnedAgent's disappointing 0.05-0.15
+  against a 3.76x local backtest edge), on top of the separately-confirmed,
+  well-documented ARC-AGI-3 public/private generalization gap (see the
+  "Kaggle competition submission" section's own external-research
+  discussion). **Fixed in all three real submission notebooks and the
+  `_build_learned_agent_notebook.py` builder script**: `--retry-max-time`
+  restored to `600`, keeping the background-`Popen`-overlap-with-setup
+  technique (strictly faster than the official's sequential wait at the
+  same worst-case budget, never slower) -- pushed as free kernel updates
+  (hypothesis v18, pure graph-explorer v3, graph-explorer-learned v3).
+  **Correction (2026-09-07): it WAS re-submitted -- ref `56043778`,
+  2026-09-06, `SubmissionStatus.COMPLETE`, public score `0.18`**, the
+  graph-explorer-learned agent's best real score by a clear margin (prior:
+  0.08, 0.15, 0.05). At n=1 against this project's documented 0.00-0.25
+  noise band that is not proof the fix helped -- the case for it remains
+  mechanistic (matches the official reference; removes a silent-failure
+  path no free diagnostic push can reach), not statistical. **Worth doing again if this project's
+  submissions keep underperforming their local backtests**: diff against
+  the official starter kit early, not as a last resort -- it caught a real,
+  concrete, previously-unconsidered discrepancy in under 30 minutes that a
+  much longer independent debugging saga (GPU/P100, quota, control tests)
+  never surfaced, because that saga was entirely internally-generated
+  hypotheses rather than a reference-implementation diff.
+- **Kaggle's `enable_gpu: true` can provision a Tesla P100 (CUDA capability
+  sm_60), which the bundled PyTorch build's compiled kernels don't support
+  (minimum sm_70)** -- confirmed directly via a diagnostic push
+  (`kaggle_submission_graph_explorer_learned/notebook_diag/`) while
+  debugging `GraphExplorerLearnedAgent`'s submission errors: with
+  `enable_gpu: true`, every real tensor op on the GPU throws
+  `torch.AcceleratorError: CUDA error: no kernel image is available for
+  execution on the device`, even though `torch.cuda.is_available()`
+  returns `True` (a GPU is physically present, just unsupported) --
+  `jepa/device.py: get_device()`'s own "CUDA if available" logic has no
+  way to detect this ahead of time. This was directly, empirically tested
+  by TOGGLING `enable_gpu` between `true`/`false` on the exact same code
+  and checkpoint -- `false` (CPU-only) loads and runs cleanly every time;
+  `true` fails deterministically on this hardware. Hypothesis's own
+  `enable_gpu: true` submissions have apparently never hit this (different
+  GPU pool assignment, or their larger model/checkpoint happens not to
+  trigger it at the exact op that fails) -- don't assume `enable_gpu: true`
+  is safe just because another submission in this project uses it
+  successfully elsewhere. If a future submission needs real GPU compute,
+  check the actual provisioned card's compute capability first (or design
+  the fallback path to be genuinely acceptable, not just "shouldn't
+  happen") rather than assuming the competition's advertised RTX 6000-
+  class hardware pool is what any given kernel actually gets.
+- **`checkpoints/` is gitignored and can silently hold a stale
+  experimental checkpoint in place of production, with zero warning and
+  no version history to catch it.** Discovered 2026-08-28: `checkpoints/
+  encoder_moe.pt`/`moe_predictor.pt`/`value_head.pt`/`game_vocab_moe.json`
+  had a `stage6-game-holdout` fold-1 checkpoint sitting in them (21-game
+  vocab, `exclude_games` for 5 local games) instead of the true 26-game
+  production lineage, apparently since around 2026-08-11 -- long enough
+  that a real Kaggle submission (`55843700`) and at least one local
+  diagnostic ran against it believing it was production, before anyone
+  noticed. Nothing enforces that `checkpoints/`'s contents match what
+  CLAUDE.md documents as current -- it's just whatever file was last
+  copied there, from any experiment, by any session. **Before trusting
+  any eval/diagnostic/submission that loads checkpoints by their default
+  `checkpoints/` path, spot-check `game_vocab_moe.json`'s entry count
+  (26 = true production; anything else is a different experiment's
+  artifact) and `moe_training_meta.json` for an unexpected `exclude_games`
+  field** -- this takes seconds and would have caught the issue
+  immediately. If this recurs and the true checkpoint isn't obviously
+  sitting in the current worktree, check sibling worktrees under
+  `.claude/worktrees/*/checkpoints/` before assuming it's lost -- that's
+  where the real one was recovered from this time.
+- **`kaggle datasets version -p <dir> --dir-mode zip` (CLI 2.2.3, Windows)
+  fails on plain top-level *files* in the staging dir with `[Errno 2] No
+  such file or directory` pointing at a mangled path like
+  `...\.kaggle/uploads\C_/kagstage_hypothesis_agent.py.json`** --
+  directory args (which get zipped first) upload fine; a bare file like
+  `hypothesis_agent.py` or `dataset-metadata.json` sitting directly in the
+  staging dir hits a bug in the CLI's per-file upload-tracking path
+  construction on Windows (mixes `/` and `\`, produces a path whose
+  parent directory doesn't exist). Not a staging-path-length issue --
+  reproduced identically from both a long nested scratchpad path and a
+  short one (`C:\kagstage`). **Workaround: `mkdir` the missing directory
+  the error names** (in this case `%TEMP%\.kaggle\uploads\C_\`) before
+  retrying -- the upload then succeeds normally. Check the exact failing
+  path in the error message first since the mangled directory name (`C_`
+  here) may differ by drive letter/staging path.
 - **`ARC-AGI-3-Agents/recordings/` (gitignored, fully regenerable) grows
   without bound and will eventually fill the disk if nothing ever cleans
   it up.** Hit this directly (2026-07-17): a backtest sweep and a
