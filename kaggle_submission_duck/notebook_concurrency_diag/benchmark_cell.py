@@ -186,13 +186,16 @@ async def _one_request(session, seed: int, max_tokens: int, allow_ignore_eos: bo
         payload["ignore_eos"] = True
 
     t_send = time.perf_counter()
+    raw_lines: list[str] = []
     arrivals: list[float] = []
     usage = None
     status = None
+    ctype = None
     error = None
     try:
         async with session.post(CHAT_URL, json=payload) as response:
             status = response.status
+            ctype = response.headers.get("Content-Type", "")
             if status != 200:
                 error = (await response.text())[:400]
                 return {
@@ -202,6 +205,8 @@ async def _one_request(session, seed: int, max_tokens: int, allow_ignore_eos: bo
                 }
             async for raw in response.content:
                 line = raw.decode("utf-8", "ignore").strip()
+                if len(raw_lines) < 25:
+                    raw_lines.append(line[:300])
                 if not line.startswith("data:"):
                     continue
                 data = line[5:].strip()
@@ -234,6 +239,8 @@ async def _one_request(session, seed: int, max_tokens: int, allow_ignore_eos: bo
         "ok": error is None and bool(arrivals),
         "status": status,
         "error": error,
+        "raw_lines": raw_lines,
+        "content_type": ctype,
         "seed": seed,
         "t_send": t_send,
         "t_end": time.perf_counter(),
@@ -353,9 +360,21 @@ async def _main() -> list[dict]:
                   f"err={probe['error']!r}); retrying without it", flush=True)
             probe = await _one_request(session, 999_001, 8, False)
             if not probe["ok"]:
-                print(f"FATAL: server not answering: status={probe['status']} "
-                      f"err={probe['error']!r}", flush=True)
-                return []
+                # Do NOT guess at the cause -- dump exactly what came back.
+                # A previous run failed here with status=200/err=None and a
+                # first fix (counting reasoning_content) did not change it,
+                # so the raw stream is the only reliable evidence.
+                print(f"PROBE FAILED: status={probe['status']} "
+                      f"err={probe['error']!r} "
+                      f"content_type={probe.get('content_type')!r} "
+                      f"n_raw_lines={len(probe.get('raw_lines') or [])}", flush=True)
+                print("---- RAW PROBE RESPONSE (first 25 lines) ----", flush=True)
+                for _l in (probe.get("raw_lines") or []):
+                    print(f"  | {_l}", flush=True)
+                print("---- END RAW PROBE RESPONSE ----", flush=True)
+                print("continuing anyway -- measuring is the point; a probe "
+                      "that cannot parse the stream does not prove the server "
+                      "is down.", flush=True)
         print(f"\nignore_eos accepted = {allow_ignore_eos}", flush=True)
 
         print(f"warmup: {WARMUP_CONCURRENCY} x {WARMUP_OUTPUT_TOKENS} tokens ...", flush=True)
