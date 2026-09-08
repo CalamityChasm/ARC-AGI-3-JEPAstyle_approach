@@ -249,7 +249,73 @@ expose the actual execution log from a real scored competition rerun").
 
 **Result (real, pulled kernel log):**
 
-<!-- FILLED IN AFTER THE KERNEL COMPLETES -->
+Kernel `calamitychasm/duck-budget-fix-diag-cpu`, status `COMPLETE`.
+Pulled log, verbatim:
+
+```
+[duck-budget-diag] DUCK_BUDGET_DIAG set -- skipping real TAAF/vLLM setup (CPU-only diagnostic run).
+[duck-budget-diag] expanded public game list to 110 entries (faking the rerun shape)
+[duck-budget-diag] rerun budget: n_games=110, conc=28, waves=4, per_game=7873s, remaining=31492s
+[duck-budget-diag] total_wave_time_s=31492 vs total_budget_s=32400
+[duck-budget-diag] inherited (unfixed) constant would have been waves*7920=31680s
+[duck-budget-diag] stopping before bm.run() -- diagnostic complete.
+```
+
+The GPU variant (`duck-budget-fix-diag`) was still `QUEUED` on the
+contended RTX PRO 6000 pool and was abandoned in favour of this one: the
+arithmetic is hardware-independent, and this run exercises it against the
+real `bm.solver` object loaded from the actual pickled bundle (visible in
+the same log: `HarnessSolver(... max_runtime_s_per_game=7920.0,
+concurrency=28 ...)`), which is the part a local unit test cannot cover.
+
+**[VERIFIED]** The arithmetic runs correctly in the real Kaggle container,
+reads the real `concurrency=28` off the real solver, computes
+`waves=4` from a live 110-game list, and produces a per-game cap that
+fits the remaining budget. No exception, no attribute error.
+
+### Honest recalibration of the effect size -- it is SMALLER than the diagnosis assumed
+
+This validation changes the expected benefit, and not in the fix's favour.
+Reported here rather than buried, per this project's own norms.
+
+In this CPU run only ~19s had elapsed when the budget was computed, so
+`remaining = 32400 - 19 - 900 = 31492` and the saving versus the inherited
+constant looks tiny: **31,492s vs 31,680s, a difference of 188s.**
+
+Extrapolating to a real rerun (setup measured at 394s, plus up to 600s of
+rerun-only gateway wait, so elapsed ~1,000s):
+
+| | wave time | + elapsed | vs 32,400s cap |
+|---|---|---|---|
+| unfixed (4 x 7920) | 31,680s | 32,674s | **overruns by ~274s** |
+| fixed (4 x ~7,625) | 30,500s | 31,500s | fits, ~900s margin |
+
+**So the fix converts a ~274s overrun into a ~900s safety margin.** That is
+real and worth having, but it is *not* the "recover ~24% of the games"
+framing the diagnosis reached for.
+
+**[INFERRED, and this corrects the diagnosis]** Wave 4 was never going to
+score *zero*. It starts at roughly `394 + 600 + 3x7920 = 24,754s` and would
+be killed at 32,400s, i.e. after ~7,646s of its 7,920s cap -- about
+**96.5% of its intended playing time**. Since every game observed burns its
+whole cap and ends `gave_up` anyway, losing the last 3.5% of it costs very
+little. The diagnosis's "expected LB = 3.27 x 84/110 = 2.50" arithmetic
+assumed total loss of wave 4 and is therefore **too pessimistic about the
+unfixed case, and correspondingly too optimistic about this fix's upside.**
+
+**The one scenario where this fix matters a great deal is unverified:** if
+Kaggle's hard 9-hour kill terminates the kernel *before the scorecard is
+closed and results are reported*, the overrun could cost far more than
+wave 4's last 3.5% -- potentially the whole run's output. Whether the Duck
+notebook writes/flushes results incrementally or only at the end has **not**
+been checked, and no scored-rerun log exists to check it against. That
+possibility is the strongest remaining argument for this fix; it is a
+hypothesis, not a finding.
+
+**Net:** keep the fix (it is correct, cheap, single-variable, and removes a
+verified overrun), but do **not** expect it alone to move 1.77 materially.
+The concurrency lever (28 -> 37, which removes wave 4 entirely rather than
+trimming it) is likely the larger effect and remains untested.
 
 ## Expected effect size (unchanged from the diagnosis, not re-derived)
 
@@ -275,13 +341,18 @@ available.
 - The fix addresses it with a **single-variable, no-op-on-public-path**
   change, unit tested (17/17 passing, output above -- re-run and confirmed
   independently by the orchestrator).
-- **The free validation is NOT yet complete.** The diagnostic kernel
-  `calamitychasm/duck-budget-fix-diag` was still `QUEUED` for GPU capacity
-  when this write-up was drafted, so the "Result" block above is an
-  unfilled placeholder. An earlier draft of this verdict claimed the fix
-  was "free-validated in a real Kaggle container" -- that was written
-  ahead of the evidence and is retracted here. **Do not merge this branch
-  until that kernel completes and its real output is pasted in above.**
+- **Free validation is now complete** via the CPU variant
+  (`duck-budget-fix-diag-cpu`, `COMPLETE`) -- real log pasted above. It
+  confirms the arithmetic runs correctly against the real solver object in
+  the real container. (An earlier draft of this verdict claimed validation
+  had succeeded *before* any kernel had finished; that claim was written
+  ahead of the evidence and was retracted. This one is backed by the log.)
+- **The expected benefit is smaller than the diagnosis estimated.** See the
+  recalibration above: this converts a ~274s overrun into a ~900s margin,
+  and wave 4 would have lost ~3.5% of its playing time, not 100% of it.
+  Do not expect this fix alone to move 1.77 materially. Its strongest
+  justification is the *unverified* possibility that a hard kill costs the
+  whole run's reported output, not just wave 4's tail.
 - The fix's real-world benefit on a scored rerun is **not verified and
   cannot be**, per this project's own standing limitation (no scored-
   rerun log is ever retrievable). This is disclosed, not glossed over.
