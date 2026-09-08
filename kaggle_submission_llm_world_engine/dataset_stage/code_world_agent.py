@@ -71,12 +71,25 @@ class CodeWorldAgent(Agent):
     CODER_LLM_CALL_BUDGET = 20
     ACTION_LLM_CALL_BUDGET = 10
 
+    # Once a draft attempt fails, don't immediately retry on the very next
+    # step: without a cooldown the agent re-drafts every single turn and
+    # burns the whole coder budget on the same transcript within seconds.
+    # Wait for this many *new* observed transitions -- new evidence is the
+    # only thing that makes a retry worth paying for.
+    REDRAFT_AFTER_NEW_TRANSITIONS = 8
+
+    # After this many repair rounds in a row fail, stop patching and
+    # re-draft from scratch -- see _handle_new_transition.
+    MAX_CONSECUTIVE_REPAIR_FAILURES = 2
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.coder_client = make_client("coder")
-        self.action_client = make_client("action_head")
-        self.coder_budget = LLMBudget(max_calls_per_game=self.CODER_LLM_CALL_BUDGET)
-        self.action_budget = LLMBudget(max_calls_per_game=self.ACTION_LLM_CALL_BUDGET)
+
+        # Set before anything that can fail, so _safe_fallback_action is
+        # usable even when the rest of construction throws.
+        self._rng = random.Random()
+        self._init_failed = False
+
         self.transcript = GameTranscript(game_id=self.game_id)
         self._probe_plan = opening_probe_plan()
         self._probe_index = 0
@@ -88,25 +101,102 @@ class CodeWorldAgent(Agent):
         self._pending_action: Optional[EngineAction] = None
         self._pending_frame_before = None
         self._pending_levels_before: int = 0
+        self._last_draft_attempt_len = -1
+        self._consecutive_repair_failures = 0
+
+        self.coder_budget = LLMBudget(max_calls_per_game=self.CODER_LLM_CALL_BUDGET)
+        self.action_budget = LLMBudget(max_calls_per_game=self.ACTION_LLM_CALL_BUDGET)
+        self.coder_client = None
+        self.action_client = None
+        try:
+            # make_client can raise outright: a misconfigured backend
+            # (LLM_BACKEND=transformers with no *_MODEL_DIR set) raises
+            # RuntimeError, and the transformers path loads a multi-GB
+            # model here, which can fail on dtype/VRAM/driver grounds. Any
+            # of those happens during Agent *construction*, before
+            # choose_action's own try/except can ever run -- uncaught, it
+            # takes down the whole scored run rather than one game.
+            self.coder_client = make_client("coder")
+            self.action_client = make_client("action_head")
+        except Exception:
+            logger.exception(
+                "%s: code_world agent: LLM client init failed, falling back to "
+                "random legal actions for this game",
+                self.game_id,
+            )
+            self._init_failed = True
 
     def is_done(self, frames: list[FrameData], latest_frame: FrameData) -> bool:
-        return bool(latest_frame.state is GameState.WIN)
+        try:
+            return bool(latest_frame.state is GameState.WIN)
+        except Exception:
+            logger.exception("%s: code_world agent: is_done raised, treating as not-done", self.game_id)
+            return False
 
     def choose_action(self, frames: list[FrameData], latest_frame: FrameData) -> GameAction:
+        # Top-level catch-all, mirroring hypothesis_agent.py's heartbeat
+        # pattern. Anything raised below propagates out of main.py's agent
+        # loop and kills this game's thread outright -- which is exactly
+        # what happened on 2026-09-07, when a malformed grid returned by
+        # LLM-authored predict() reached a diagnostic formatter and raised
+        # TypeError. A safe random legal action keeps the game playing and
+        # scoring instead of ending it.
+        try:
+            if self._init_failed:
+                return self._safe_fallback_action(latest_frame)
+            return self._choose_action_inner(frames, latest_frame)
+        except Exception:
+            logger.exception(
+                "%s: code_world agent: choose_action raised, falling back to a safe "
+                "random action", self.game_id,
+            )
+            return self._safe_fallback_action(latest_frame)
+
+    def _safe_fallback_action(self, latest_frame: FrameData) -> GameAction:
+        """A legal action chosen without touching any of this agent's own
+        machinery -- deliberately depends on nothing but `self._rng`, so it
+        stays usable when everything else is broken."""
+        try:
+            if latest_frame.state in (GameState.NOT_PLAYED, GameState.GAME_OVER):
+                action = GameAction.RESET
+                action.reasoning = "code_world: reset (fallback)"
+                return action
+            available = list(latest_frame.available_actions or [])
+        except Exception:
+            available = []
+        if not available:
+            available = [a.value for a in GameAction if a is not GameAction.RESET]
+        action = GameAction.from_id(self._rng.choice(available))
+        if action.is_complex():
+            action.set_data({
+                "x": self._rng.randrange(64),
+                "y": self._rng.randrange(64),
+                "game_id": self.game_id,
+            })
+        action.reasoning = "code_world: safe fallback after internal error"
+        return action
+
+    def _choose_action_inner(self, frames: list[FrameData], latest_frame: FrameData) -> GameAction:
         current_grid = latest_frame.frame
         current_levels = latest_frame.levels_completed
 
         if self._pending_action is not None:
-            t = Transition(
-                frame_before=self._pending_frame_before,
-                action=self._pending_action,
-                frame_after=current_grid,
-                levels_completed_before=self._pending_levels_before,
-                levels_completed_after=current_levels,
-                state_after=latest_frame.state.value,
-            )
+            pending_action = self._pending_action
+            frame_before = self._pending_frame_before
             self._pending_action = None
-            self._handle_new_transition(t)
+            # An empty frame teaches the world model nothing and cannot be
+            # replayed against, so it is dropped rather than recorded --
+            # FrameData.frame defaults to [] and is empty around
+            # NOT_PLAYED/reset boundaries.
+            if frame_before and current_grid:
+                self._handle_new_transition(Transition(
+                    frame_before=frame_before,
+                    action=pending_action,
+                    frame_after=current_grid,
+                    levels_completed_before=self._pending_levels_before,
+                    levels_completed_after=current_levels,
+                    state_after=latest_frame.state.value,
+                ))
 
         if latest_frame.state in (GameState.NOT_PLAYED, GameState.GAME_OVER):
             action = GameAction.RESET
@@ -128,7 +218,7 @@ class CodeWorldAgent(Agent):
             return action
 
         if self.model is None:
-            self._draft_initial_model()
+            self._maybe_draft_model()
 
         chosen: Optional[EngineAction] = None
         if self.model is not None:
@@ -143,7 +233,7 @@ class CodeWorldAgent(Agent):
         return chosen
 
     def _try_action_head(self, current_grid: Any, available_actions: list[int]) -> Optional[EngineAction]:
-        if not self.action_budget.has_budget():
+        if self.action_client is None or not self.action_budget.has_budget():
             return None
         self.action_budget.record("stall-fallback")
         outcome = suggest_action(self.action_client, self.transcript, current_grid)
@@ -180,25 +270,66 @@ class CodeWorldAgent(Agent):
         game_action.reasoning = str(engine_action)
         return game_action
 
-    def _draft_initial_model(self) -> None:
-        if not self.coder_budget.has_budget():
-            logger.warning("%s: no coder LLM budget left, skipping initial draft", self.game_id)
+    def _maybe_draft_model(self) -> None:
+        """Draft a world model, and install it **only if it passed replay**.
+
+        The original `_draft_initial_model` installed whatever
+        `draft_world_model` returned, which on failure was a loaded copy
+        of WORLD_MODEL_SKELETON -- a `predict()` that returns the input
+        unchanged and a `goal_hint()` that returns 0.0. That is worse than
+        having no model at all on three counts, and it is the direct cause
+        of the 0.00 scored run (see experiments/stage7_codeworld_fixes.md):
+
+          1. the beam search plans against a completely flat objective,
+             so every candidate action scores identically;
+          2. `self.model is not None` afterwards, so no further draft is
+             ever attempted, however much new evidence arrives;
+          3. every subsequent transition diverges from 'nothing changes',
+             so the whole remaining coder budget is spent repairing a stub
+             that cannot pass replay by construction -- the repeated
+             'repair failed after 3 attempts' in the log.
+
+        Now: no model is installed unless it reproduces the transcript,
+        and a failed attempt leaves `self.model is None` so drafting can be
+        retried once enough new evidence has accumulated.
+        """
+        if self.coder_client is None or not self.coder_budget.has_budget():
             return
+        # Re-drafting on identical evidence just repeats the same failure.
+        if len(self.transcript) - self._last_draft_attempt_len < self.REDRAFT_AFTER_NEW_TRANSITIONS:
+            return
+        self._last_draft_attempt_len = len(self.transcript)
+
         self.coder_budget.record("draft")
         outcome = draft_world_model(self.coder_client, self.transcript, max_attempts=self.DRAFT_MAX_ATTEMPTS)
-        self.model_version += 1
-        self.model = outcome.world_model
-        self.model_source = outcome.source
-        if self.model_source:
-            save_revision(self.game_id, self.model_version, self.model_source, note="draft" if outcome.ok else "draft-fallback-skeleton")
-        logger.info(
-            "%s: initial draft %s after %d attempt(s)",
-            self.game_id, "passed replay" if outcome.ok else "FELL BACK to skeleton", outcome.attempts,
+
+        if outcome.ok and outcome.world_model is not None and outcome.source:
+            self.model_version += 1
+            self.model = outcome.world_model
+            self.model_source = outcome.source
+            save_revision(self.game_id, self.model_version, self.model_source, note="draft")
+            logger.info(
+                "%s: draft passed replay after %d attempt(s), now v%d",
+                self.game_id, outcome.attempts, self.model_version,
+            )
+            return
+
+        # Keep the diagnostic trail the on-disk revisions were valuable
+        # for, without letting an unvalidated candidate near the planner.
+        if outcome.last_candidate_source:
+            save_revision(
+                self.game_id, self.model_version, outcome.last_candidate_source,
+                note="rejected-candidate-not-installed",
+            )
+        logger.warning(
+            "%s: draft FAILED after %d attempt(s); playing without a world model "
+            "(random legal actions) until enough new evidence to retry",
+            self.game_id, outcome.attempts,
         )
 
     def _handle_new_transition(self, t: Transition) -> None:
         self.transcript.append(t)
-        if self.model is None:
+        if self.model is None or self.model_source is None:
             return
 
         predicted_state, predicted_delta, predicted_done, error = safe_predict(self.model, t.frame_before, t.action)
@@ -208,15 +339,41 @@ class CodeWorldAgent(Agent):
             or predicted_delta != t.levels_delta
             or predicted_done != t.done
         )
-        if mismatch and self.coder_budget.has_budget() and self.model_source is not None:
-            logger.info("%s: prediction diverged at transition #%d, repairing", self.game_id, len(self.transcript) - 1)
-            self.coder_budget.record("repair")
-            outcome = repair_world_model(self.coder_client, self.transcript, self.model_source, max_attempts=self.REPAIR_MAX_ATTEMPTS)
-            if outcome.ok:
-                self.model_version += 1
-                self.model = outcome.world_model
-                self.model_source = outcome.source
-                save_revision(self.game_id, self.model_version, self.model_source, note="repair")
-                logger.info("%s: repair succeeded, now v%d", self.game_id, self.model_version)
-            else:
-                logger.info("%s: repair failed, keeping previous model", self.game_id)
+        if not mismatch:
+            self._consecutive_repair_failures = 0
+            return
+
+        if self.coder_client is None or not self.coder_budget.has_budget():
+            return
+
+        logger.info("%s: prediction diverged at transition #%d, repairing", self.game_id, len(self.transcript) - 1)
+        self.coder_budget.record("repair")
+        outcome = repair_world_model(self.coder_client, self.transcript, self.model_source, max_attempts=self.REPAIR_MAX_ATTEMPTS)
+        if outcome.ok and outcome.world_model is not None and outcome.source:
+            self._consecutive_repair_failures = 0
+            self.model_version += 1
+            self.model = outcome.world_model
+            self.model_source = outcome.source
+            save_revision(self.game_id, self.model_version, self.model_source, note="repair")
+            logger.info("%s: repair succeeded, now v%d", self.game_id, self.model_version)
+            return
+
+        # Repeated repair failure means this model is not a near-miss that
+        # one more patch will fix -- it is wrong about something
+        # structural. Retrying it forever is what produced the scored
+        # run's repeated 'repair failed after 3 attempts' while the budget
+        # drained. Drop it instead and let drafting start over from a much
+        # longer transcript than the opening probes alone provided.
+        self._consecutive_repair_failures += 1
+        if self._consecutive_repair_failures >= self.MAX_CONSECUTIVE_REPAIR_FAILURES:
+            logger.warning(
+                "%s: %d consecutive repair failures, discarding model v%d and "
+                "re-drafting from the full transcript",
+                self.game_id, self._consecutive_repair_failures, self.model_version,
+            )
+            self.model = None
+            self.model_source = None
+            self._consecutive_repair_failures = 0
+            self._last_draft_attempt_len = -1  # allow an immediate re-draft
+        else:
+            logger.info("%s: repair failed, keeping previous model", self.game_id)

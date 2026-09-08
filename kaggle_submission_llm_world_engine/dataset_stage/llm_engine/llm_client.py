@@ -257,17 +257,76 @@ class MockLLMClient:
         return f"```python\n{WORLD_MODEL_SKELETON}```"
 
 
-_CODE_BLOCK_RE = re.compile(r"```(?:python)?\s*\n(.*?)```", re.DOTALL)
+_CODE_BLOCK_RE = re.compile(r"```(?:[A-Za-z0-9_+-]*)[ \t]*\r?\n(.*?)```", re.DOTALL)
+_OPEN_FENCE_RE = re.compile(r"```(?:[A-Za-z0-9_+-]*)[ \t]*\r?\n")
+# Reasoning-model preamble. Qwen3 emits <think>...</think>; other families
+# use <reasoning>/<scratchpad>. A sketch inside one of those is explicitly
+# *not* the answer, so it must not be mistaken for one.
+_THINK_RE = re.compile(
+    r"<(think|thinking|reasoning|scratchpad)>.*?</\1>", re.DOTALL | re.IGNORECASE
+)
+_UNCLOSED_THINK_RE = re.compile(r"<(think|thinking|reasoning|scratchpad)>", re.IGNORECASE)
 
 
 def extract_code(response_text: str) -> str:
-    """Pull the first fenced code block out of an LLM response. Falls back
-    to the whole response if no fence is found (some models occasionally
-    omit it despite being asked)."""
-    match = _CODE_BLOCK_RE.search(response_text)
-    if match:
-        return match.group(1).strip()
-    return response_text.strip()
+    """Pull the WorldModel source out of an LLM response.
+
+    Rewritten 2026-09-07. The original took the *first* fenced block and,
+    if it found no fence, returned the raw response verbatim. Both
+    behaviours were bugs with the same consequence -- a candidate that
+    cannot possibly compile, burning a draft attempt:
+
+    1. **First-fence.** A reasoning model that sketches a throwaway class
+       inside its `<think>` block before writing the real one had the
+       sketch extracted and the real answer discarded.
+    2. **Unterminated fence.** A response truncated by `max_tokens` has an
+       opening fence and no closing one, so the regex did not match at all
+       and the "fall back to the whole response" branch returned text
+       *starting with* "```python" -- a guaranteed SyntaxError, every
+       time, for a candidate that may have been almost complete.
+
+    Now: strip reasoning blocks, prefer the last fence that actually
+    defines a WorldModel, recover the tail of an unterminated fence, and
+    strip stray fence markers from unfenced text.
+    """
+    text = _THINK_RE.sub("", response_text or "")
+    # A truncated response can open a reasoning block and never close it;
+    # everything after such a marker is preamble, not an answer, unless it
+    # is all we have.
+    unclosed = _UNCLOSED_THINK_RE.search(text)
+    if unclosed is not None:
+        before, after = text[: unclosed.start()], text[unclosed.end():]
+        text = before if _OPEN_FENCE_RE.search(before) else after
+
+    blocks = [m.group(1).strip() for m in _CODE_BLOCK_RE.finditer(text)]
+
+    # An unterminated final fence: take everything after the last opening
+    # fence that the closed-block scan did not already consume.
+    consumed_to = 0
+    for m in _CODE_BLOCK_RE.finditer(text):
+        consumed_to = m.end()
+    tail_open = _OPEN_FENCE_RE.search(text, consumed_to)
+    if tail_open is not None:
+        tail = text[tail_open.end():].strip()
+        if tail:
+            blocks.append(tail)
+
+    if blocks:
+        # Prefer a block that actually defines the class we asked for;
+        # among several, the last one (a model that revises itself means
+        # the later block, not the earlier sketch). Otherwise fall back to
+        # the longest block, which beats "the first" when the first is a
+        # one-line usage example.
+        defining = [b for b in blocks if "class WorldModel" in b]
+        if defining:
+            return defining[-1]
+        return max(blocks, key=len)
+
+    # No fence at all. Strip any stray lone fence markers so a partially
+    # fenced response is not doomed to a SyntaxError on line 1.
+    return "\n".join(
+        line for line in text.splitlines() if not line.strip().startswith("```")
+    ).strip()
 
 
 def make_client(role: Role) -> LLMClient:
