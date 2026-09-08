@@ -52,6 +52,29 @@ _SAFE_BUILTIN_NAMES = [
     "sorted", "str", "sum", "tuple", "zip", "print", "getattr", "setattr",
     "hasattr", "ValueError", "TypeError", "IndexError", "KeyError",
     "Exception", "StopIteration",
+    # --- added 2026-09-07 -------------------------------------------
+    # Everything below was missing, and each omission silently converted
+    # ordinary, idiomatic generated Python into a load or predict
+    # failure that the model then had to guess its way out of:
+    #   super()            -> NameError in __init__, so the whole class
+    #                         fails to instantiate (load_world_model
+    #                         reports "constructor failed")
+    #   map/filter/reversed-> NameError at predict() time, i.e. a replay
+    #                         failure indistinguishable from a wrong rule
+    #   AttributeError &c. -> a model's own defensive `try/except` block
+    #                         raises NameError while handling an error
+    # These are all pure builtins with no I/O, no import machinery and no
+    # filesystem/network reach, so adding them does not widen what this
+    # namespace can do -- see the note above about this being a
+    # foot-gun guard, not a security boundary. `__import__`, `open`,
+    # `eval`, `exec` and `compile` remain deliberately absent.
+    "map", "filter", "reversed", "type", "object", "super",
+    "staticmethod", "classmethod", "property", "frozenset", "divmod",
+    "pow", "iter", "next", "repr", "format", "slice", "bytes", "complex",
+    "id", "hash", "chr", "ord", "bin", "hex", "oct",
+    "AttributeError", "NameError", "RuntimeError", "ZeroDivisionError",
+    "NotImplementedError", "AssertionError", "ArithmeticError",
+    "LookupError", "OverflowError", "RecursionError",
 ]
 _SAFE_BUILTINS = {
     name: getattr(builtins, name) for name in _SAFE_BUILTIN_NAMES if hasattr(builtins, name)
@@ -105,15 +128,61 @@ def safe_predict(
 ) -> tuple[Optional[Grid], Optional[int], Optional[bool], Optional[str]]:
     """Call model.predict, catching any exception so a broken model
     degrades to 'always wrong' (a replay failure) instead of crashing the
-    agent process."""
+    agent process.
+
+    The return value is *also* type-checked here, not just the call. This
+    is load-bearing: before 2026-09-07 a `predict()` that returned a
+    structurally-malformed grid (a plausible LLM slip -- e.g. returning
+    one layer instead of the list of layers) sailed through this function
+    and only blew up later, inside the diagnostic formatter that tried to
+    describe the mismatch, as an unhandled TypeError that killed the game
+    thread. Catching it here turns that class of near-miss model into
+    ordinary, actionable repair feedback: 'your predict() returned the
+    wrong shape, here is how'.
+    """
     try:
         state_copy = copy.deepcopy(state)
-        next_state, levels_delta, done = model.predict(
-            state_copy, action.name, x=action.x, y=action.y
-        )
-        return next_state, levels_delta, done, None
+        result = model.predict(state_copy, action.name, x=action.x, y=action.y)
     except Exception as e:  # noqa: BLE001
         return None, None, None, f"predict() raised {type(e).__name__}: {e}"
+
+    error = _describe_bad_prediction(result)
+    if error is not None:
+        return None, None, None, error
+
+    next_state, levels_delta, done = result
+    return next_state, int(levels_delta), bool(done), None
+
+
+def _describe_bad_prediction(result: Any) -> Optional[str]:
+    """None if `result` is a usable (next_state, levels_delta, done)
+    triple, else a description of what is wrong with it, phrased for the
+    LLM that has to fix it."""
+    from .diff import describe_malformed  # local import: diff imports types only
+
+    if not isinstance(result, (tuple, list)):
+        return (
+            f"predict() returned {type(result).__name__}, expected a "
+            "(next_state, levels_delta, done) tuple"
+        )
+    if len(result) != 3:
+        return (
+            f"predict() returned {len(result)} value(s), expected exactly 3: "
+            "(next_state, levels_delta, done)"
+        )
+
+    next_state, levels_delta, done = result
+    malformed = describe_malformed(next_state, "predict()'s next_state")
+    if malformed is not None:
+        return malformed
+    if isinstance(levels_delta, bool) or not isinstance(levels_delta, int):
+        return (
+            f"predict()'s levels_delta is {type(levels_delta).__name__}, "
+            "expected an int (usually 0 or 1)"
+        )
+    if not isinstance(done, bool):
+        return f"predict()'s done is {type(done).__name__}, expected a bool"
+    return None
 
 
 def safe_goal_hint(model: WorldModelProtocol, state: Grid) -> float:

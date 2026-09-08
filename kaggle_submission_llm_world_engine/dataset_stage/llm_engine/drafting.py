@@ -15,7 +15,7 @@ from .diff import format_diff, format_grid
 from .llm_client import LLMClient, extract_code
 from .replay import ReplayResult, describe_failure, replay
 from .types import GameTranscript
-from .world_model import WORLD_MODEL_SKELETON, LoadResult, WorldModelProtocol, load_world_model
+from .world_model import LoadResult, WorldModelProtocol, load_world_model
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +84,14 @@ def _render_transcript(transcript: GameTranscript, max_transitions: int = 40) ->
     return "\n\n".join(lines)
 
 
+# A complete WorldModel for a 64x64 game is not a short function. The
+# original 2048 left no headroom for a model that writes any preamble at
+# all, and a response cut off mid-class is not a partial answer -- it is a
+# guaranteed compile failure that costs a whole attempt. See
+# experiments/stage7_codeworld_fixes.md.
+DRAFT_MAX_TOKENS = 4096
+
+
 @dataclass
 class DraftOutcome:
     ok: bool
@@ -91,6 +99,31 @@ class DraftOutcome:
     world_model: Optional[WorldModelProtocol] = None
     attempts: int = 0
     replay_result: Optional[ReplayResult] = None
+    # The last candidate the LLM produced when `ok` is False. Kept for the
+    # on-disk diagnostic trail only -- it has NOT passed replay and must
+    # never be installed as the agent's world model.
+    last_candidate_source: Optional[str] = None
+
+
+def _retry_prompt(transcript: GameTranscript, source: str, problem: str) -> str:
+    """Build the next attempt's prompt.
+
+    Crucially this **re-includes the transcript**. The original retry
+    prompts replaced the user message wholesale with just the error and
+    the broken code, so from attempt 2 onward the model was asked to
+    infer a rule for data it could no longer see -- and every attempt
+    after the first was made blind. That alone makes the multi-attempt
+    loop close to worthless.
+    """
+    return (
+        f"Transcript for game {transcript.game_id}:\n\n"
+        f"{_render_transcript(transcript)}\n\n"
+        f"You already tried this, and it did not work:\n\n"
+        f"```python\n{source}\n```\n\n"
+        f"The problem: {problem}\n\n"
+        "Rewrite the WorldModel so it reproduces the transcript above exactly. "
+        "Respond with only a single Python code fence."
+    )
 
 
 def draft_world_model(
@@ -100,9 +133,19 @@ def draft_world_model(
 ) -> DraftOutcome:
     """First-draft loop: prompt for a WorldModel, replay-check it against
     the transcript, and if it fails, tell the LLM exactly which transition
-    broke and why, up to max_attempts. Falls back to the (honest, useless)
-    skeleton model on total failure so callers always get *something*
-    loadable rather than needing to special-case None."""
+    broke and why (alongside the transcript itself), up to max_attempts.
+
+    On total failure this returns `ok=False` with **no world model at
+    all** -- deliberately. It used to hand back a loaded copy of
+    WORLD_MODEL_SKELETON so callers "always get something loadable", but
+    the skeleton is an 'assume nothing ever changes' model: installing it
+    gives the beam search a flat, zero-information objective *and*
+    convinces the agent it has a model, which suppresses any further
+    drafting and redirects the whole LLM budget into repairing a stub that
+    can never pass replay. A caller with no model can fall back to a
+    random legal action for free; a caller with a stub cannot. See
+    experiments/stage7_codeworld_fixes.md.
+    """
     user_prompt = (
         f"Transcript for game {transcript.game_id}:\n\n"
         f"{_render_transcript(transcript)}\n\n"
@@ -111,22 +154,24 @@ def draft_world_model(
 
     last_load: Optional[LoadResult] = None
     last_replay: Optional[ReplayResult] = None
+    last_source: Optional[str] = None
+    attempts_made = 0
 
     for attempt in range(1, max_attempts + 1):
-        response = _safe_complete(client, _SYSTEM_PROMPT, user_prompt, max_tokens=2048)
+        attempts_made = attempt
+        response = _safe_complete(client, _SYSTEM_PROMPT, user_prompt, max_tokens=DRAFT_MAX_TOKENS)
         if response is None:
-            logger.warning("draft attempt %d: LLM unreachable, aborting to fallback", attempt)
+            logger.warning("draft attempt %d: LLM unreachable, aborting", attempt)
             break
         source = extract_code(response)
+        last_source = source
         load = load_world_model(source)
         last_load = load
 
         if not load.ok:
             logger.info("draft attempt %d: load failed: %s", attempt, load.error)
-            user_prompt = (
-                f"Your previous code failed to load: {load.error}\n\n"
-                f"Here it was:\n```python\n{source}\n```\n\n"
-                "Fix it and respond with only the corrected code fence."
+            user_prompt = _retry_prompt(
+                transcript, source, f"it failed to load: {load.error}"
             )
             continue
 
@@ -140,25 +185,26 @@ def draft_world_model(
             "draft attempt %d: replay failed (%d/%d), first failure at #%d",
             attempt, result.pass_count, result.total, result.first_failure.index,  # type: ignore[union-attr]
         )
-        user_prompt = (
-            f"Your code loaded but doesn't reproduce the transcript.\n\n"
-            f"{describe_failure(transcript, result.first_failure)}\n\n"  # type: ignore[arg-type]
-            f"Here was your code:\n```python\n{source}\n```\n\n"
-            "Fix it (you may rewrite the whole thing) and respond with only the "
-            "corrected code fence."
+        user_prompt = _retry_prompt(
+            transcript,
+            source,
+            "it loaded but does not reproduce the transcript. "
+            + describe_failure(transcript, result.first_failure),  # type: ignore[arg-type]
         )
 
     logger.warning(
-        "draft failed to pass replay after %d attempts for game %s; falling back to skeleton",
-        max_attempts, transcript.game_id,
+        "draft failed to produce a replay-passing model after %d attempt(s) for game %s "
+        "(last load error: %s); continuing WITHOUT a world model rather than installing "
+        "the do-nothing skeleton",
+        attempts_made, transcript.game_id, last_load.error if last_load else "n/a",
     )
-    fallback = load_world_model(WORLD_MODEL_SKELETON)
     return DraftOutcome(
         ok=False,
-        source=WORLD_MODEL_SKELETON,
-        world_model=fallback.world_model,
-        attempts=max_attempts,
+        source=None,
+        world_model=None,
+        attempts=attempts_made,
         replay_result=last_replay,
+        last_candidate_source=last_source,
     )
 
 
@@ -173,23 +219,31 @@ def repair_world_model(
     (already appended to `transcript`). Requires the patch to re-pass
     replay on the FULL transcript, old transitions included -- the guard
     against the model 'fixing' the new case by breaking old ones."""
-    result = replay(transcript, load_world_model(current_source).world_model)  # type: ignore[union-attr]
+    current_load = load_world_model(current_source)
+    if not current_load.ok:
+        # The caller should never hand us un-loadable source (it only ever
+        # passes a revision that previously passed replay), but if it does,
+        # this is a re-draft, not a repair.
+        logger.warning("repair called with un-loadable source: %s", current_load.error)
+        return draft_world_model(client, transcript, max_attempts=max_attempts)
+
+    result = replay(transcript, current_load.world_model)  # type: ignore[arg-type]
     if result.passed:
         # Shouldn't normally happen (caller only repairs on an observed
         # divergence), but if it does there's nothing to repair.
-        return DraftOutcome(ok=True, source=current_source, world_model=load_world_model(current_source).world_model, attempts=0, replay_result=result)
+        return DraftOutcome(ok=True, source=current_source, world_model=current_load.world_model, attempts=0, replay_result=result)
 
-    user_prompt = (
-        f"This WorldModel worked until now, but just failed to predict a new observation:\n\n"
-        f"{describe_failure(transcript, result.first_failure)}\n\n"  # type: ignore[arg-type]
-        f"Current code:\n```python\n{current_source}\n```\n\n"
-        "Patch it so it handles this new case WITHOUT breaking any earlier transitions "
-        "(your patch will be replayed against the full history). Respond with only the "
-        "corrected code fence."
+    user_prompt = _retry_prompt(
+        transcript,
+        current_source,
+        "it worked until now, but just failed to predict a new observation. "
+        + describe_failure(transcript, result.first_failure)  # type: ignore[arg-type]
+        + " Patch it so it handles this new case WITHOUT breaking any earlier "
+        "transitions -- your patch will be replayed against the full history above.",
     )
 
     for attempt in range(1, max_attempts + 1):
-        response = _safe_complete(client, _SYSTEM_PROMPT, user_prompt, max_tokens=2048)
+        response = _safe_complete(client, _SYSTEM_PROMPT, user_prompt, max_tokens=DRAFT_MAX_TOKENS)
         if response is None:
             logger.warning("repair attempt %d: LLM unreachable, aborting", attempt)
             break
@@ -197,18 +251,21 @@ def repair_world_model(
         load = load_world_model(source)
 
         if not load.ok:
-            user_prompt = f"That failed to load: {load.error}\n\nFix it and respond with only the corrected code fence."
+            user_prompt = _retry_prompt(
+                transcript, source, f"it failed to load: {load.error}"
+            )
             continue
 
         replay_result = replay(transcript, load.world_model)  # type: ignore[arg-type]
         if replay_result.passed:
             return DraftOutcome(ok=True, source=source, world_model=load.world_model, attempts=attempt, replay_result=replay_result)
 
-        user_prompt = (
-            f"Still failing: {describe_failure(transcript, replay_result.first_failure)}\n\n"  # type: ignore[arg-type]
-            f"Current code:\n```python\n{source}\n```\n\n"
-            "Try again -- respond with only the corrected code fence."
+        user_prompt = _retry_prompt(
+            transcript,
+            source,
+            "it still does not reproduce the transcript. "
+            + describe_failure(transcript, replay_result.first_failure),  # type: ignore[arg-type]
         )
 
     logger.warning("repair failed after %d attempts for game %s; keeping last known-good model", max_attempts, transcript.game_id)
-    return DraftOutcome(ok=False, source=current_source, world_model=load_world_model(current_source).world_model, attempts=max_attempts, replay_result=result)
+    return DraftOutcome(ok=False, source=current_source, world_model=current_load.world_model, attempts=max_attempts, replay_result=result)
