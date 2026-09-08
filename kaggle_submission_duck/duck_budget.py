@@ -156,7 +156,7 @@ def compute_rerun_budget(
 # ``concurrency_gain_factor`` below makes that dependency explicit: it is the
 # only place a measured throughput ratio enters the arithmetic.
 
-DEFAULT_TARGET_CONCURRENCY = 28
+DEFAULT_TARGET_CONCURRENCY = 37
 """Target concurrency for the competition rerun.
 
 Single named constant, mirrored verbatim into the notebook's cell 9 (a Kaggle
