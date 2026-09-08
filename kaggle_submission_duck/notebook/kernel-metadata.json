@@ -1,0 +1,28 @@
+{
+  "id": "calamitychasm/lb-9-arc3-duck-v12-with-qwen-3-8-27b",
+  "id_no": 131880433,
+  "title": "LB-9 arc3 duck v12 with Qwen 3.8 27B",
+  "code_file": "lb-9-arc3-duck-v12-with-qwen-3-8-27b.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "keywords": [
+    "gpu"
+  ],
+  "dataset_sources": [
+    "driessmit1/arc3-vllm-h100-wheelhouse-v3",
+    "jakobbrggen/taaf-kaggle-source-anim-20260807-anim"
+  ],
+  "kernel_sources": [],
+  "competition_sources": [
+    "arc-prize-2026-arc-agi-3"
+  ],
+  "model_sources": [
+    "foysalemonshanto/qwen3-8-27b-fp8-repacked-v1/PyTorch/hf-fp8/1"
+  ],
+  "docker_image": "gcr.io/kaggle-private-byod/python@sha256:57e612b484cf3df5026ee4dcc3cb176974b22b2bc0937fb1e16132a8be4cb13c",
+  "machine_shape": "NvidiaRtxPro6000"
+}
