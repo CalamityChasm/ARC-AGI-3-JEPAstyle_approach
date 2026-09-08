@@ -215,7 +215,18 @@ async def _one_request(session, seed: int, max_tokens: int, allow_ignore_eos: bo
                     usage = obj["usage"]
                 for choice in obj.get("choices") or []:
                     delta = choice.get("delta") or {}
-                    if delta.get("content"):
+                    # This server runs with reasoning_parser=qwen3 /
+                    # preserve_thinking, so generated tokens arrive in
+                    # `reasoning_content` while the model is thinking and only
+                    # move to `content` once it emits its final answer. Counting
+                    # only `content` undercounts real decode work -- and, at the
+                    # small max_tokens used by the readiness probe, produces
+                    # ZERO arrivals for a perfectly healthy server (observed:
+                    # status=200, error=None, yet ok=False -> "FATAL: server not
+                    # answering", which aborted the first benchmark run before
+                    # it measured anything). Both fields are decoded output
+                    # tokens and both count toward throughput.
+                    if delta.get("content") or delta.get("reasoning_content"):
                         arrivals.append(time.perf_counter())
     except Exception as exc:  # pragma: no cover - diagnostic only
         error = repr(exc)[:400]
