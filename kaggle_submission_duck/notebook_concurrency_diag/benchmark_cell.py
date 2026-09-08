@@ -231,12 +231,29 @@ async def _one_request(session, seed: int, max_tokens: int, allow_ignore_eos: bo
                     # answering", which aborted the first benchmark run before
                     # it measured anything). Both fields are decoded output
                     # tokens and both count toward throughput.
-                    if delta.get("content") or delta.get("reasoning_content"):
+                    # VERIFIED from a raw stream dump on the real server:
+                    # this vLLM build's Qwen3 reasoning parser emits thinking
+                    # tokens as `delta.reasoning` -- NOT `delta.content` and
+                    # NOT the OpenAI-style `delta.reasoning_content`. The very
+                    # first chunk carries content="" (falsy). Checking only
+                    # `content` produced zero arrivals for a healthy server and
+                    # zeroed every measurement, because token accounting sums
+                    # usage over `ok` requests only. Accept any of the three
+                    # text fields so a future rename degrades gracefully.
+                    if (delta.get("content") or delta.get("reasoning")
+                            or delta.get("reasoning_content")):
                         arrivals.append(time.perf_counter())
     except Exception as exc:  # pragma: no cover - diagnostic only
         error = repr(exc)[:400]
     return {
-        "ok": error is None and bool(arrivals),
+        # Belt and braces: if the server reports completion_tokens > 0 the
+        # request genuinely succeeded, even if we failed to recognise the
+        # per-token delta field. Without this, one unfamiliar field name
+        # silently zeroes an entire GPU benchmark run (it did, twice).
+        "ok": error is None and (
+            bool(arrivals)
+            or bool((usage or {}).get("completion_tokens", 0))
+        ),
         "status": status,
         "error": error,
         "raw_lines": raw_lines,
