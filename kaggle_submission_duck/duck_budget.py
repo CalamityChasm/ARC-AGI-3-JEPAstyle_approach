@@ -123,3 +123,154 @@ def compute_rerun_budget(
         per_game_raw_s=per_game_raw_s,
         max_runtime_s_per_game=max_runtime_s_per_game,
     )
+
+
+# ---------------------------------------------------------------------------
+# stage7-duck-concurrency: the *other* lever on the same arithmetic
+# ---------------------------------------------------------------------------
+# ``compute_rerun_budget`` above divides the remaining wall-clock by
+# ``waves = ceil(n_games / concurrency)``. Concurrency is therefore the only
+# input that changes the *number* of waves rather than the length of each one:
+# at 110 games, 28 -> 4 waves, 37 -> 3 waves, 55 -> 2 waves.
+#
+# THE TOKEN-NEUTRALITY ARGUMENT (why this is not obviously a win).
+# Total wall-clock is fixed by the 9h cap, and aggregate token throughput is a
+# property of the vLLM server, not of how the harness slices its games. So
+# total tokens generated over the run is approximately
+# ``aggregate_throughput x wall_clock`` REGARDLESS of concurrency. Raising
+# concurrency gives each game more wall-clock (fewer waves) but a
+# proportionally thinner slice of the GPU (more sequences sharing it), and
+# tokens-per-game come out about the same:
+#
+#     tokens_per_game ~= (aggregate_tps / concurrency) x (wall_clock / waves)
+#
+# Substituting waves = n_games / concurrency, the concurrency terms cancel:
+#
+#     tokens_per_game ~= aggregate_tps x wall_clock / n_games
+#
+# **Raising concurrency is therefore only a win if aggregate throughput
+# actually RISES with more concurrent sequences.** That is a measurable
+# property of the server, not something derivable from the harness config --
+# see ``experiments/stage7_duck_concurrency.md`` for the measurement.
+#
+# ``concurrency_gain_factor`` below makes that dependency explicit: it is the
+# only place a measured throughput ratio enters the arithmetic.
+
+DEFAULT_TARGET_CONCURRENCY = 28
+"""Target concurrency for the competition rerun.
+
+Single named constant, mirrored verbatim into the notebook's cell 9 (a Kaggle
+kernel has no import path back into this repo). Set to ``None`` -- or to the
+inherited value -- to leave ``bm.solver.concurrency`` untouched.
+"""
+
+
+@dataclass(frozen=True)
+class ConcurrencyOverride:
+    """Result of resolving a concurrency override, with its wave arithmetic."""
+
+    inherited: int
+    target: int | None
+    effective: int
+    n_games: int
+    waves_before: int
+    waves_after: int
+    changed: bool
+
+    def log_line(self) -> str:
+        return (
+            f"rerun concurrency: inherited={self.inherited}, "
+            f"target={self.target}, effective={self.effective}, "
+            f"n_games={self.n_games}, waves {self.waves_before} -> "
+            f"{self.waves_after}, changed={self.changed}"
+        )
+
+
+def wave_count(n_games: int, concurrency: int) -> int:
+    """``ceil(n_games / concurrency)``, floored at 1.
+
+    The solver runs games in fixed-length waves because no game finishes
+    early (verified: 25/25 games in a real fork run ended ``gave_up`` at
+    >=7900s of a 7920s cap), so the wave count is what actually governs how
+    the 9h budget is divided.
+    """
+    if n_games <= 0:
+        raise ValueError(f"n_games must be positive, got {n_games!r}")
+    if concurrency <= 0:
+        raise ValueError(f"concurrency must be positive, got {concurrency!r}")
+    return max(1, -(-n_games // concurrency))  # ceil division, no math import
+
+
+def resolve_concurrency(
+    inherited: int,
+    n_games: int,
+    target: int | None = DEFAULT_TARGET_CONCURRENCY,
+) -> ConcurrencyOverride:
+    """Decide the effective concurrency and report the resulting wave change.
+
+    Parameters
+    ----------
+    inherited:
+        ``bm.solver.concurrency`` as loaded from the pickled bundle (28).
+    n_games:
+        Live game count for this rerun (``len(bm.games)``).
+    target:
+        Desired concurrency. ``None`` (or a non-positive value) means "leave
+        the inherited value alone" -- the override is then a no-op and
+        ``changed`` is False.
+
+    Raises
+    ------
+    ValueError
+        If ``inherited`` or ``n_games`` is not positive.
+    """
+    if inherited <= 0:
+        raise ValueError(f"inherited concurrency must be positive, got {inherited!r}")
+    if n_games <= 0:
+        raise ValueError(f"n_games must be positive, got {n_games!r}")
+
+    effective = inherited if (target is None or target <= 0) else int(target)
+    return ConcurrencyOverride(
+        inherited=inherited,
+        target=target,
+        effective=effective,
+        n_games=n_games,
+        waves_before=wave_count(n_games, inherited),
+        waves_after=wave_count(n_games, effective),
+        changed=effective != inherited,
+    )
+
+
+def concurrency_gain_factor(
+    n_games: int,
+    inherited: int,
+    target: int,
+    throughput_ratio: float,
+) -> float:
+    """Expected change in tokens-generated-per-game from a concurrency change.
+
+    This is the token-neutrality argument in the module comment above, made
+    numeric. Returns a multiplier: ``1.0`` means the change is token-neutral,
+    ``>1.0`` means each game gets more model output, ``<1.0`` means less.
+
+    ``throughput_ratio`` is the MEASURED aggregate output tokens/sec at
+    ``target`` concurrency divided by the same at ``inherited`` concurrency.
+    If the server's aggregate throughput is flat in concurrency (ratio 1.0),
+    the result is the pure wave-quantisation effect -- which is *not*
+    guaranteed to be 1.0, because ``ceil`` makes waves lumpy: at 110 games,
+    28 -> 4 waves is only 78% packed (112 slots for 110 games), whereas
+    37 -> 3 waves is 99% packed (111 slots), so a small real gain survives
+    even at flat throughput.
+
+    Raises
+    ------
+    ValueError
+        On non-positive inputs.
+    """
+    if throughput_ratio <= 0:
+        raise ValueError(f"throughput_ratio must be positive, got {throughput_ratio!r}")
+    waves_before = wave_count(n_games, inherited)
+    waves_after = wave_count(n_games, target)
+    # per-game tokens ~= (aggregate_tps / concurrency) x (wall_clock / waves)
+    # so the ratio of the two configurations is:
+    return throughput_ratio * (inherited / target) * (waves_before / waves_after)

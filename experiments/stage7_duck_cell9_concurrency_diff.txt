@@ -1,0 +1,55 @@
+--- cell9/source (before concurrency override)
++++ cell9/source (after concurrency override)
+@@ -42,6 +42,52 @@
+         bm.games = _competition_games()
+         bm.n_passes = 1
+         bm.game_weights = None
++
++        # --- stage7-duck-concurrency ---------------------------------------
++        # The solver runs games in fixed-length waves (no game finishes early
++        # -- verified: 25/25 games in a real fork run ended `gave_up` at
++        # >=7900s of a 7920s cap), so waves = ceil(n_games / concurrency).
++        # At 110 hidden games the inherited concurrency=28 gives 4 waves;
++        # 37 would give 3.
++        #
++        # IMPORTANT -- this is NOT free extra compute. Total wall-clock is
++        # fixed by the 9h cap and aggregate throughput is a property of the
++        # vLLM server, so total tokens generated ~= throughput x wall_clock
++        # REGARDLESS of concurrency. Raising it gives each game more
++        # wall-clock but a proportionally thinner slice of the GPU:
++        #     tokens_per_game ~= (agg_tps / conc) x (wall_clock / waves)
++        # and with waves = n_games / conc the concurrency terms cancel.
++        # Raising concurrency only helps if AGGREGATE THROUGHPUT RISES with
++        # more concurrent sequences. That was measured on the real server --
++        # see experiments/stage7_duck_concurrency.md for the throughput table
++        # and the verdict, and kaggle_submission_duck/duck_budget.py
++        # (resolve_concurrency / concurrency_gain_factor, unit-tested) for the
++        # standalone version of this arithmetic.
++        #
++        # Single named constant, trivial to change. Set to None (or to the
++        # inherited value) to leave bm.solver.concurrency untouched.
++        DUCK_TARGET_CONCURRENCY = 28
++        _inherited_conc = int(getattr(bm.solver, "concurrency", 28) or 28)
++        _target_conc = DUCK_TARGET_CONCURRENCY
++        if (
++            _target_conc is not None
++            and _target_conc > 0
++            and _target_conc != _inherited_conc
++            and hasattr(bm.solver, "concurrency")
++        ):
++            bm.solver.concurrency = int(_target_conc)
++        _effective_conc = int(getattr(bm.solver, "concurrency", _inherited_conc) or _inherited_conc)
++        _n_games_for_waves = len(bm.games)
++        _waves_before = max(1, -(-_n_games_for_waves // _inherited_conc))
++        _waves_after = max(1, -(-_n_games_for_waves // _effective_conc))
++        print(
++            f"rerun concurrency: inherited={_inherited_conc}, "
++            f"target={_target_conc}, effective={_effective_conc}, "
++            f"n_games={_n_games_for_waves}, waves {_waves_before} -> "
++            f"{_waves_after}, changed={_effective_conc != _inherited_conc}",
++            flush=True,
++        )
++        # --- end stage7-duck-concurrency -----------------------------------
+ 
+         # --- stage7-duck-budget-fix ----------------------------------------
+         # Inherited concurrency=28 / max_runtime_s_per_game=7920.0 (from the
