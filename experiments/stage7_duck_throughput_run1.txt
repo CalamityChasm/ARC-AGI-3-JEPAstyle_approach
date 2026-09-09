@@ -1,0 +1,75 @@
+=== flag availability + vllm version (verbatim) ===
+vllm serve --help: 293 distinct flags parsed (usable=True)
+flag availability in THIS build (VERIFIED, not assumed):
+   --speculative-config               YES
+   --async-scheduling                 YES
+   --enable-prefix-caching            YES
+   --no-enable-prefix-caching         YES
+   --kv-cache-dtype                   YES
+   --kv-cache-memory-bytes            YES
+   --max-num-seqs                     YES
+   --max-num-batched-tokens           YES
+   --enable-chunked-prefill           YES
+   --no-enable-chunked-prefill        YES
+   --max-cudagraph-capture-size       YES
+   --gpu-memory-utilization           YES
+   --compilation-config               YES
+   --quantization                     YES
+   --moe-backend                      YES
+   --no-enable-log-requests           YES
+   --disable-uvicorn-access-log       YES
+
+vllm version: 0.19.0
+
+=== baseline argv (read from /proc) ===
+--- baseline vLLM argv (read from the LIVE process, not assumed) ---
+  /usr/bin/python3
+  -m
+  vllm.entrypoints.openai.api_server
+  --model
+  /kaggle/input/models/foysalemonshanto/qwen3-8-27b-fp8-repacked-v1/pytorch/hf-fp8/1
+  --served-model-name
+  Qwen/Qwen3.8-27B-FP8
+  --host
+  127.0.0.1
+  --port
+  1234
+  --tensor-parallel-size
+  1
+  --enable-auto-tool-choice
+  --tool-call-parser
+  qwen3_coder
+  --generation-config
+  vllm
+  --enable-prefix-caching
+  --default-chat-template-kwargs
+  {"preserve_thinking": true}
+  --reasoning-parser
+  qwen3
+  --max-model-len
+  65536
+
+=== results block (verbatim) ===
+BEGIN_SERVING_BENCHMARK_RESULTS
+==============================================================================
+config            ok   e2e_agg   dec_agg  per_seq  ttft_p50  preempt  accept  kv_max  boot_s
+--------------------------------------------------------------------------------------------
+baseline      37/37      299.9     788.1    21.30     22.09        0     n/a     nan     nan
+mtp3          37/37      288.3       nan      nan     21.53        1   0.466     nan     140
+flags             --  failed to stop previous server
+--------------------------------------------------------------------------------------------
+JSON_ROWS [{"config": "baseline", "desc": "production argv, unchanged (already running)", "elapsed_at_start_s": 17.296626091003418, "argv": ["/usr/bin/python3", "-m", "vllm.entrypoints.openai.api_server", "--model", "/kaggle/input/models/foysalemonshanto/qwen3-8-27b-fp8-repacked-v1/pytorch/hf-fp8/1", "--served-model-name", "Qwen/Qwen3.8-27B-FP8", "--host", "127.0.0.1", "--port", "1234", "--tensor-parallel-size", "1", "--enable-auto-tool-choice", "--tool-call-parser", "qwen3_coder", "--generation-config", "vllm", "--enable-prefix-caching", "--default-chat-template-kwargs", "{\"preserve_thinking\": true}", "--reasoning-parser", "qwen3", "--max-model-len", "65536"], "server_status": "baseline (already running)", "warnings": ["(APIServer pid=141) WARNING 09-09 01:16:33 [config.py:441] Mamba cache mode is set to 'align' for Qwen3_5ForConditionalGeneration by default when prefix caching is enabled", "(APIServer pid=141) INFO 09-09 01:16:33 [config.py:461] Warning: Prefix caching in Mamba cache 'align' mode is currently enabled. Its support for Mamba layers is experimental. Please report any issues you may observe.", "(EngineCore pid=471) INFO 09-09 01:16:43 [core.py:105] Initializing a V1 LLM engine (v0.19.0) with config: model='/kaggle/input/models/foysalemonshanto/qwen3-8-27b-fp8-repacked-v1/pytorch/hf-fp8/1', speculative_config=No", "(EngineCore pid=471) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead", "(EngineCore pid=471) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.", "(EngineCore pid=471) /kaggle/working/vllm-site-packages/vllm/model_executor/layers/fla/ops/utils.py:113: UserWarning: Input tensor shape suggests potential format mismatch: seq_len (16) < num_heads (48). This may indicat", "(EngineCore pid=471) /kaggle/working/vllm-site-packages/vllm/model_executor/layers/fla/ops/utils.py:113: UserWarning: Input tensor shape suggests potential format mismatch: seq_len (32) < num_heads (48). This may indicat", "(EngineCore pid=471) /kaggle/working/vllm-site-packages/vllm/model_executor/layers/fla/ops/utils.py:113: UserWarning: Input tensor shape suggests potential format mismatch: seq_len (16) < num_heads (48). This may indicat", "(EngineCore pid=471) /kaggle/working/vllm-site-packages/vllm/model_executor/layers/fla/ops/utils.py:113: UserWarning: Input tensor shape suggests potential format mismatch: seq_len (32) < num_heads (48). This may indicat", "(EngineCore pid=471) /kaggle/working/vllm-site-packages/vllm/model_executor/layers/fla/ops/utils.py:113: UserWarning: Input tensor shape suggests potential format mismatch: seq_len (26) < num_heads (48). This may indicat"], "ignore_eos": true, "concurrency": 37, "requests_ok": 37, "requests_failed": 0, "first_error": null, "e2e_wall_s": 63.17262995100009, "e2e_out_tokens": 18944, "e2e_agg_tps": 299.8767031654995, "e2e_per_seq_tps": 8.104775761229718, "decode_window_s": 21.98081692400001, "decode_tokens": 17324, "decode_agg_tps": 788.1417719777553, "decode_per_seq_tps": 21.301128972371764, "ttft_p50_s": 22.087801829, "ttft_max_s": 39.50530910800012, "prompt_tokens_mean": 9388.351351351352, "kv_cache_usage_max": NaN, "running_max": 37.0, "waiting_max": 35.0, "preemptions_total_end": 0.0, "spec_draft_tokens": NaN, "spec_accepted_tokens": NaN, "spec_accept_rate": NaN, "metric_samples": 63}, {"config": "mtp3", "desc": "baseline + 3-token MTP speculative decoding (NO model change)", "elapsed_at_start_s": 96.92935824394226, "argv": ["/usr/bin/python3", "-m", "vllm.entrypoints.openai.api_server", "--model", "/kaggle/input/models/foysalemonshanto/qwen3-8-27b-fp8-repacked-v1/pytorch/hf-fp8/1", "--served-model-name", "Qwen/Qwen3.8-27B-FP8", "--host", "127.0.0.1", "--port", "1234", "--tensor-parallel-size", "1", "--enable-auto-tool-choice", "--tool-call-parser", "qwen3_coder", "--generation-config", "vllm", "--enable-prefix-caching", "--default-chat-template-kwargs", "{\"preserve_thinking\": true}", "--reasoning-parser", "qwen3", "--max-model-len", "65536", "--speculative-config", "{\"method\":\"mtp\",\"num_speculative_tokens\":3}"], "boot_s": 140.0109784603119, "server_status": "ready", "warnings": ["(APIServer pid=1491) WARNING 09-09 01:23:20 [speculative.py:512] Enabling num_speculative_tokens > 1 will run multiple times of forward on same MTP layer,which may result in lower acceptance rate", "(APIServer pid=1491) WARNING 09-09 01:23:20 [config.py:441] Mamba cache mode is set to 'align' for Qwen3_5ForConditionalGeneration by default when prefix caching is enabled", "(APIServer pid=1491) INFO 09-09 01:23:20 [config.py:461] Warning: Prefix caching in Mamba cache 'align' mode is currently enabled. Its support for Mamba layers is experimental. Please report any issues you may observe.", "(EngineCore pid=1816) INFO 09-09 01:23:30 [core.py:105] Initializing a V1 LLM engine (v0.19.0) with config: model='/kaggle/input/models/foysalemonshanto/qwen3-8-27b-fp8-repacked-v1/pytorch/hf-fp8/1', speculative_config=S", "(EngineCore pid=1816) WARNING 09-09 01:23:31 [__init__.py:206] min_p and logit_bias parameters won't work with speculative decoding.", "(EngineCore pid=1816) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instea", "(EngineCore pid=1816) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.", "(EngineCore pid=1816) /kaggle/working/vllm-site-packages/vllm/model_executor/layers/fla/ops/utils.py:113: UserWarning: Input tensor shape suggests potential format mismatch: seq_len (16) < num_heads (48). This may indica", "(EngineCore pid=1816) /kaggle/working/vllm-site-packages/vllm/model_executor/layers/fla/ops/utils.py:113: UserWarning: Input tensor shape suggests potential format mismatch: seq_len (32) < num_heads (48). This may indica", "(EngineCore pid=1816) /kaggle/working/vllm-site-packages/vllm/model_executor/layers/fla/ops/utils.py:113: UserWarning: Input tensor shape suggests potential format mismatch: seq_len (16) < num_heads (48). This may indica", "(EngineCore pid=1816) /kaggle/working/vllm-site-packages/vllm/model_executor/layers/fla/ops/utils.py:113: UserWarning: Input tensor shape suggests potential format mismatch: seq_len (32) < num_heads (48). This may indica", "(EngineCore pid=1816) WARNING 09-09 01:25:04 [kv_cache_utils.py:1059] Add 3 padding layers, may waste at most 6.25% KV cache memory"], "ignore_eos": true, "concurrency": 37, "requests_ok": 37, "requests_failed": 0, "first_error": null, "e2e_wall_s": 65.69871075900005, "e2e_out_tokens": 18944, "e2e_agg_tps": 288.3466019522288, "e2e_per_seq_tps": 7.793151404114292, "decode_window_s": NaN, "decode_tokens": 0, "decode_agg_tps": NaN, "decode_per_seq_tps": NaN, "ttft_p50_s": 21.533855321000146, "ttft_max_s": 55.882784124999944, "prompt_tokens_mean": 9385.405405405405, "kv_cache_usage_max": NaN, "running_max": 35.0, "waiting_max": 35.0, "preemptions_total_end": 1.0, "spec_draft_tokens": 23826.0, "spec_accepted_tokens": 11099.0, "spec_accept_rate": 0.46583564173591874, "metric_samples": 66}, {"config": "flags", "desc": "baseline + async sched, prefix caching OFF, fp8 KV (NO spec decode)", "elapsed_at_start_s": 337.8070824146271, "argv": ["/usr/bin/python3", "-m", "vllm.entrypoints.openai.api_server", "--model", "/kaggle/input/models/foysalemonshanto/qwen3-8-27b-fp8-repacked-v1/pytorch/hf-fp8/1", "--served-model-name", "Qwen/Qwen3.8-27B-FP8", "--host", "127.0.0.1", "--port", "1234", "--tensor-parallel-size", "1", "--enable-auto-tool-choice", "--tool-call-parser", "qwen3_coder", "--generation-config", "vllm", "--default-chat-template-kwargs", "{\"preserve_thinking\": true}", "--reasoning-parser", "qwen3", "--max-model-len", "65536", "--async-scheduling", "--no-enable-prefix-caching", "--kv-cache-dtype", "fp8"], "server_status": "failed to stop previous server"}]
+==============================================================================
+END_SERVING_BENCHMARK_RESULTS
+
+=== per-config console trace ===
+CONFIG 1/6: baseline  --  production argv, unchanged (already running)
+  -> ok=37/37  e2e_agg=299.9  decode_agg=788.1  per_seq=21.30  ttft_p50=22.09  preempt=0.0  accept=nan
+CONFIG 2/6: mtp3  --  baseline + 3-token MTP speculative decoding (NO model change)
+  stopping current server (pid=141) ...
+  starting: qwen3_coder --generation-config vllm --enable-prefix-caching --default-chat-template-kwargs {"preserve_thinking": true} --reasoning-parser qwen3 --max-model-len 65536 --speculative-config {"method":"mtp","num_speculative_tokens":3}
+  server ready in 140s (pid=1491)
+  -> ok=37/37  e2e_agg=288.3  decode_agg=nan  per_seq=nan  ttft_p50=21.53  preempt=1.0  accept=0.46583564173591874
+CONFIG 3/6: flags  --  baseline + async sched, prefix caching OFF, fp8 KV (NO spec decode)
+  stopping current server (pid=1491) ...
+  FAILED to stop previous server -- aborting sweep.

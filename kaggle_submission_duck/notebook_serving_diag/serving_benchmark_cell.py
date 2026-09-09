@@ -194,11 +194,29 @@ def _argv_of(pid: int) -> list[str]:
     return [p.decode("utf-8", "replace") for p in raw.split(b"\x00") if p]
 
 
+#: pid -> Popen for servers WE started, so they can be reaped. A vLLM server we
+#: spawn is our child; after it dies it stays a zombie until waited on, and a
+#: zombie still answers `os.kill(pid, 0)`. Run 1 of this benchmark aborted after
+#: the second config for exactly that reason ("failed to stop previous server"),
+#: losing four configurations.
+_OWNED: dict[int, subprocess.Popen] = {}
+
+
 def _alive(pid: int) -> bool:
+    """True only if the process exists AND is not a reaped-pending zombie."""
+    proc = _OWNED.get(pid)
+    if proc is not None and proc.poll() is not None:
+        return False  # our child; already exited and reaped by poll()
     try:
         os.kill(pid, 0)
-        return True
     except OSError:
+        return False
+    # `os.kill(pid, 0)` succeeds for zombies, so check the real process state.
+    try:
+        raw = Path(f"/proc/{pid}/stat").read_text(encoding="utf-8")
+        state = raw[raw.rfind(")") + 2:].split()[0]
+        return state != "Z"
+    except (FileNotFoundError, OSError, IndexError):
         return False
 
 
@@ -263,11 +281,18 @@ def _unsupported(add: list[str]) -> list[str]:
 def _stop_server(pid: int | None, timeout_s: float = 180.0) -> bool:
     if not pid or not _alive(pid):
         return True
+    proc = _OWNED.get(pid)
     for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGKILL):
         try:
             os.kill(pid, sig)
         except OSError:
             return True
+        if proc is not None:
+            # Reap our own child so it cannot linger as a zombie.
+            try:
+                proc.wait(timeout=5)
+            except Exception:
+                pass
         deadline = time.time() + (timeout_s if sig != signal.SIGKILL else 30.0)
         while time.time() < deadline:
             if not _alive(pid):
@@ -302,6 +327,7 @@ def _start_server(argv: list[str], log_path: Path) -> tuple[int | None, str]:
                                 stderr=subprocess.STDOUT, text=True)
     except Exception as exc:
         return None, f"spawn failed: {exc!r}"
+    _OWNED[proc.pid] = proc
     deadline = time.time() + SERVER_READY_TIMEOUT_S
     while time.time() < deadline:
         if proc.poll() is not None:
@@ -531,6 +557,19 @@ async def _run_level(session, concurrency: int, max_tokens: int, seed_base: int,
                 decode_tokens += sum(1 for t in r["arrivals"] if w_start <= t <= w_end)
             decode_tps = decode_tokens / decode_window
 
+    # Per-request decode rate, summed. The global overlap window above is empty
+    # whenever the slowest request's FIRST token lands after the fastest
+    # request's LAST token -- which actually happened under speculative
+    # decoding in run 1 (ttft_max 55.9s against a 65.7s total), making
+    # decode_agg_tps NaN and leaving no decode figure at all for that config.
+    # This estimator degrades gracefully instead of vanishing.
+    per_req_tps = 0.0
+    for r in ok:
+        if len(r["arrivals"]) >= 2:
+            span = r["arrivals"][-1] - r["arrivals"][0]
+            if span > 0:
+                per_req_tps += (len(r["arrivals"]) - 1) / span
+
     ttfts = [r["arrivals"][0] - r["t_send"] for r in ok if r["arrivals"]]
 
     def _agg(key, fn=max):
@@ -553,6 +592,7 @@ async def _run_level(session, concurrency: int, max_tokens: int, seed_base: int,
         "decode_window_s": decode_window,
         "decode_tokens": decode_tokens,
         "decode_agg_tps": decode_tps,
+        "decode_sum_per_req_tps": per_req_tps,
         "decode_per_seq_tps": decode_tps / concurrency if concurrency else float("nan"),
         "ttft_p50_s": sorted(ttfts)[len(ttfts) // 2] if ttfts else float("nan"),
         "ttft_max_s": max(ttfts) if ttfts else float("nan"),
@@ -587,6 +627,13 @@ _SPEC_NGRAM = json.dumps(
      "prompt_lookup_max": 4, "prompt_lookup_min": 2},
     separators=(",", ":"))
 
+_SPEC_MTP1 = json.dumps({"method": "mtp", "num_speculative_tokens": 1},
+                        separators=(",", ":"))
+
+# RUN 2 ORDERING. Run 1 measured `baseline` and `mtp3` and then aborted on a
+# zombie-reaping bug (see `_OWNED`), losing the other four. The still-unmeasured
+# configs therefore come first here; `mtp3` is kept last purely as a
+# cross-run reproducibility check, since its answer is already known (-3.8%).
 CONFIGS: list[dict] = [
     {
         "name": "baseline",
@@ -594,9 +641,9 @@ CONFIGS: list[dict] = [
         "mutate": None,  # measured on the server the bundle already started
     },
     {
-        "name": "mtp3",
-        "desc": "baseline + 3-token MTP speculative decoding (NO model change)",
-        "mutate": {"add": ["--speculative-config", _SPEC_MTP]},
+        "name": "mtp1",
+        "desc": "1-token MTP -- the depth our 1-layer MTP head natively supports",
+        "mutate": {"add": ["--speculative-config", _SPEC_MTP1]},
     },
     {
         "name": "flags",
@@ -608,23 +655,28 @@ CONFIGS: list[dict] = [
         },
     },
     {
-        "name": "mtp3+flags",
+        "name": "mtp1+flags",
         "desc": "both of the above together (combined, NOT attributable alone)",
         "mutate": {
             "drop": [("--enable-prefix-caching", False)],
-            "add": ["--speculative-config", _SPEC_MTP, "--async-scheduling",
+            "add": ["--speculative-config", _SPEC_MTP1, "--async-scheduling",
                     "--no-enable-prefix-caching", "--kv-cache-dtype", "fp8"],
         },
     },
     {
         "name": "mtp2",
-        "desc": "2-token MTP (is 3 past the acceptance sweet spot?)",
+        "desc": "2-token MTP (is the acceptance/compute tradeoff better than 3?)",
         "mutate": {"add": ["--speculative-config", _SPEC_MTP2]},
     },
     {
         "name": "ngram3",
-        "desc": "n-gram spec decode -- the model-free fallback if MTP is unsupported",
+        "desc": "n-gram spec decode -- model-free, drafts from the prompt itself",
         "mutate": {"add": ["--speculative-config", _SPEC_NGRAM]},
+    },
+    {
+        "name": "mtp3",
+        "desc": "3-token MTP -- reproducibility check against run 1's -3.8%",
+        "mutate": {"add": ["--speculative-config", _SPEC_MTP]},
     },
 ]
 
@@ -740,6 +792,7 @@ async def _main() -> list[dict]:
             f"  -> ok={row['requests_ok']}/{CONCURRENCY}  "
             f"e2e_agg={row['e2e_agg_tps']:.1f}  "
             f"decode_agg={row['decode_agg_tps']:.1f}  "
+            f"decode_sum={row['decode_sum_per_req_tps']:.1f}  "
             f"per_seq={row['decode_per_seq_tps']:.2f}  "
             f"ttft_p50={row['ttft_p50_s']:.2f}  "
             f"preempt={row['preemptions_total_end']}  "
@@ -761,7 +814,7 @@ print("\n\n" + "=" * 78, flush=True)
 print("BEGIN_SERVING_BENCHMARK_RESULTS")
 print("=" * 78)
 _hdr = (
-    f"{'config':<12} {'ok':>7} {'e2e_agg':>9} {'dec_agg':>9} {'per_seq':>8} "
+    f"{'config':<12} {'ok':>7} {'e2e_agg':>9} {'dec_agg':>9} {'dec_sum':>9} {'per_seq':>8} "
     f"{'ttft_p50':>9} {'preempt':>8} {'accept':>7} {'kv_max':>7} {'boot_s':>7}"
 )
 print(_hdr)
@@ -777,6 +830,7 @@ for _r in _rows:
         f"{_r['requests_ok']:>3}/{CONCURRENCY:<3} "
         f"{_r['e2e_agg_tps']:>9.1f} "
         f"{_r['decode_agg_tps']:>9.1f} "
+        f"{_r.get('decode_sum_per_req_tps', float('nan')):>9.1f} "
         f"{_r['decode_per_seq_tps']:>8.2f} "
         f"{_r['ttft_p50_s']:>9.2f} "
         f"{_r['preemptions_total_end']:>8.0f} "
@@ -795,7 +849,7 @@ _by = {r["config"]: r for r in _rows if "e2e_agg_tps" in r}
 _bl = _by.get("baseline")
 print("\nATTRIBUTION (vs. baseline, e2e aggregate tok/s)")
 if _bl and _bl["e2e_agg_tps"] > 0:
-    for _name in ("mtp3", "mtp2", "flags", "mtp3+flags", "ngram3"):
+    for _name in ("mtp1", "flags", "mtp1+flags", "mtp2", "ngram3", "mtp3"):
         _r = _by.get(_name)
         if not _r:
             print(f"  {_name:<12} not measured")
@@ -803,7 +857,7 @@ if _bl and _bl["e2e_agg_tps"] > 0:
         _ratio = _r["e2e_agg_tps"] / _bl["e2e_agg_tps"]
         print(f"  {_name:<12} {_r['e2e_agg_tps']:>7.1f} tok/s  "
               f"x{_ratio:.3f}  ({(_ratio - 1) * 100:+.1f}%)")
-    _m, _f = _by.get("mtp3"), _by.get("flags")
+    _m, _f = _by.get("mtp1"), _by.get("flags")
     if _m and _f:
         print("\n  Model-swap-free attribution:")
         print(f"    spec decoding alone : {(_m['e2e_agg_tps'] / _bl['e2e_agg_tps'] - 1) * 100:+.1f}%")
