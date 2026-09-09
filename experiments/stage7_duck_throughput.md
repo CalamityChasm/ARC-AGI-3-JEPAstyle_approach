@@ -170,6 +170,28 @@ A config that fails to boot is recorded with its server-log tail, and the
 baseline server is restored before the next config, so one bad config cannot
 poison the rest of the sweep.
 
+### 3.1 Validation of the production-side patch [VERIFIED]
+
+The production change is generated from `kaggle_submission_duck/vllm_serving.py`
+into the submission notebook's cell 5 by
+`scripts/_patch_duck_notebook_serving.py`, and was checked against the **real**
+`setup_commands.json` downloaded from the mounted bundle
+(`jakobbrggen/taaf-kaggle-source-anim-20260807-anim`), not against a fixture:
+
+```
+real bundle setup command chars: 10076
+launch anchor present in REAL bundle: True
+  mtp1           patched=1  python_valid=True  has_extend=True
+  flags          patched=1  python_valid=True  has_extend=True
+  fork-profile   patched=1  python_valid=True  has_extend=True
+  mtp3           patched=1  python_valid=True  has_extend=True
+```
+
+For every profile the anchor matches exactly once and the resulting here-doc
+body is still valid Python. The notebook ships with
+`DUCK_VLLM_SERVING_PROFILE = 'baseline'`, an exact no-op, and a mismatched
+anchor raises rather than silently launching the unpatched argv.
+
 ---
 
 ## 4. Results
