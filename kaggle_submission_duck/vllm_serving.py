@@ -76,6 +76,17 @@ PROFILES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     BASELINE_PROFILE: ((), ()),
     "mtp3": ((), ("--speculative-config", speculative_config("mtp", 3))),
     "mtp2": ((), ("--speculative-config", speculative_config("mtp", 2))),
+    # Our checkpoint's MTP head is ONE layer deep. The fork drives 3 tokens
+    # from an equally shallow head via its own runtime's
+    # `index_share_for_mtp_iteration` (i.e. re-running the single layer), which
+    # stock vLLM may not do -- in which case only 1 token is reachable here.
+    # Kept as an explicit profile so that case is measurable rather than a
+    # dead end.
+    "mtp1": ((), ("--speculative-config", speculative_config("mtp", 1))),
+    "qwen3_next_mtp1": (
+        (),
+        ("--speculative-config", speculative_config("qwen3_next_mtp", 1)),
+    ),
     "flags": (
         ("--enable-prefix-caching",),
         ("--async-scheduling", "--no-enable-prefix-caching", "--kv-cache-dtype", "fp8"),
