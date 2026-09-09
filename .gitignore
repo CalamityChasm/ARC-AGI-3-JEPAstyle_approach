@@ -29,3 +29,5 @@ kaggle.json
 
 # Claude Code local state
 .claude/
+_work/
+_fork_nvfp4_mtp.ipynb
