@@ -106,6 +106,25 @@ PROFILES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
             speculative_config("ngram", 3, prompt_lookup_max=4, prompt_lookup_min=2),
         ),
     ),
+    # The public fork's ENTIRE published profile ("kv5-bf16-mtp3-c8-cg32"),
+    # transplanted onto our model. Included because the recipe is probably not
+    # separable: speculative decoding pays off when decode is memory-bandwidth
+    # bound (small batch) and costs extra compute when it is not, and the fork
+    # pairs 3-token MTP with only EIGHT concurrent sequences and a 5 GiB KV
+    # cache. Taking MTP without the small batch -- which is what `mtp3` alone
+    # does -- may be testing an operating point the recipe never intended.
+    "fork-profile": (
+        ("--enable-prefix-caching",),
+        (
+            "--speculative-config", speculative_config("mtp", 3),
+            "--async-scheduling",
+            "--no-enable-prefix-caching",
+            "--max-num-seqs", "8",
+            "--max-num-batched-tokens", "8192",
+            "--kv-cache-memory-bytes", "5368709120",
+            "--max-cudagraph-capture-size", "32",
+        ),
+    ),
 }
 
 
