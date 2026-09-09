@@ -16,7 +16,15 @@ import math
 
 import pytest
 
-from kaggle_submission_duck.duck_budget import RerunBudget, compute_rerun_budget
+from kaggle_submission_duck.duck_budget import (
+    DEFAULT_TARGET_CONCURRENCY,
+    ConcurrencyOverride,
+    RerunBudget,
+    compute_rerun_budget,
+    concurrency_gain_factor,
+    resolve_concurrency,
+    wave_count,
+)
 
 
 def test_110_games_concurrency_28_matches_hand_derivation():
@@ -151,3 +159,160 @@ def test_log_line_format():
 def test_returns_rerun_budget_instance():
     budget = compute_rerun_budget(n_games=110, concurrency=28, elapsed_s=0.0)
     assert isinstance(budget, RerunBudget)
+
+
+# ---------------------------------------------------------------------------
+# stage7-duck-concurrency: wave arithmetic under a concurrency override
+# ---------------------------------------------------------------------------
+
+
+def test_wave_count_matches_ceil_division():
+    assert wave_count(110, 28) == 4
+    assert wave_count(110, 37) == 3
+    assert wave_count(110, 55) == 2
+    assert wave_count(110, 110) == 1
+    assert wave_count(110, 200) == 1  # concurrency above the game count
+    for n in (1, 25, 55, 110, 111):
+        for c in (1, 7, 28, 37, 48, 64):
+            assert wave_count(n, c) == math.ceil(n / c)
+
+
+def test_wave_count_rejects_non_positive():
+    with pytest.raises(ValueError):
+        wave_count(0, 28)
+    with pytest.raises(ValueError):
+        wave_count(110, 0)
+
+
+def test_resolve_concurrency_28_to_37_removes_a_wave():
+    # The headline hypothesis: ceil(110/37) = 3 waves instead of 4.
+    override = resolve_concurrency(inherited=28, n_games=110, target=37)
+
+    assert override.inherited == 28
+    assert override.target == 37
+    assert override.effective == 37
+    assert override.waves_before == 4
+    assert override.waves_after == 3
+    assert override.changed is True
+
+
+def test_resolve_concurrency_none_target_is_a_noop():
+    override = resolve_concurrency(inherited=28, n_games=110, target=None)
+
+    assert override.effective == 28
+    assert override.waves_before == override.waves_after == 4
+    assert override.changed is False
+
+
+def test_resolve_concurrency_same_target_is_a_noop():
+    override = resolve_concurrency(inherited=28, n_games=110, target=28)
+    assert override.changed is False
+    assert override.effective == 28
+
+
+def test_resolve_concurrency_non_positive_target_is_a_noop():
+    # Defensive: a mistyped/zeroed constant must not disable the solver.
+    for bad in (0, -1):
+        override = resolve_concurrency(inherited=28, n_games=110, target=bad)
+        assert override.effective == 28
+        assert override.changed is False
+
+
+def test_resolve_concurrency_rejects_bad_inputs():
+    with pytest.raises(ValueError):
+        resolve_concurrency(inherited=0, n_games=110, target=37)
+    with pytest.raises(ValueError):
+        resolve_concurrency(inherited=28, n_games=0, target=37)
+
+
+def test_resolve_concurrency_log_line_format():
+    line = resolve_concurrency(inherited=28, n_games=110, target=37).log_line()
+    assert "inherited=28" in line
+    assert "target=37" in line
+    assert "effective=37" in line
+    assert "n_games=110" in line
+    assert "waves 4 -> 3" in line
+    assert "changed=True" in line
+
+
+def test_default_target_concurrency_is_a_plain_int_or_none():
+    # It is mirrored verbatim into the notebook, so it must be trivially
+    # representable there (no imports, no expressions).
+    assert DEFAULT_TARGET_CONCURRENCY is None or isinstance(DEFAULT_TARGET_CONCURRENCY, int)
+
+
+def test_budget_follows_the_overridden_concurrency():
+    # The two pieces compose: override concurrency first, then feed the
+    # EFFECTIVE value into compute_rerun_budget so the wave count (and
+    # therefore the per-game cap) reflects the override. This is exactly
+    # the ordering the notebook cell uses.
+    elapsed_s = 394.0 + 300.0
+    override = resolve_concurrency(inherited=28, n_games=110, target=37)
+    budget = compute_rerun_budget(
+        n_games=110, concurrency=override.effective, elapsed_s=elapsed_s
+    )
+
+    assert budget.concurrency == 37
+    assert budget.waves == 3  # not 4
+    expected_remaining = 9 * 3600 - elapsed_s - 900.0
+    assert budget.max_runtime_s_per_game == pytest.approx(expected_remaining / 3)
+    # Fewer waves means a LONGER per-game cap than the 4-wave case...
+    four_wave = compute_rerun_budget(n_games=110, concurrency=28, elapsed_s=elapsed_s)
+    assert budget.max_runtime_s_per_game > four_wave.max_runtime_s_per_game
+    # ...but the same total wave time, which is the whole point: wall-clock
+    # is conserved, it is only redistributed.
+    assert budget.waves * budget.max_runtime_s_per_game == pytest.approx(
+        four_wave.waves * four_wave.max_runtime_s_per_game
+    )
+
+
+# --- the token-neutrality argument, as arithmetic --------------------------
+
+
+def test_gain_factor_is_the_wave_packing_effect_when_throughput_is_flat():
+    # If aggregate throughput does NOT rise with concurrency (ratio 1.0),
+    # the only thing left is ceil() quantisation: 28 -> 4 waves wastes 2 of
+    # 112 slots, 37 -> 3 waves wastes 1 of 111. Small, but not nothing.
+    gain = concurrency_gain_factor(
+        n_games=110, inherited=28, target=37, throughput_ratio=1.0
+    )
+    assert gain == pytest.approx((28 / 37) * (4 / 3))
+    assert gain == pytest.approx(1.009, abs=1e-3)  # ~0.9%, i.e. noise
+
+
+def test_gain_factor_is_exactly_one_when_waves_divide_evenly():
+    # With a game count that divides evenly at both concurrencies there is
+    # no quantisation benefit at all -- token-neutrality is exact.
+    gain = concurrency_gain_factor(
+        n_games=120, inherited=30, target=60, throughput_ratio=1.0
+    )
+    assert wave_count(120, 30) == 4 and wave_count(120, 60) == 2
+    assert gain == pytest.approx(1.0)
+
+
+def test_gain_factor_rises_only_if_measured_throughput_rises():
+    # A real 25% aggregate-throughput gain at the higher concurrency.
+    better = concurrency_gain_factor(
+        n_games=110, inherited=28, target=37, throughput_ratio=1.25
+    )
+    flat = concurrency_gain_factor(
+        n_games=110, inherited=28, target=37, throughput_ratio=1.0
+    )
+    worse = concurrency_gain_factor(
+        n_games=110, inherited=28, target=37, throughput_ratio=0.8
+    )
+    assert better > flat > worse
+    assert better == pytest.approx(1.25 * flat)
+    assert worse < 1.0  # a throughput regression makes the change harmful
+
+
+def test_gain_factor_rejects_non_positive_throughput_ratio():
+    with pytest.raises(ValueError):
+        concurrency_gain_factor(n_games=110, inherited=28, target=37, throughput_ratio=0.0)
+    with pytest.raises(ValueError):
+        concurrency_gain_factor(n_games=110, inherited=28, target=37, throughput_ratio=-1.0)
+
+
+def test_returns_concurrency_override_instance():
+    override = resolve_concurrency(inherited=28, n_games=110, target=37)
+    assert isinstance(override, ConcurrencyOverride)
