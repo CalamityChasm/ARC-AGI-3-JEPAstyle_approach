@@ -172,9 +172,108 @@ poison the rest of the sweep.
 
 ---
 
-## 4. Results [VERIFIED — real kernel log]
+## 4. Results
 
-<!-- RESULTS_TABLE -->
+### 4.1 Environment, verified in-kernel [VERIFIED]
+
+`vllm version: 0.19.0`. `vllm serve --help` parsed **293 flags**, and **every
+flag the recipe needs is present** in our stock wheelhouse build — no flag in
+this experiment was unavailable:
+
+```
+--speculative-config YES   --async-scheduling YES   --no-enable-prefix-caching YES
+--kv-cache-dtype YES       --kv-cache-memory-bytes YES  --max-num-seqs YES
+--max-num-batched-tokens YES  --max-cudagraph-capture-size YES  --moe-backend YES
+```
+
+Baseline argv, read from `/proc/<pid>/cmdline` of the live production server:
+
+```
+/usr/bin/python3 -m vllm.entrypoints.openai.api_server
+  --model /kaggle/input/models/foysalemonshanto/qwen3-8-27b-fp8-repacked-v1/pytorch/hf-fp8/1
+  --served-model-name Qwen/Qwen3.8-27B-FP8 --host 127.0.0.1 --port 1234
+  --tensor-parallel-size 1 --enable-auto-tool-choice --tool-call-parser qwen3_coder
+  --generation-config vllm --enable-prefix-caching
+  --default-chat-template-kwargs {"preserve_thinking": true}
+  --reasoning-parser qwen3 --max-model-len 65536
+```
+
+Notably it sets **no** `--max-num-seqs`, `--max-num-batched-tokens`,
+`--gpu-memory-utilization` or scheduling flags — those run at vLLM defaults.
+
+### 4.2 Run 1 [VERIFIED — real kernel log, `experiments/stage7_duck_throughput_run1.txt`]
+
+Concurrency fixed at 37. `ignore_eos` forced exactly 512 output tokens per
+request, so **both rows generated an identical 18,944 tokens** — the throughput
+difference is purely how long that same work took.
+
+| config | ok | e2e agg tok/s | decode agg tok/s | ttft p50 | preempt | MTP accept | boot s | vs. baseline |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `baseline` | 37/37 | **299.9** | 788.1 | 22.09 | 0 | — | — | 1.000x |
+| `mtp3` | 37/37 | 288.3 | n/a¹ | 21.53 | 1 | **0.466** | 140 | **0.962x (−3.8%)** |
+
+¹ `decode_agg_tps` is NaN for `mtp3` because the steady-decode window
+degenerated: the slowest request's first token arrived at 55.9s, after the
+fastest request's last token, so no interval exists in which all 37 sequences
+were simultaneously decoding. That is a limitation of that particular
+estimator, not a server failure — `e2e_agg_tps` is unaffected and is the
+figure that governs total tokens in a fixed 9h wall-clock. (Run 2 adds a
+per-request decode estimator that degrades instead of vanishing.)
+
+**The primary hypothesis is confirmed on the mechanism and refuted on the
+outcome:**
+
+- **MTP speculative decoding works on our existing model, with stock vLLM
+  0.19.0, with no model swap.** [VERIFIED] The server booted in 140s with
+  `--speculative-config {"method":"mtp","num_speculative_tokens":3}` and did
+  real speculative work: **23,826 draft tokens, 11,099 accepted, a 46.6%
+  acceptance rate.** This is a genuinely useful finding — the recipe's biggest
+  lever does *not* require the 135 GB NVFP4 mount.
+- **It made throughput worse, not better**: −3.8% end-to-end, and the only
+  preemption observed in either row.
+
+vLLM warned about exactly the depth limit predicted from `config.json`
+[VERIFIED, verbatim]:
+
+```
+WARNING [speculative.py:512] Enabling num_speculative_tokens > 1 will run
+multiple times of forward on same MTP layer, which may result in lower
+acceptance rate
+WARNING [kv_cache_utils.py:1059] Add 3 padding layers, may waste at most
+6.25% KV cache memory
+```
+
+Also present on **both** rows, so not attributable to MTP, but worth recording
+since our baseline runs with prefix caching on and this model is a hybrid
+Mamba/linear-attention architecture [VERIFIED, verbatim]:
+
+```
+WARNING [config.py:441] Mamba cache mode is set to 'align' for
+Qwen3_5ForConditionalGeneration by default when prefix caching is enabled
+INFO [config.py:461] Warning: Prefix caching in Mamba cache 'align' mode is
+currently enabled. Its support for Mamba layers is experimental.
+```
+
+**[INFERRED] Why MTP loses here.** Speculative decoding trades extra compute
+(draft + verify) for fewer sequential decode steps. It wins when decode is
+memory-bandwidth bound — i.e. at small batch, where the GPU is idle waiting on
+weights. At 37 concurrent sequences the decode batch is already large enough to
+be compute-bound, so the extra draft/verify work is a straight cost, and a 46.6%
+acceptance rate over a one-layer MTP head run three times is not enough to pay
+for it. This is consistent with the fork's own profile, which pairs 3-token MTP
+with **only 8 concurrent sequences** and a 5 GiB KV cache — a deliberately
+small-batch, low-latency operating point, the opposite of our
+maximum-aggregate-throughput one.
+
+Run 1 also aborted after `mtp3` (`flags` reported "failed to stop previous
+server"), losing four configurations. That was a bug in this harness, not in
+vLLM: `_start_server` discarded its `Popen` handle, so a killed server remained
+an unreaped zombie, and `os.kill(pid, 0)` succeeds on zombies. Fixed by
+tracking and waiting on the handle and reading `/proc/<pid>/stat` state.
+
+### 4.3 Run 2
+
+<!-- RUN2 -->
 
 ---
 
