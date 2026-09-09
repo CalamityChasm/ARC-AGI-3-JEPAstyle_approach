@@ -112,6 +112,68 @@ returns 20. Unresolved.
 both tracks: a corrected Duck fork for a rank floor, and `CodeWorldAgent` as the real
 deliverable.
 
+### 5. Progress log — 2026-09-07 / 2026-09-08
+
+**All Stage 7 work below is merged to `master`.** PRs #1, #5, #6, #7, #8, #9.
+
+**The repo now has its own test suite: 84 tests, `pytest tests/ -q`.** It had
+**zero** before 2026-09-07 (only the vendored framework's). Run them before any
+merge. `pytest.ini` sets `pythonpath=.` / `testpaths=tests` and is scoped so the
+vendored `ARC-AGI-3-Agents/` suite is unaffected.
+
+**Rescued from permanent loss** (all were in no commit on any branch):
+- `CodeWorldAgent` + `llm_engine/` — existed **only on Kaggle**, no local copy.
+- `graph_explorer_THIRD_PARTY_LICENSE` — the MIT attribution this file claims is
+  "carried forward verbatim". It was an unmet attribution obligation on disk only.
+- 58 files total, plus 53 commits across 6 branches that existed nowhere but this
+  machine, plus 8 unique checkpoint sets and 83 level-up segments (2,952
+  transitions) archived to `E:\arc3_worktree_archive\`. ~13 GB reclaimed.
+
+**Duck fork — three findings:**
+1. **The "LB 9" in the notebook title was never a measured score.** Its author is
+   rank 102, best **3.58** across **103 submissions**; only 1 of 2,870 teams
+   scores >= 9.0. Hardware, model mount and vLLM boot were all verified fine.
+   Our 1.77 (n=1) vs their 3.58 (best of 103) is ~2x, not 5x.
+2. **Budget fix (merged, PR #7): hygiene, not scoring.** It converts a ~274s
+   overrun into a ~900s margin. Wave 4 would have lost only ~3.5% of its playing
+   time, not 100% — the original "recover 24% of games" estimate was wrong.
+   Confirmed the rerun writes **no** `submission.parquet` (scoring is server-side
+   via the gateway), so a hard kill cannot lose already-completed games.
+3. **Concurrency raised 28 -> 37 (merged, PR #9), backed by a real measurement.**
+   Aggregate throughput *does* rise with concurrency (288.7 -> 310.3 tok/s e2e).
+   But picking the raw peak (48, at 322.0) is a **trap**: games run in
+   fixed-length waves, so the last wave runs at leftover concurrency, and 48's
+   third wave holds only 14 games. Weighted by wave size, 37 gives **+8.0%** and
+   48 only +1.7%. **~+8% tokens is not ~+8% score** — RHAE squares efficiency and
+   caps on completion.
+
+**`CodeWorldAgent`'s 0.00 has a verified root cause (merged, PR #8):**
+`draft_world_model` had an *unconditional* fallback returning the template
+skeleton, installed without checking `outcome.ok`. That stub is an **anti-model**
+— flat objective, and `self.model is not None` then permanently suppresses
+re-drafting, so the repair budget drains on source that cannot pass replay by
+construction. Four contributors were reproduced; the sharpest is that **the exec
+sandbox's allowlist omitted `super`**, so a genuinely correct world model calling
+`super().__init__()` was rejected outright. **Still unfixed and still binding:
+throughput (0.02-0.27 actions/sec).** Whether the coder model can write a
+replay-passing model for a real 64x64 game is **untested** — the local RTX 2070
+cannot host it.
+
+**New gotcha — vLLM reasoning-parser field name.** This build's Qwen3 reasoning
+parser streams generated tokens as **`delta.reasoning`** — not `delta.content`,
+and not the OpenAI-style `delta.reasoning_content`. A benchmark harness that
+counted only `content` reported a healthy server as
+`FATAL: server not answering: status=200 err=None` and produced a complete,
+plausible-looking, entirely **empty** results table, because `ok` gated token
+accounting. **Three free GPU runs were burned on two guessed fixes before anyone
+dumped the raw SSE stream and simply read the field name.** Restates this file's
+own standing lesson: instrument before theorising.
+
+**Kaggle submissions:** none spent on 2026-09-08 — the slot is deliberately held
+while the throughput lever (NVFP4 + MTP speculative decoding) is measured, so
+budget fix + concurrency + throughput can ship as one submission rather than
+three marginal ones.
+
 ## Repo / branch layout
 
 - `master` -- Stage 0 (harness) is complete and stable here. Don't rebase
