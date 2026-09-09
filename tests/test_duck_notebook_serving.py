@@ -25,6 +25,14 @@ import pytest
 
 from kaggle_submission_duck.vllm_serving import BASELINE_PROFILE, LAUNCH_ANCHOR
 
+# The profile the production notebook actually ships. Measured winner from
+# run 2 of the serving benchmark: 352.0 tok/s e2e vs. baseline 302.1 (+16.5%)
+# at concurrency 37 on the real RTX PRO 6000. Changing what ships must be a
+# deliberate edit here, backed by a measurement -- that is the point of these
+# tests. See experiments/stage7_duck_throughput.md.
+SHIPPED_PROFILE = "mtp1+flags"
+
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 NOTEBOOK = (
     REPO_ROOT
@@ -63,21 +71,21 @@ def test_notebook_cell5_is_valid_python():
 def test_shipped_profile_is_the_measured_default():
     """An unmeasured profile must never ship as the notebook's default."""
     source = _cell5_source()
-    assert f"DUCK_VLLM_SERVING_PROFILE = {BASELINE_PROFILE!r}" in source
+    assert f"DUCK_VLLM_SERVING_PROFILE = {SHIPPED_PROFILE!r}" in source
 
 
 def test_notebook_block_matches_the_generator_exactly():
     """Catch a hand-edit or a forgotten regeneration."""
     patch = _load_patch_module()
     shipped = _generated_block(_cell5_source())
-    expected = _generated_block(patch.render_block(BASELINE_PROFILE))
+    expected = _generated_block(patch.render_block(SHIPPED_PROFILE))
     assert shipped == expected
 
 
 def test_patch_script_check_mode_passes_on_the_committed_notebook():
     patch = _load_patch_module()
     source = _cell5_source()
-    assert patch.patch_cell(source, BASELINE_PROFILE) == source
+    assert patch.patch_cell(source, SHIPPED_PROFILE) == source
 
 
 def test_notebook_carries_every_known_profile_so_switching_needs_no_regeneration():

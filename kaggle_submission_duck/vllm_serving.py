@@ -91,6 +91,24 @@ PROFILES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
         ("--enable-prefix-caching",),
         ("--async-scheduling", "--no-enable-prefix-caching", "--kv-cache-dtype", "fp8"),
     ),
+    # MEASURED WINNER (run 2, concurrency 37, real RTX PRO 6000):
+    # 352.0 tok/s e2e vs. baseline 302.1 = +16.5%, the best of every
+    # configuration tested. Note this is SUPERADDITIVE: mtp1 alone is +2.3%
+    # and flags alone is +6.9% (sum +9.2%), so the combination is worth more
+    # than its parts -- plausibly because --async-scheduling overlaps the
+    # draft/verify work that speculative decoding adds. [INFERRED]
+    #
+    # Note the speculative depth: ONE token, not the public fork's three.
+    # Our MTP head is one layer deep; driving it 3x drops the acceptance rate
+    # from 0.719 to 0.456 and made throughput WORSE than baseline (-6.6%).
+    "mtp1+flags": (
+        ("--enable-prefix-caching",),
+        (
+            "--speculative-config", speculative_config("mtp", 1),
+            "--async-scheduling", "--no-enable-prefix-caching",
+            "--kv-cache-dtype", "fp8",
+        ),
+    ),
     "mtp3+flags": (
         ("--enable-prefix-caching",),
         (

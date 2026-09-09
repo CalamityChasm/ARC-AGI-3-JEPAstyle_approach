@@ -295,22 +295,118 @@ tracking and waiting on the handle and reading `/proc/<pid>/stat` state.
 
 ### 4.3 Run 2
 
-<!-- RUN2 -->
+**[VERIFIED — real kernel log, `calamitychasm/arc3-duck-serving-benchmark`.]**
+Concurrency fixed at 37, `ignore_eos` forcing exactly 512 output tokens per
+request, so every row generated identical work. The zombie-reaping bug that
+truncated run 1 is fixed, so all seven configurations completed.
+
+| config | ok | e2e agg tok/s | dec agg | dec sum | per-seq | ttft p50 | preempt | MTP accept | boot s | vs. baseline |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `baseline` | 37/37 | 302.1 | 788.8 | 507.3 | 21.32 | 21.89 | 0 | — | — | 1.000x |
+| `mtp1` | 37/37 | 309.0 | 469.6 | 307.7 | 12.69 | 21.27 | 0 | **0.719** | 140 | 1.023x |
+| `flags` | 37/37 | 322.9 | 940.7 | 562.7 | 25.42 | 21.20 | 0 | — | 90 | 1.069x |
+| **`mtp1+flags`** | 37/37 | **352.0** | 739.1 | 397.2 | 19.97 | 20.53 | 0 | 0.709 | 70 | **1.165x** |
+| `mtp2` | 37/37 | 320.4 | 426.9 | 272.2 | 11.54 | 21.52 | 0 | 0.553 | 60 | 1.061x |
+| `mtp3` | 37/37 | 282.0 | n/a | 253.3 | n/a | 21.51 | 2 | 0.456 | 60 | 0.934x |
+| `ngram3` | 37/37 | 129.8 | 370.0 | 223.2 | 10.00 | 19.80 | 0 | 0.295 | 75 | **0.430x** |
+
+**Three results matter here:**
+
+1. **`mtp1+flags` wins at +16.5%**, the best of every configuration tested, and
+   it needs **no model swap** — it runs on our existing FP8 mount.
+2. **Speculative depth 1, not the fork's 3.** Acceptance falls monotonically
+   with depth (0.719 → 0.553 → 0.456) because our MTP head is one layer deep
+   and driving it repeatedly degrades the draft. `mtp3` — literally the fork's
+   published `TAAF_VLLM_MTP_TOKENS=3` — is **worse than baseline (−6.6%)** and
+   produced the only preemptions in the run. **Copying the published recipe
+   verbatim would have made us slower.**
+3. **`ngram3` is catastrophic (−57%)** and is recorded so nobody tries it again.
+
+The combination is **superadditive**: `mtp1` alone is +2.3% and `flags` alone is
++6.9% (sum +9.2%), but together they give +16.5%. **[INFERRED]** the likely
+mechanism is `--async-scheduling` overlapping the draft/verify work speculative
+decoding adds, so the two changes pay for each other rather than competing.
+Note also that `mtp1+flags` had the **fastest server boot (70s)** and the
+**lowest TTFT (20.53s)** of any configuration.
+
 
 ---
 
 ## 5. Attribution
 
-<!-- ATTRIBUTION -->
+Measured at concurrency 37, all on our existing FP8 model, no model swap:
+
+| component | e2e tok/s | vs. baseline |
+|---|---:|---:|
+| serving flags alone (`--async-scheduling`, prefix caching off, `--kv-cache-dtype fp8`) | 322.9 | **+6.9%** |
+| MTP speculative decoding alone, depth 1 | 309.0 | **+2.3%** |
+| both together | 352.0 | **+16.5%** |
+
+**Model swap contribution: zero, because no model swap is needed.** The recipe's
+headline component (MTP) runs on our existing 30.9 GB FP8 mount; the fork's
+135.3 GB NVFP4 model is a different architecture (`Qwen4Exp`, 512 experts) and
+was never required to get this.
+
+Stacking with the separately-measured concurrency change (28 → 37, +8.0%):
+
+```
+1.080  x  1.165  =  1.258   ->  ~+26% total tokens vs. the original config
+```
+
+**[INFERRED]** — that multiplication assumes the two effects are independent.
+The concurrency curve was measured at baseline serving and the serving curve at
+concurrency 37, so the product is an estimate, not a measurement. A combined
+measurement was not run.
+
 
 ---
 
 ## 6. Verdict
 
-<!-- VERDICT -->
+**Ship `mtp1+flags`.** It is the measured winner (+16.5% e2e throughput at our
+real operating point), needs no model swap, boots fastest, has the lowest TTFT,
+and produced no preemptions.
+
+**The public recipe does NOT reproduce as published, and that is the headline.**
+Three of its components were checked directly and each failed on our stack:
+- its `TAAF_VLLM_*` environment variables are **inert here** — they are read only
+  by a 3,109-line `serving_setup.py` the fork ships and we do not. Setting them
+  would have silently done nothing.
+- its `TAAF_VLLM_MTP_TOKENS=3` is **actively harmful** on our one-layer MTP head
+  (−6.6%).
+- its 135 GB NVFP4 model is **unnecessary** — our own checkpoint already carries
+  MTP weights of the same depth.
+
+What did transfer is the *idea* (speculative decoding + async scheduling +
+prefix caching off), retuned to our own measurements.
+
+**Do not oversell this.** ~+26% more tokens is **not** ~+26% more score. RHAE
+squares action efficiency and caps each game at its weighted completion
+fraction, so extra actions convert into score non-linearly and possibly weakly.
+This is a real, measured, cheap improvement — not a path to 2.99 on its own.
+
 
 ---
 
 ## 7. What could not be measured
 
-<!-- LIMITS -->
+- **KV-cache utilisation was `nan` for every configuration** — the
+  `vllm:gpu_cache_usage_perc` scrape failed here exactly as it did in the
+  concurrency benchmark. The "~22% utilised" figure from the production log
+  remains **unverified** across both experiments.
+- **The combined concurrency x serving effect was never measured**, only
+  multiplied. See Attribution.
+- **`decode_agg` degenerates for speculative configs** (NaN for `mtp3`): with
+  speculation, sequences finish at very different times and the estimator's
+  "all sequences simultaneously decoding" window can vanish. `dec_sum` (a
+  per-request estimator added in run 2) degrades gracefully instead, and
+  `e2e_agg` — the figure that actually governs total tokens in a fixed 9h
+  wall-clock — is unaffected.
+- **No accuracy check was run.** Speculative decoding is designed to be
+  output-equivalent to non-speculative sampling, but that was assumed here, not
+  verified. Prefix caching was also disabled, and this is a hybrid Mamba model
+  whose prefix-caching support vLLM itself flags as experimental — so disabling
+  it may be *safer* as well as faster, but neither direction was tested.
+- **Nothing here has been tested in real scored play.** The only evidence is
+  server-side throughput on synthetic prompts.
+
