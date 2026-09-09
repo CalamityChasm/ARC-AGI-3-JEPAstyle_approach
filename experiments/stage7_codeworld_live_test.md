@@ -45,6 +45,50 @@ it publishes a separate dataset, `calamitychasm/llm-world-engine-agent-fixed`,
 built from `master`'s `dataset_stage/`, so the two workstreams cannot clobber
 each other.
 
+### Divergence audit (VERIFIED by downloading the live dataset, 2026-09-09)
+
+Neither fork is a superset of the other. Both directions matter for the
+reconciliation that will be needed later:
+
+**`master` has, live does not** (all from PR #8):
+- sandbox allowlist entries `super`, `map`, `filter`, `reversed`, `type`,
+  `object`, ... -- live's is missing all of them.
+- `draft_world_model` returning **no** model on failure -- live still has
+  `fallback = load_world_model(WORLD_MODEL_SKELETON)` at `drafting.py:178`
+  and installs it.
+- `DRAFT_MAX_TOKENS = 4096`. **Live passes `max_tokens=768` at all three
+  draft/repair call sites** (`drafting.py:120,215,260`).
+- an `extract_code` that recovers the tail of an unterminated fence, strips
+  `<think>` blocks, and prefers the last block defining `WorldModel`. Live
+  uses `_CODE_BLOCK_RE.search()` (first fence only) and, when no *closed*
+  fence is found, `return response_text.strip()`.
+- transcript-preserving retry prompts.
+
+Those last three compound into a near-certain failure mode in the currently
+deployed dataset, independent of anything the model does: a complete
+`WorldModel` for a 64x64 game does not fit in 768 tokens, so the response is
+truncated; a truncated response has an opening fence and no closing one, so
+`_CODE_BLOCK_RE.search()` does not match; the fallback then returns the whole
+response, which *begins with* ```` ```python ```` -- a guaranteed
+`SyntaxError` on line 1, every time. This is stated as VERIFIED from the
+downloaded live files, not inferred from the 0.00 scores.
+
+**Live has, `master` does not** -- three modules and their wiring:
+- `viewport.py`: `detect_viewport_bounds` (bounding box of non-padding cells)
+  and `generate_action6_candidates` (targeted click candidates instead of
+  blind 64x64 sampling; used by its `planner.py` and agent).
+- `abstraction.py`: `format_compact_grid` (crops to the active viewport
+  before hex-rendering) and `summarize_transition_components` (object-level
+  change summary).
+- `level_diff.py`: `analyze_level_transition` / `LevelTransitionAnalysis`
+  (viewport-changed / new-colours detection across a level boundary).
+
+Live's `_render_transcript` uses `format_compact_grid` plus a "semantic
+summary" line per transition, where `master` still pastes the full 64x64 hex
+grid. That is a real prompt-size mitigation `master` lacks, and it is directly
+relevant to this experiment: `master`'s prompt carries ~4.2 KB of raw hex per
+transition.
+
 **New kernel.** Every previous free push validated nothing, because all of the
 real setup and agent code sits behind
 `if os.getenv('KAGGLE_IS_COMPETITION_RERUN')`, which is unset on a free push.
