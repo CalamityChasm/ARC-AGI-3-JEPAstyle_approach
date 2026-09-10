@@ -191,3 +191,86 @@ re-diagnose them:
   broken mount that would fail the notebook at cell 7. It is not: reading the
   archive's namelist directly shows all 4,408 entries present. Read members from
   the zip rather than extracting on Windows.
+
+---
+
+## Free-run result (2026-09-10) — VERIFIED
+
+Kernel `calamitychasm/arc3-duck-nvfp4-baseline` v2, `COMPLETE`, ~3 h wall-clock,
+public-25 path (`KAGGLE_IS_COMPETITION_RERUN` unset).
+
+### Hardware: the manual-GPU warning does NOT apply to an API push [VERIFIED]
+
+The upstream notebook warns *"if you make a copy of this notebook, you will have
+to manually select the proper GPU (RTX Pro 6000)"*. Our probe cell shows the
+metadata request **is** honoured when pushed via the API:
+
+```
+NVIDIA RTX PRO 6000 Blackwell Server Edition, 97887 MiB, 12.0, 580.159.04
+HW_PROBE host_ram_gib=176.9   cpu_count=48
+```
+
+### Serving stack came up as intended [VERIFIED]
+
+```
+PUBLIC25_VLLM_PROFILE name=kv5-bf16-mtp3-c8-cg32
+Resolved architecture: Qwen3_8FlashNextMTP
+Overriding draft model max model len from 262144 to 32768
+```
+
+The `TAAF_VLLM_*` variables **are live here** because the bundle that reads them
+(`serving_setup.py`, in `keithtyser/duck-qwen38-nvfp4-mtp-vllm-smoke-v1`) is
+mounted. This is exactly what our own stack lacked, and is why those same
+variables were inert in `experiments/stage7_duck_throughput.md`.
+
+### Score: 10.69 vs. our own stack's 3.37 [VERIFIED]
+
+**Mean public-25 self-eval `10.69`** (median 4.76, 3,633 actions), against
+**3.37** for our FP8 stack on the identical 25 games — **3.2x better**.
+
+| game | NVFP4 | our FP8 stack |
+|---|---:|---:|
+| `sb26` | **58.33** (6/8 levels) | 2.78 |
+| `lp85` | **41.67** (5/8) | 8.33 |
+| `tr87` | **28.57** (3/6) | 4.76 |
+| `ft09` | **23.81** (3/6) | 8.07 |
+| `re86` | 16.67 (3/8) | 1.83 |
+| `vc33` | 16.37 (3/7) | 10.71 |
+
+### A reporting trap worth recording
+
+**The log emits a progressive summary block roughly every 10 games' worth of
+progress, not one final result.** The first block reads `mean score: 0.80,
+total actions: 236`; successive blocks climb 1.78 → 3.41 → 4.79 → 6.71 → 8.73 →
+**10.69** at 3,633 actions. Reading the first block as "the result" inverts the
+conclusion completely — it would say this stack is 4x *worse* than ours when it
+is 3.2x *better*. This was very nearly reported that way. **Always take the
+LAST summary block, and cross-check it by recomputing from the per-game
+`[finished]` lines** (which reproduce 10.69 exactly).
+
+### Known issues, not blocking [VERIFIED]
+
+- **Many `analyzer request failed ... Read timed out`** across games (timeouts
+  9-155 s). The run completed and scored well regardless, so these are degraded
+  requests, not fatal — but they are lost actions and represent real headroom.
+- `RuntimeError: vLLM teardown did not reach the bounded terminal gate` fires
+  **after** play finishes, during teardown only. No scoring impact observed.
+- Qwen3VL video-processor `[ERROR]` lines at load are cosmetic kwarg-docstring
+  warnings from the bundled runtime.
+
+### Verdict
+
+**Recommend submitting this stack unmodified on the next slot.** It is the
+strongest local evidence this project has produced: 3.2x our current stack on a
+like-for-like measurement, with the hardware, model mount, and speculative
+decoding all verified working on our own account.
+
+**Do not port our tunings onto it** (unchanged from this document's earlier
+reasoning, now with the operating point confirmed from the log:
+`kv5-bf16-mtp3-c8-cg32` — 8 sequences, 3-token MTP). Our `mtp1`/concurrency-37
+results were measured at 37 concurrent on a one-layer FP8 head and do not
+transfer.
+
+**Expectation management:** public-25 is not the hidden set. Our own stack went
+3.37 local → 2.57 real (~0.76x), and the notebook's author reports **4.33** real.
+Do not expect 10.69 to survive contact with the hidden games.
