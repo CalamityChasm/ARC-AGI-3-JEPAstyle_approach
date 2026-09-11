@@ -174,6 +174,52 @@ while the throughput lever (NVFP4 + MTP speculative decoding) is measured, so
 budget fix + concurrency + throughput can ship as one submission rather than
 three marginal ones.
 
+### 7. Result — 2026-09-11: NVFP4 stack scored **2.84**, and the local signal over-predicted by ~3x
+
+**Ref `56153820`, `COMPLETE`, public score `2.84`** (prev best `2.57`, +10.5%).
+Team rank **434 / 2,962**, top **14.7%**. Top-10% bar is now rank 297, score
+**3.24**.
+
+Submitted: `calamitychasm/arc3-duck-nvfp4-baseline` v2 — the public notebook
+`wuliao0/duck-qwen3-8-anim-base` (Qwen3.8-Flash-Next-NVFP4 + `keithtyser`
+serving bundle + NVFP4 vLLM runtime), staged **verbatim**, our own tunings
+deliberately not applied.
+
+**The headline is not the +10.5%. It is the local-to-hidden collapse:**
+
+| stack | public-25 local | real hidden | ratio |
+|---|---:|---:|---:|
+| our FP8 (`mtp1+flags`, conc 37) | 3.37 | 2.57 | **0.76** |
+| NVFP4 (this) | **10.69** | **2.84** | **0.27** |
+
+The NVFP4 stack is **3.2x better locally but only 1.10x better on hidden
+games.** Its local advantage almost entirely evaporated. This is the same
+pattern this file documents repeatedly (Stage 6's 13 interventions;
+GraphExplorerLearnedAgent's 3.76x local backtest producing real 0.05-0.15) --
+reproduced here on a completely different, LLM-based stack. **Treat the
+25 public games as a near-useless predictor of hidden-game score: they are
+the set the entire community iterates against.**
+
+**Unexplained gap: the notebook's author reports `4.33`; we got `2.84` on
+nominally the same stack, unmodified.** Candidate causes, none verified:
+run-to-run variance of unknown magnitude for this stack (we have n=1, they
+have n=1 at that score); a config difference we have not spotted; or their
+figure coming from a different kernel version. **Worth resolving before
+spending further slots on this lineage** -- if 2.84 is its true central
+tendency for us, this stack does not reach 3.24 and a different lever is
+needed.
+
+**Prediction accuracy, recorded for calibration:** the pre-submission forecast
+was "3-4.5, anywhere in that range is a top-10% finish." Actual: 2.84, below
+the range. The forecast leaned on the author's 4.33 and on a local-to-real
+ratio (0.76) taken from *our* stack, which did not hold for theirs.
+
+**Real, measured headroom found in the free run, not yet acted on:** frequent
+`analyzer request failed ... Read timed out` (9-155 s) across games. Those are
+lost actions on a stack that still scored well locally -- fixing them would be
+our own contribution measured against this fork as a baseline, rather than
+someone else's configuration.
+
 ## Repo / branch layout
 
 - `master` -- Stage 0 (harness) is complete and stable here. Don't rebase
