@@ -1,0 +1,45 @@
+games                      : 25
+analyzer turns (total)     : 1312
+ANALYZER STATUS records    : 1312
+analyzer read timeouts     : 25  (1.905% of turns)
+timeouts per game (counts) : {1: 25}
+actions (total)            : 3633
+levels completed (total)   : 48
+
+observed read-timeout values (s):
+  n=25 min=3.92 median=76.89 mean=75.71 max=155.70 sum=1892.8
+
+wall-clock instant each doomed request expired (s past midnight):
+  min=64436.21 max=64437.19 range=0.98s stdev=0.27s
+  -> a range of ~1s across all games means ONE shared deadline, not per-request variation.
+
+game             turns  acts lvls  GO fail@act timeout_s med_turn_s tail_acts
+lp85-305b61c3       51    78    5   0       79    155.70      160.5      1.56
+wa30-ee6fef47       52   188    2   1      189    136.09      154.0      3.29
+tr87-cd924810       52   137    3   0      138    124.54      152.0      2.19
+g50t-5849a774       52   168    1   0      169    120.06      153.0      2.59
+cd82-fb555c5d       54   114    1   0      115    118.81      149.0      1.74
+su15-1944f8ab       53    92    3   0       93    112.12      149.5      1.32
+bp35-0a0ad940       51    61    1   2       62    107.92      158.5      0.84
+tn36-ef4dde99       53    92    1   1       93    107.35      152.0      1.26
+sb26-7fbdac44       53   152    6   0      153    103.19      149.0      2.01
+lf52-271a04aa       53   109    1   0      110     93.87      157.0      1.31
+cn04-2fe56bfb       52    42    1   0       43     89.34      157.0      0.48
+tu93-0768757b       51   174    3  11      175     83.43      152.0      1.85
+s5i5-18d95033       53   219    1   1      220     76.89      147.0      2.15
+re86-8af5384d       53   315    3   0      316     74.46      155.5      2.99
+vc33-5430563c       53   115    3   0      116     69.21      148.0      1.01
+ar25-0c556536       53   411    2   1      412     59.72      151.0      3.12
+dc22-fdcac232       53   139    1   1      140     56.64      151.5      1.00
+sc25-635fd71a       53   153    1   3      154     42.01      155.0      0.82
+sk48-d8078629       51   141    0   0      142     38.67      161.0      0.69
+ka59-38d34dbb       52   143    2   0      144     32.71      160.0      0.59
+r11l-495a7899       53    83    1   9       84     27.43      150.5      0.29
+ls20-9607627b       53    91    1   0       92     25.68      153.0      0.30
+m0r0-492f87ba       54    88    1   0       89     23.05      150.0      0.26
+ft09-0d8bbf25       53    65    3   0       66      9.97      150.0      0.08
+sp80-589a99af       51   263    1   7      264      3.92      158.0      0.13
+
+upper-bound actions recoverable (sum of per-game rate x wasted s): 33.9  = 0.93% of all actions
+actions per level completed (pooled)  : 75.7
+expected extra levels from those acts : 0.45  (across 25 games)
