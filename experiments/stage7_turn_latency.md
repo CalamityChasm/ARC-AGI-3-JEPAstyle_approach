@@ -401,7 +401,7 @@ re-derives it.
 Better still, **`benchmark.json` carries `base_actions_per_level` per game** —
 the real human baselines — so `h_l` does not have to be inferred at all. The
 scorer is reimplemented verbatim in `scripts/project_turns_rhae.py` and
-**reproduces all 25 recorded `final_score` values to 1e-9**. Every projection
+**reproduces all 25 recorded `final_score` values bit-exactly** (max abs error 0.00e+00). Every projection
 model reproduces the observed run exactly at ×1.0; that is the correctness test.
 
 ### 6.2 Which term binds, and where the headroom is [VERIFIED]
