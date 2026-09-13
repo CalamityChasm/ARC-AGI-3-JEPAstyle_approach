@@ -1,0 +1,284 @@
+{
+  "source": "C:\\Users\\desktop-06\\AppData\\Local\\Temp\\nvfp4_out",
+  "latency": {
+    "e2e": {
+      "count": 1339.0,
+      "sum": 195093.28096461296,
+      "mean": 145.70073260986777,
+      "p50": 240.0,
+      "p90": 240.0,
+      "p99": 480.0
+    },
+    "queue": {
+      "count": 1339.0,
+      "sum": 169664.82178958,
+      "mean": 126.7100984238835,
+      "p50": 240.0,
+      "p90": 240.0,
+      "p99": 240.0
+    },
+    "inference": {
+      "count": 1339.0,
+      "sum": 24916.13998852195,
+      "mean": 18.6080209025556,
+      "p50": 15.0,
+      "p90": 40.0,
+      "p99": 120.0
+    },
+    "prefill": {
+      "count": 1339.0,
+      "sum": 2140.366348422985,
+      "mean": 1.5984812161486073,
+      "p50": 2.0,
+      "p90": 2.0,
+      "p99": 5.0
+    },
+    "decode": {
+      "count": 1339.0,
+      "sum": 22775.773640098992,
+      "mean": 17.009539686407013,
+      "p50": 15.0,
+      "p90": 40.0,
+      "p99": 120.0
+    },
+    "ttft": {
+      "count": 1342.0,
+      "sum": 172696.81150484085,
+      "mean": 128.68614866232554,
+      "p50": 160.0,
+      "p90": 640.0,
+      "p99": 640.0
+    }
+  },
+  "server": {
+    "kv_cache_tokens": 105202,
+    "kv_max_concurrency_at": 32768,
+    "kv_max_concurrency": 3.21,
+    "model_load_gib": 81.8,
+    "initial_free_gib": 94.43,
+    "kv_reserved_gib": 5.0,
+    "ooms": [
+      {
+        "want_bytes": 511705088,
+        "free_bytes": 42336256,
+        "total_bytes": 101973950464
+      },
+      {
+        "want_bytes": 2097152,
+        "free_bytes": 2490368,
+        "total_bytes": 101973950464
+      }
+    ],
+    "launch_args": {
+      "max_num_seqs": "8",
+      "max_num_batched_tokens": "8192",
+      "kv_cache_memory_bytes": "5368709120",
+      "max_model_len": "32768",
+      "enable_prefix_caching": "False",
+      "enable_chunked_prefill": "True",
+      "async_scheduling": "True",
+      "max_cudagraph_capture_size": "32",
+      "speculative_config": "{'method': 'mtp', 'num_speculative_tokens': 3}"
+    }
+  },
+  "snapshot_summary": {
+    "n": 792,
+    "window_s": 7920.0,
+    "mean_running": 3.1338383838383836,
+    "mean_waiting": 21.619949494949495,
+    "mean_kv_pct": 80.27373737373738,
+    "mean_prompt_tps": 3407.425378787879,
+    "mean_gen_tps": 242.0818181818182,
+    "pct_running_ge_8": 0.0,
+    "pct_kv_ge_85": 11.11111111111111
+  },
+  "workload": {
+    "requests": 1339.0,
+    "prompt_tokens_total": 27014325.0,
+    "generation_tokens_total": 1919110.0,
+    "mtp_drafts": 688180.0,
+    "mtp_draft_tokens": 2064525.0,
+    "mtp_accepted_tokens": 1231695.0,
+    "mean_kv_footprint_tokens": 21608.241224794623
+  },
+  "turns": {
+    "per_game": [
+      {
+        "game": "ar25-0c556536",
+        "turns": 53,
+        "first_s": 56517,
+        "last_s": 64377,
+        "median_turn_s": 151.0
+      },
+      {
+        "game": "bp35-0a0ad940",
+        "turns": 51,
+        "first_s": 56517,
+        "last_s": 64329,
+        "median_turn_s": 158.5
+      },
+      {
+        "game": "cd82-fb555c5d",
+        "turns": 54,
+        "first_s": 56517,
+        "last_s": 64318,
+        "median_turn_s": 149
+      },
+      {
+        "game": "cn04-2fe56bfb",
+        "turns": 52,
+        "first_s": 56517,
+        "last_s": 64347,
+        "median_turn_s": 157
+      },
+      {
+        "game": "dc22-fdcac232",
+        "turns": 53,
+        "first_s": 56517,
+        "last_s": 64380,
+        "median_turn_s": 151.5
+      },
+      {
+        "game": "ft09-0d8bbf25",
+        "turns": 53,
+        "first_s": 56517,
+        "last_s": 64427,
+        "median_turn_s": 150.0
+      },
+      {
+        "game": "g50t-5849a774",
+        "turns": 52,
+        "first_s": 56517,
+        "last_s": 64317,
+        "median_turn_s": 153
+      },
+      {
+        "game": "ka59-38d34dbb",
+        "turns": 52,
+        "first_s": 56517,
+        "last_s": 64404,
+        "median_turn_s": 160
+      },
+      {
+        "game": "lf52-271a04aa",
+        "turns": 53,
+        "first_s": 56517,
+        "last_s": 64343,
+        "median_turn_s": 157.0
+      },
+      {
+        "game": "lp85-305b61c3",
+        "turns": 51,
+        "first_s": 56517,
+        "last_s": 64281,
+        "median_turn_s": 160.5
+      },
+      {
+        "game": "ls20-9607627b",
+        "turns": 53,
+        "first_s": 56517,
+        "last_s": 64411,
+        "median_turn_s": 153.0
+      },
+      {
+        "game": "m0r0-492f87ba",
+        "turns": 54,
+        "first_s": 56517,
+        "last_s": 64414,
+        "median_turn_s": 150
+      },
+      {
+        "game": "r11l-495a7899",
+        "turns": 53,
+        "first_s": 56517,
+        "last_s": 64409,
+        "median_turn_s": 150.5
+      },
+      {
+        "game": "re86-8af5384d",
+        "turns": 53,
+        "first_s": 56517,
+        "last_s": 64362,
+        "median_turn_s": 155.5
+      },
+      {
+        "game": "s5i5-18d95033",
+        "turns": 53,
+        "first_s": 56517,
+        "last_s": 64360,
+        "median_turn_s": 147.0
+      },
+      {
+        "game": "sb26-7fbdac44",
+        "turns": 53,
+        "first_s": 56517,
+        "last_s": 64334,
+        "median_turn_s": 149.0
+      },
+      {
+        "game": "sc25-635fd71a",
+        "turns": 53,
+        "first_s": 56517,
+        "last_s": 64395,
+        "median_turn_s": 155.0
+      },
+      {
+        "game": "sk48-d8078629",
+        "turns": 51,
+        "first_s": 56517,
+        "last_s": 64398,
+        "median_turn_s": 161.0
+      },
+      {
+        "game": "sp80-589a99af",
+        "turns": 51,
+        "first_s": 56517,
+        "last_s": 64433,
+        "median_turn_s": 158.0
+      },
+      {
+        "game": "su15-1944f8ab",
+        "turns": 53,
+        "first_s": 56517,
+        "last_s": 64325,
+        "median_turn_s": 149.5
+      },
+      {
+        "game": "tn36-ef4dde99",
+        "turns": 53,
+        "first_s": 56517,
+        "last_s": 64329,
+        "median_turn_s": 152.0
+      },
+      {
+        "game": "tr87-cd924810",
+        "turns": 52,
+        "first_s": 56517,
+        "last_s": 64312,
+        "median_turn_s": 152
+      },
+      {
+        "game": "tu93-0768757b",
+        "turns": 51,
+        "first_s": 56517,
+        "last_s": 64353,
+        "median_turn_s": 152.0
+      },
+      {
+        "game": "vc33-5430563c",
+        "turns": 53,
+        "first_s": 56517,
+        "last_s": 64367,
+        "median_turn_s": 148.0
+      },
+      {
+        "game": "wa30-ee6fef47",
+        "turns": 52,
+        "first_s": 56517,
+        "last_s": 64301,
+        "median_turn_s": 154
+      }
+    ],
+    "total": 1312
+  }
+}

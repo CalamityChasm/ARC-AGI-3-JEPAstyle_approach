@@ -1,0 +1,128 @@
+==============================================================================
+TURN LATENCY DECOMPOSITION
+source: C:\Users\desktop-06\AppData\Local\Temp\nvfp4_out
+==============================================================================
+
+-- [A] Per-request latency, vllm-metrics-final.prom (cumulative) --
+  requests completed                 n = 1339
+  metric                          mean s    share     p50<=     p90<=     p99<=
+  e2e request latency             145.70  100.00%     240.0     240.0     480.0
+    queue (WAITING phase)         126.71   86.97%     240.0     240.0     240.0
+    inference (RUNNING phase)      18.61   12.77%      15.0      40.0     120.0
+      prefill phase                 1.60    1.10%       2.0       2.0       5.0
+      decode phase                 17.01   11.67%      15.0      40.0     120.0
+  time to first token             128.69   88.32%     160.0     640.0     640.0
+  closure: queue+inference = 145.32 s vs e2e 145.70 s (residual +0.38 s)
+
+-- [B] Server admission state, vllm-openai-server.log --
+  launch args: {"max_num_seqs": "8", "max_num_batched_tokens": "8192", "kv_cache_memory_bytes": "5368709120", "max_model_len": "32768", "enable_prefix_caching": "False", "enable_chunked_prefill": "True", "async_scheduling": "True", "max_cudagraph_capture_size": "32", "speculative_config": "{'method': 'mtp', 'num_speculative_tokens': 3}"}
+  scheduler snapshots (10 s cadence) n = 792 -> window 7920 s
+  KV cache size                      105,202 tokens
+  vLLM max concurrency @ 32,768 tok/req  3.21x
+  mean Running reqs                  3.13
+  mean Waiting reqs                  21.62
+  mean Running+Waiting               24.75
+  mean GPU KV cache usage            80.3%
+  Running  min/p50/max               2 / 3 / 6
+  Waiting  min/p50/max               18 / 22 / 22
+  KV usage min/p50/max               47.1% / 79.3% / 100.0%
+  snapshots with Running >= 8        0 of 792 (0.0%)
+  snapshots with KV usage >= 85%     88 of 792 (11.1%)
+  mean prompt throughput             3407.4 tok/s
+  mean generation throughput         242.1 tok/s
+
+-- [C] GPU memory headroom --
+  model weights on GPU               81.8 GiB
+  reported initial free              94.43 GiB
+  KV cache reserved                  5.0 GiB
+  CUDA OOM events in server log      2
+    wanted 488.0 MiB, free 40.4 MiB, device total 95.0 GiB
+    wanted 2.0 MiB, free 2.4 MiB, device total 95.0 GiB
+
+-- [D] Workload shape --
+  mean prompt tokens / request       20175
+  mean generated tokens / request    1433
+  mean KV footprint / request        21608 tokens
+  -> requests that fit in KV cache   4.87
+  per-sequence decode rate           84.3 tok/s
+  per-sequence prefill rate          12621 tok/s
+  prefix cache queries / hits        0 / 0
+  MTP drafts/draft tok/accepted      688180 / 2064525 / 1231695
+  MTP acceptance rate                0.5966
+  MTP accepted per draft             1.790 of 3
+
+-- [E] Turn-level cross-check, transcripts/*.txt --
+  games                              25
+  analyzer turns (transcript heads)  1312
+  turns per game min/mean/max        51 / 52.5 / 54
+  inter-turn gap p10/p50/p90 (s)     98 / 153 / 205
+  LLM requests per analyzer turn     1.021
+
+-- [F] Little's law closure --
+  throughput X                       0.1691 req/s
+  X * e2e   -> reqs in server        24.63
+  X * queue -> reqs waiting          21.42   (log mean 21.62)
+  X * infer -> reqs running          3.15   (log mean 3.13)
+============================================================================================
+RHAE PROJECTION: what does K x more analyzer turns buy?
+============================================================================================
+
+reported mean public-25 score: 10.689 over 25 games
+games where the COMPLETION term binds : 15
+games where the EFFICIENCY term binds : 10
+games with zero levels completed      : 1
+
+-- per game --
+game                turns   acts   lvls      N   score binds       marginal action cost/level
+sb26-7fbdac44          53    152      6      8   58.33 completion  [11, 56, 15, 15, 17, 19]
+lp85-305b61c3          51     78      5      8   41.67 completion  [12, 14, 16, 15, 14]
+tr87-cd924810          52    137      3      6   28.57 completion  [30, 57, 28]
+ft09-0d8bbf25          53     65      3      ?   23.81 efficiency  [6, 7, 32]
+re86-8af5384d          53    315      3      8   16.67 completion  [23, 36, 81]
+vc33-5430563c          53    115      3      ?   16.37 efficiency  [9, 35, 31]
+su15-1944f8ab          53     92      3      9   13.33 completion  [25, 29, 23]
+ka59-38d34dbb          52    143      2      7   10.71 completion  [26, 96]
+ar25-0c556536          53    411      2      8    8.33 completion  [19, 44]
+tu93-0768757b          51    174      3      ?    6.77 efficiency  [18, 23, 60]
+wa30-ee6fef47          52    188      2      ?    5.96 efficiency  [41, 136]
+cd82-fb555c5d          54    114      1      6    4.76 completion  [39]
+cn04-2fe56bfb          52     42      1      6    4.76 completion  [26]
+m0r0-492f87ba          54     88      1      6    4.76 completion  [29]
+r11l-495a7899          53     83      1      6    4.76 completion  [6]
+g50t-5849a774          52    168      1      7    3.57 completion  [66]
+tn36-ef4dde99          53     92      1      7    3.57 completion  [25]
+s5i5-18d95033          53    219      1      8    2.78 completion  [18]
+ls20-9607627b          53     91      1      ?    2.37 efficiency  [27]
+lf52-271a04aa          53    109      1     10    1.82 completion  [25]
+dc22-fdcac232          53    139      1      ?    1.62 efficiency  [101]
+bp35-0a0ad940          51     61      1      ?    0.96 efficiency  [32]
+sc25-635fd71a          53    153      1      ?    0.80 efficiency  [88]
+sp80-589a99af          51    263      1      ?    0.17 efficiency  [207]
+sk48-d8078629          51    141      0      ?    0.00 efficiency  -
+
+observed marginal-cost growth per level: n=24, median 1.17x, min 0.27x, max 5.09x
+
+-- projected mean score (UPPER BOUND: completion term only) --
+   E_e = min(completion, efficiency) <= completion, so scoring every
+   completion-bound game at its completion term needs no assumption
+   about the unobservable h_l. Efficiency-bound games are held FLAT:
+   S_l is monotone decreasing in a_l, so a slowly-won extra level can
+   only drag their efficiency mean down, never raise it.
+
+ x turns         A linear  vs base     B marg 1.00x  vs base     B marg 1.17x  vs base
+     1.0           10.689     0.0%           10.689     0.0%           10.689     0.0%
+     1.2           12.134    13.5%           18.333    71.5%           17.000    59.0%
+     1.5           16.124    50.8%           21.587   102.0%           19.555    82.9%
+     2.0           24.787   131.9%           27.866   160.7%           25.767   141.1%
+     3.0           35.075   228.1%           38.302   258.3%           32.772   206.6%
+     5.0           48.825   356.8%           57.834   441.0%           48.158   350.5%
+
+levels completed across the 25 games: base 48
+  x1.0 -> A linear 48, B marg 1.00x 48, B marg 1.17x 48
+  x1.2 -> A linear 50, B marg 1.00x 70, B marg 1.17x 67
+  x1.5 -> A linear 61, B marg 1.00x 77, B marg 1.17x 73
+  x2.0 -> A linear 90, B marg 1.00x 98, B marg 1.17x 92
+  x3.0 -> A linear 123, B marg 1.00x 130, B marg 1.17x 115
+  x5.0 -> A linear 174, B marg 1.00x 186, B marg 1.17x 149
+
+(the x1.0 row MUST reproduce base mean 10.689 / 48 levels for models B; that is the model's correctness test)
