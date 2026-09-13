@@ -174,6 +174,55 @@ while the throughput lever (NVFP4 + MTP speculative decoding) is measured, so
 budget fix + concurrency + throughput can ship as one submission rather than
 three marginal ones.
 
+### 8. Result — 2026-09-12: n=2 on the NVFP4 stack settles the variance question
+
+**Ref `56174348`, `COMPLETE`, `2.95`** — a **byte-identical** resubmit of kernel
+v2 (zero code changes), purely to measure run-to-run spread. Rank **427 /
+2,987**.
+
+| run | config | score |
+|---|---|---|
+| 2026-09-11 | v2, unmodified | 2.84 |
+| 2026-09-12 | v2, **byte-identical** | 2.95 |
+
+**Spread 0.11 = 3.8% of the mean.** Far tighter than Tufa's own public-25 figure
+(`1.6002 +/- 0.4475`, ~28% CV at n=20) would predict. **This stack's central
+tendency for us is ~2.9 and is stable.** Caveat: n=2 is a poor variance
+estimator -- two close draws are consistent with low variance but do not prove
+it. Still, this is real evidence against "2.84 was an unlucky draw."
+
+**Therefore the notebook author's `4.33` is NOT explained by our variance.** The
+likelier reading, now preferred: **that notebook is probably not what scored
+4.33.** Its title is `duck-qwen3-8-anim-BASE`; teams routinely publish a
+baseline rather than their best submission, and 4.33 is a *team* leaderboard
+score with nothing tying it to this kernel. If so, ~2.9 simply is what this
+notebook does and there was never a gap to close.
+
+### The bar is moving faster than forking can keep up
+
+| date | top-10% score |
+|---|---|
+| 2026-09-07 | 2.99 |
+| 2026-09-10 | 3.20 |
+| 2026-09-11 | 3.24 |
+| 2026-09-12 | **3.31** |
+
+**~+0.1/day**, because the community is forking the same public notebooks --
+including the one we forked. Our three submissions gained +0.38 (2.57 -> 2.95)
+while the bar moved +0.11 over the same window. **Forking cannot win this race:
+the fork is what raises the bar.** Currently 2.95 vs 3.31, ~+12% needed against
+a drifting target.
+
+### Strategic consequence
+
+Tufa's writeup: *"solvability ... depends on model capability, while the cost is
+mostly dictated by the harness"*, and their own stated weak areas are
+**"context management and perception"**. Three submissions of harness/serving
+work moved 2.57 -> 2.95, consistent with harness buying **cost, not
+solvability**. **Stop spending slots on this lineage.** The remaining directions
+are perception (their stated gap, where our measured 9-155 s analyzer timeouts
+also live) and model capability -- not more serving tuning.
+
 ## Repo / branch layout
 
 - `master` -- Stage 0 (harness) is complete and stable here. Don't rebase
