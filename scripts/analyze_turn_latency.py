@@ -352,6 +352,12 @@ def main():
     print("  MTP drafts/draft tok/accepted      %.0f / %.0f / %.0f" % (drafts, draft_tok, acc_tok))
     print("  MTP acceptance rate                %.4f" % (acc_tok / draft_tok))
     print("  MTP accepted per draft             %.3f of %.0f" % (acc_tok / drafts, draft_tok / drafts))
+    preempt = scalar(prom, "vllm:num_preemptions_total") or 0.0
+    print("  preemptions                        %.0f (%.1f%% of requests)"
+          % (preempt, 100.0 * preempt / n_req))
+    for labels, val in prom.get("vllm:request_success_total", []):
+        if val:
+            print("  finished_reason=%-12s        %.0f" % (labels.get("finished_reason"), val))
 
     print("\n-- [E] Turn-level cross-check, transcripts/*.txt --")
     games = tr["per_game"]
