@@ -27,9 +27,24 @@ The competition metric is **RHAE**, not levels-completed:
 
 ```
 per level:        S_l = min(1.15, h_l / a_l)^2      h = upper-median best-human action count
-per environment:  E_e = min( Sum_solved w_l / Sum_all w_n ,  Sum w_l*S_l / Sum w_l ),  w_l = l
-final:            T   = mean over environments, as a PERCENTAGE (0-100)
+per environment:  E_e = min( Sum_solved w_l / Sum_all w_n ,  Sum_ALL w_l*S_l / Sum_ALL w_l ),  w_l = l
 ```
+
+**CORRECTION (2026-09-12): both denominators are over ALL levels, not solved
+levels.** The earlier wording (`Sum w_l*S_l / Sum w_l`) did not say which, and
+that ambiguity **flips the sign of every "does more play help?" estimate**. Read
+from the real scorer in the mounted solver bundle
+(`taaf/game.py: GameRun._compute_final_score`), not inferred: the efficiency
+term's denominator sums over every level, so **E_e is monotone non-decreasing in
+levels solved -- completing another level can never lower a game's score.**
+
+Under the wrong (solved-only) reading, solving an extra level *dilutes* the
+efficiency average and a projection of "2x more turns" comes out at a confident
+**-29%**. Under the correct reading the same projection is **+66% floor**. A
+reimplementation against the real scorer reproduces all 25 of a real run's
+`final_score` values bit-exactly, and `benchmark.json` carries
+`base_actions_per_level` (the true `h_l` human baselines), so nothing here needs
+inferring. See `experiments/stage7_turn_latency.md`.
 
 Efficiency is **squared** (2x human action count => 1/4 score; 10x => ~1%) and
 completion is a **hard ceiling** weighted toward deep levels. `GraphExplorerAgent`'s
