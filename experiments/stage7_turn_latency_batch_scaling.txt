@@ -1,0 +1,46 @@
+====================================================================================
+DECODE BATCH-SCALING CURVE (observational, from the production log)
+source: C:\Users\desktop-06\AppData\Local\Temp\nvfp4_out\vllm-openai-server.log   n=792 snapshots
+====================================================================================
+
+windows with prompt throughput < 500 tok/s (decode-dominated): 88 of 792
+
+-- ALL windows --
+ Running       n    gen tok/s      per-seq prompt tok/s       KV %
+       2       2        234.9        117.5       3492.9       48.0
+       3     705        243.4         81.1       3409.8       78.8
+       4      64        201.7         50.4       3322.9       92.9
+       5      19        342.5         68.5       3500.3       93.5
+       6       2        126.1         21.0       4312.1       98.3
+
+-- decode-dominated windows --
+ Running       n    gen tok/s      per-seq prompt tok/s       KV %
+       3      74        297.2         99.1          0.0       80.3
+       4      14         47.9         12.0          0.0       96.0
+
+-- marginal aggregate generation throughput per extra running sequence --
+   (decode-dominated windows with n >= 5 only)
+   Running 3 -> 4 : 297.2 -> 47.9 tok/s  (-249.3 tok/s per extra seq, x0.161)  n=74,14
+
+   over Running 3 -> 4: aggregate x0.161 while batch x1.333
+   -> scaling efficiency -252% of ideal linear batching
+   (100%% would mean each extra resident sequence is free; 0%% would
+    mean decode is already compute-bound and the KV lever is worthless)
+
+====================================================================================
+VERDICT ON THIS LOG AS EVIDENCE
+====================================================================================
+Running distribution: {2: 2, 3: 705, 4: 64, 5: 19, 6: 2}
+89% of all snapshots sit at Running=3.
+
+The batch size BARELY VARIES, because the KV pool pins it. There is no
+range to regress over, the off-mode buckets are tiny (n=2..19) and are
+confounded with prefill bursts and preemption recovery, and the
+decode-dominated Running=4 bucket is visibly contaminated (aggregate
+generation FALLS, which no batching model predicts).
+
+So: the turn DECOMPOSITION is fully recoverable from existing artifacts,
+but the throughput-vs-batch CURVE is not. Reporting a number from this
+log would be exactly the 'confident, plausible-looking, wrong table'
+failure this project has already paid for once. It needs a controlled
+sweep on a free kernel instead.

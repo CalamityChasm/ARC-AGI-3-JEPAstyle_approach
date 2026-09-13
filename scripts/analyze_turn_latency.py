@@ -382,6 +382,56 @@ def main():
     print("  X * queue -> reqs waiting          %.2f   (log mean %.2f)" % (X * queue["mean"], mean("waiting")))
     print("  X * infer -> reqs running          %.2f   (log mean %.2f)" % (X * infer["mean"], mean("running")))
 
+    print("\n-- [G] Turns-per-game arithmetic --")
+    print("  A game is a serial loop, so it gets T / turn_latency turns, and under")
+    print("  saturation Little's law makes turn_latency = N_games / X. Both views")
+    print("  reduce to the same identity, which closes on the measured data:")
+    print()
+    tokens_per_turn = gen_tok / total_turns
+    agg_gen = mean("gen_tps")
+    print("      turns_per_game = agg_generation_tok_s * T / (tokens_per_turn * N_games)")
+    print("                     = %.1f * %.0f / (%.0f * %d)"
+          % (agg_gen, window_s, tokens_per_turn, len(games)))
+    print("                     = %.1f          (observed %.1f)"
+          % (agg_gen * window_s / (tokens_per_turn * len(games)), total_turns / len(games)))
+    print()
+    print("      turns_per_game = X * T / N_games = %.4f * %.0f / %d = %.1f"
+          % (X, window_s, len(games), X * window_s / len(games)))
+    print("      turn_latency   = N_games / X     = %d / %.4f = %.1f s  (e2e %.1f s)"
+          % (len(games), X, len(games) / X, e2e["mean"]))
+    print()
+    print("  CONSEQUENCE, and it corrects a natural worry: turns per game depends on")
+    print("  AGGREGATE generation throughput and on nothing else, because the token")
+    print("  count of a turn is a property of the harness, not of the server config.")
+    print("  A configuration that doubles aggregate throughput by running twice as")
+    print("  many sequences at half the per-sequence speed therefore delivers")
+    print("  exactly TWICE the turns, not the same number - the halved per-sequence")
+    print("  rate is already inside the aggregate figure. Per-sequence latency would")
+    print("  only matter if a single turn could outgrow the analyzer timeout (900 s)")
+    print("  or the per-game budget; at %.1f s it is 6.2x under the former." % e2e["mean"])
+    print()
+    print("  %8s %14s %14s %14s" % ("agg x", "agg tok/s", "turns/game", "turn latency s"))
+    seq_cap_mult = 8.0 / mean("running")
+    for mult in sorted({1.0, 1.25, 1.5, 2.0, round(seq_cap_mult, 2), 3.0}):
+        print("  %8.2f %14.1f %14.1f %14.1f"
+              % (mult, agg_gen * mult,
+                 agg_gen * mult * window_s / (tokens_per_turn * len(games)),
+                 e2e["mean"] / mult))
+    seq_cap = srv["launch_args"].get("max_num_seqs")
+    print()
+    print("  x%.2f is the ceiling IF the KV pool stopped binding and the scheduler" % seq_cap_mult)
+    print("  ran at its configured max_num_seqs=%s with per-sequence decode speed" % seq_cap)
+    print("  unchanged: mean Running %.2f -> 8. Whether per-sequence speed"
+          % mean("running"))
+    print("  survives that batch increase on a 512-expert MoE is exactly what the")
+    print("  free sweep has to measure; see [H].")
+
+    print("\n-- [H] What is NOT recoverable from these artifacts --")
+    print("  The throughput-vs-batch curve. Running sits at 3 in 705 of 792")
+    print("  snapshots (89%) because the KV pool pins it, so there is no range to")
+    print("  regress over. See scripts/analyze_batch_scaling.py for the attempt and")
+    print("  why its numbers must not be quoted.")
+
     if args.json:
         blob = {
             "source": os.path.abspath(root),

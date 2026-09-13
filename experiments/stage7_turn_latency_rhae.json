@@ -687,6 +687,21 @@
       }
     },
     {
+      "mult": 2.55,
+      "A linear": {
+        "mean_score": 27.456884566001012,
+        "levels": 98
+      },
+      "B marg 1.00x": {
+        "mean_score": 34.0433203524368,
+        "levels": 117
+      },
+      "B marg 1.17x": {
+        "mean_score": 28.532209241325692,
+        "levels": 100
+      }
+    },
+    {
       "mult": 3.0,
       "A linear": {
         "mean_score": 35.07506638418283,
@@ -699,21 +714,6 @@
       "B marg 1.17x": {
         "mean_score": 32.772324681441134,
         "levels": 115
-      }
-    },
-    {
-      "mult": 5.0,
-      "A linear": {
-        "mean_score": 48.82484993396639,
-        "levels": 174
-      },
-      "B marg 1.00x": {
-        "mean_score": 57.833796542913,
-        "levels": 186
-      },
-      "B marg 1.17x": {
-        "mean_score": 48.15818326729972,
-        "levels": 149
       }
     }
   ]
