@@ -1,0 +1,274 @@
+{
+  "base_mean": 10.68920779832425,
+  "base_levels": 48,
+  "scorer_max_abs_error": 0.0,
+  "projection": [
+    {
+      "mult": 1.0,
+      "optimistic": {
+        "mean_score": 10.68920779832425,
+        "levels": 48
+      },
+      "stuck-aware": {
+        "mean_score": 10.68920779832425,
+        "levels": 48
+      },
+      "+1 only": {
+        "mean_score": 10.68920779832425,
+        "levels": 48
+      }
+    },
+    {
+      "mult": 1.25,
+      "optimistic": {
+        "mean_score": 16.8302902756891,
+        "levels": 65
+      },
+      "stuck-aware": {
+        "mean_score": 14.594575989974818,
+        "levels": 61
+      },
+      "+1 only": {
+        "mean_score": 14.594575989974818,
+        "levels": 61
+      }
+    },
+    {
+      "mult": 1.5,
+      "optimistic": {
+        "mean_score": 24.577626124784675,
+        "levels": 77
+      },
+      "stuck-aware": {
+        "mean_score": 18.741055403009735,
+        "levels": 69
+      },
+      "+1 only": {
+        "mean_score": 15.879142147814669,
+        "levels": 64
+      }
+    },
+    {
+      "mult": 2.0,
+      "optimistic": {
+        "mean_score": 37.69039514997031,
+        "levels": 101
+      },
+      "stuck-aware": {
+        "mean_score": 24.7841436611006,
+        "levels": 84
+      },
+      "+1 only": {
+        "mean_score": 17.701376464707845,
+        "levels": 72
+      }
+    },
+    {
+      "mult": 2.55,
+      "optimistic": {
+        "mean_score": 45.09611196021092,
+        "levels": 112
+      },
+      "stuck-aware": {
+        "mean_score": 30.64673310932392,
+        "levels": 97
+      },
+      "+1 only": {
+        "mean_score": 17.701376464707845,
+        "levels": 72
+      }
+    },
+    {
+      "mult": 3.0,
+      "optimistic": {
+        "mean_score": 51.03111997981374,
+        "levels": 125
+      },
+      "stuck-aware": {
+        "mean_score": 34.04183396699184,
+        "levels": 106
+      },
+      "+1 only": {
+        "mean_score": 17.701376464707845,
+        "levels": 72
+      }
+    }
+  ],
+  "per_game_at_probe": [
+    {
+      "game": "tn36-ef4dde99",
+      "base": 3.571428571428571,
+      "proj": 53.57142857142857,
+      "levels": 1,
+      "proj_levels": 5
+    },
+    {
+      "game": "lf52-271a04aa",
+      "base": 1.8181818181818181,
+      "proj": 10.46497197809605,
+      "levels": 1,
+      "proj_levels": 3
+    },
+    {
+      "game": "cn04-2fe56bfb",
+      "base": 4.761904761904762,
+      "proj": 14.285714285714285,
+      "levels": 1,
+      "proj_levels": 2
+    },
+    {
+      "game": "bp35-0a0ad940",
+      "base": 0.95703125,
+      "proj": 2.87109375,
+      "levels": 1,
+      "proj_levels": 2
+    },
+    {
+      "game": "wa30-ee6fef47",
+      "base": 5.958333333333333,
+      "proj": 13.333333333333334,
+      "levels": 2,
+      "proj_levels": 3
+    },
+    {
+      "game": "lp85-305b61c3",
+      "base": 41.66666666666667,
+      "proj": 77.77777777777779,
+      "levels": 5,
+      "proj_levels": 7
+    },
+    {
+      "game": "r11l-495a7899",
+      "base": 4.761904761904762,
+      "proj": 7.180896027049873,
+      "levels": 1,
+      "proj_levels": 2
+    },
+    {
+      "game": "tu93-0768757b",
+      "base": 6.767543907416483,
+      "proj": 9.630947851901508,
+      "levels": 3,
+      "proj_levels": 4
+    },
+    {
+      "game": "sp80-589a99af",
+      "base": 0.1690321161020594,
+      "proj": 0.5070963483061783,
+      "levels": 1,
+      "proj_levels": 2
+    },
+    {
+      "game": "m0r0-492f87ba",
+      "base": 4.761904761904762,
+      "proj": 14.285714285714285,
+      "levels": 1,
+      "proj_levels": 2
+    },
+    {
+      "game": "vc33-5430563c",
+      "base": 16.3711352265774,
+      "proj": 24.675765363049898,
+      "levels": 3,
+      "proj_levels": 4
+    },
+    {
+      "game": "ar25-0c556536",
+      "base": 8.333333333333332,
+      "proj": 10.484267738532361,
+      "levels": 2,
+      "proj_levels": 4
+    },
+    {
+      "game": "ka59-38d34dbb",
+      "base": 10.714285714285714,
+      "proj": 53.57142857142857,
+      "levels": 2,
+      "proj_levels": 5
+    },
+    {
+      "game": "sc25-635fd71a",
+      "base": 0.7969303423848879,
+      "proj": 0.8756395120031484,
+      "levels": 1,
+      "proj_levels": 2
+    },
+    {
+      "game": "sk48-d8078629",
+      "base": 0.0,
+      "proj": 0.0,
+      "levels": 0,
+      "proj_levels": 0
+    },
+    {
+      "game": "dc22-fdcac232",
+      "base": 1.6249574038026149,
+      "proj": 4.874872211407845,
+      "levels": 1,
+      "proj_levels": 2
+    },
+    {
+      "game": "cd82-fb555c5d",
+      "base": 4.761904761904762,
+      "proj": 5.581717451523546,
+      "levels": 1,
+      "proj_levels": 2
+    },
+    {
+      "game": "ft09-0d8bbf25",
+      "base": 23.80859375,
+      "proj": 71.42857142857143,
+      "levels": 3,
+      "proj_levels": 5
+    },
+    {
+      "game": "g50t-5849a774",
+      "base": 3.571428571428571,
+      "proj": 10.714285714285714,
+      "levels": 1,
+      "proj_levels": 2
+    },
+    {
+      "game": "ls20-9607627b",
+      "base": 2.3711542230060743,
+      "proj": 7.113462669018223,
+      "levels": 1,
+      "proj_levels": 2
+    },
+    {
+      "game": "re86-8af5384d",
+      "base": 16.666666666666664,
+      "proj": 28.45090675655762,
+      "levels": 3,
+      "proj_levels": 5
+    },
+    {
+      "game": "s5i5-18d95033",
+      "base": 2.7777777777777777,
+      "proj": 4.2729062510211415,
+      "levels": 1,
+      "proj_levels": 2
+    },
+    {
+      "game": "sb26-7fbdac44",
+      "base": 58.333333333333336,
+      "proj": 100.0,
+      "levels": 6,
+      "proj_levels": 8
+    },
+    {
+      "game": "su15-1944f8ab",
+      "base": 13.333333333333334,
+      "proj": 22.22222222222222,
+      "levels": 3,
+      "proj_levels": 4
+    },
+    {
+      "game": "tr87-cd924810",
+      "base": 28.57142857142857,
+      "proj": 71.42857142857143,
+      "levels": 3,
+      "proj_levels": 5
+    }
+  ]
+}

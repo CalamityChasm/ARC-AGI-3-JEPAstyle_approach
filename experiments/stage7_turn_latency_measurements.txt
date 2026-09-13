@@ -1,0 +1,191 @@
+==============================================================================
+TURN LATENCY DECOMPOSITION
+source: C:\Users\desktop-06\AppData\Local\Temp\nvfp4_out
+==============================================================================
+
+-- [A] Per-request latency, vllm-metrics-final.prom (cumulative) --
+  requests completed                 n = 1339
+  metric                          mean s    share     p50<=     p90<=     p99<=
+  e2e request latency             145.70  100.00%     240.0     240.0     480.0
+    queue (WAITING phase)         126.71   86.97%     240.0     240.0     240.0
+    inference (RUNNING phase)      18.61   12.77%      15.0      40.0     120.0
+      prefill phase                 1.60    1.10%       2.0       2.0       5.0
+      decode phase                 17.01   11.67%      15.0      40.0     120.0
+  time to first token             128.69   88.32%     160.0     640.0     640.0
+  closure: queue+inference = 145.32 s vs e2e 145.70 s (residual +0.38 s)
+
+-- [B] Server admission state, vllm-openai-server.log --
+  launch args: {"max_num_seqs": "8", "max_num_batched_tokens": "8192", "kv_cache_memory_bytes": "5368709120", "max_model_len": "32768", "enable_prefix_caching": "False", "enable_chunked_prefill": "True", "async_scheduling": "True", "max_cudagraph_capture_size": "32", "speculative_config": "{'method': 'mtp', 'num_speculative_tokens': 3}"}
+  scheduler snapshots (10 s cadence) n = 792 -> window 7920 s
+  KV cache size                      105,202 tokens
+  vLLM max concurrency @ 32,768 tok/req  3.21x
+  mean Running reqs                  3.13
+  mean Waiting reqs                  21.62
+  mean Running+Waiting               24.75
+  mean GPU KV cache usage            80.3%
+  Running  min/p50/max               2 / 3 / 6
+  Waiting  min/p50/max               18 / 22 / 22
+  KV usage min/p50/max               47.1% / 79.3% / 100.0%
+  snapshots with Running >= 8        0 of 792 (0.0%)
+  snapshots with KV usage >= 85%     88 of 792 (11.1%)
+  mean prompt throughput             3407.4 tok/s
+  mean generation throughput         242.1 tok/s
+
+-- [C] GPU memory headroom --
+  model weights on GPU               81.8 GiB
+  reported initial free              94.43 GiB
+  KV cache reserved                  5.0 GiB
+  CUDA OOM events in server log      2
+    wanted 488.0 MiB, free 40.4 MiB, device total 95.0 GiB
+    wanted 2.0 MiB, free 2.4 MiB, device total 95.0 GiB
+
+-- [D] Workload shape --
+  mean prompt tokens / request       20175
+  mean generated tokens / request    1433
+  mean KV footprint / request        21608 tokens
+  -> requests that fit in KV cache   4.87
+  per-sequence decode rate           84.3 tok/s
+  per-sequence prefill rate          12621 tok/s
+  prefix cache queries / hits        0 / 0
+  MTP drafts/draft tok/accepted      688180 / 2064525 / 1231695
+  MTP acceptance rate                0.5966
+  MTP accepted per draft             1.790 of 3
+  preemptions                        191 (14.3% of requests)
+  finished_reason=stop                1333
+  finished_reason=length              6
+
+-- [E] Turn-level cross-check, transcripts/*.txt --
+  games                              25
+  analyzer turns (transcript heads)  1312
+  turns per game min/mean/max        51 / 52.5 / 54
+  inter-turn gap p10/p50/p90 (s)     98 / 153 / 205
+  LLM requests per analyzer turn     1.021
+
+-- [F] Little's law closure --
+  throughput X                       0.1691 req/s
+  X * e2e   -> reqs in server        24.63
+  X * queue -> reqs waiting          21.42   (log mean 21.62)
+  X * infer -> reqs running          3.15   (log mean 3.13)
+
+-- [G] Turns-per-game arithmetic --
+  A game is a serial loop, so it gets T / turn_latency turns, and under
+  saturation Little's law makes turn_latency = N_games / X. Both views
+  reduce to the same identity, which closes on the measured data:
+
+      turns_per_game = agg_generation_tok_s * T / (tokens_per_turn * N_games)
+                     = 242.1 * 7920 / (1463 * 25)
+                     = 52.4          (observed 52.5)
+
+      turns_per_game = X * T / N_games = 0.1691 * 7920 / 25 = 53.6
+      turn_latency   = N_games / X     = 25 / 0.1691 = 147.9 s  (e2e 145.7 s)
+
+  CONSEQUENCE, and it corrects a natural worry: turns per game depends on
+  AGGREGATE generation throughput and on nothing else, because the token
+  count of a turn is a property of the harness, not of the server config.
+  A configuration that doubles aggregate throughput by running twice as
+  many sequences at half the per-sequence speed therefore delivers
+  exactly TWICE the turns, not the same number - the halved per-sequence
+  rate is already inside the aggregate figure. Per-sequence latency would
+  only matter if a single turn could outgrow the analyzer timeout (900 s)
+  or the per-game budget; at 145.7 s it is 6.2x under the former.
+
+     agg x      agg tok/s     turns/game turn latency s
+      1.00          242.1           52.4          145.7
+      1.25          302.6           65.5          116.6
+      1.50          363.1           78.6           97.1
+      2.00          484.2          104.9           72.9
+      2.55          617.3          133.7           57.1
+      3.00          726.2          157.3           48.6
+
+  x2.55 is the ceiling IF the KV pool stopped binding and the scheduler
+  ran at its configured max_num_seqs=8 with per-sequence decode speed
+  unchanged: mean Running 3.13 -> 8. Whether per-sequence speed
+  survives that batch increase on a 512-expert MoE is exactly what the
+  free sweep has to measure; see [H].
+
+-- [H] What is NOT recoverable from these artifacts --
+  The throughput-vs-batch curve. Running sits at 3 in 705 of 792
+  snapshots (89%) because the KV pool pins it, so there is no range to
+  regress over. See scripts/analyze_batch_scaling.py for the attempt and
+  why its numbers must not be quoted.
+====================================================================================================
+RHAE PROJECTION: what does K x more analyzer turns buy?
+formula reimplemented verbatim from taaf/game.py:GameRun._compute_final_score
+====================================================================================================
+
+[check 1] reimplemented scorer vs recorded final_score: max abs error 0.00e+00 over 25 games
+[check 2] mean public-25 score 10.689 over 25 games, 48 levels
+
+-- per game --
+game                 N  lvls    score      cap binds       actions/baseline per level (last = unfinished)
+sb26-7fbdac44        8     6   58.333   58.333 completion  11/18 56/28 15/18 15/19 17/31 19/23 19/58
+lp85-305b61c3        8     5   41.667   41.667 completion  12/17 14/38 16/31 15/16 14/41 7/60
+tr87-cd924810        6     3   28.571   28.571 completion  30/54 57/58 28/40 22/45
+ft09-0d8bbf25        6     3   23.809   28.571 efficiency  6/43 7/12 32/23 20/28
+re86-8af5384d        8     3   16.667   16.667 completion  23/26 36/42 81/86 175/108
+vc33-5430563c        7     3   16.371   21.429 efficiency  9/7 35/18 31/44 40/61
+su15-1944f8ab        9     3   13.333   13.333 completion  25/22 29/42 23/26 15/115
+ka59-38d34dbb        7     2   10.714   10.714 completion  26/28 96/109 21/51
+ar25-0c556536        8     2    8.333    8.333 completion  19/32 44/50 348/75
+tu93-0768757b        9     3    6.768   13.333 efficiency  18/19 23/16 60/34 73/42
+wa30-ee6fef47        9     2    5.958    6.667 efficiency  41/71 136/119 11/183
+cn04-2fe56bfb        6     1    4.762    4.762 completion  26/29 16/54
+r11l-495a7899        6     1    4.762    4.762 completion  6/22 77/33
+m0r0-492f87ba        6     1    4.762    4.762 completion  29/30 59/111
+cd82-fb555c5d        6     1    4.762    4.762 completion  39/55 75/8
+tn36-ef4dde99        7     1    3.571    3.571 completion  25/32 67/72
+g50t-5849a774        7     1    3.571    3.571 completion  66/78 102/175
+s5i5-18d95033        8     1    2.778    2.778 completion  18/20 201/89
+ls20-9607627b        7     1    2.371    3.571 efficiency  27/22 64/123
+lf52-271a04aa       10     1    1.818    1.818 completion  25/32 84/81
+dc22-fdcac232        6     1    1.625    4.762 efficiency  101/59 38/102
+bp35-0a0ad940        9     1    0.957    2.222 efficiency  32/21 29/48
+sc25-635fd71a        6     1    0.797    4.762 efficiency  88/36 65/6
+sp80-589a99af        6     1    0.169    4.762 efficiency  207/39 56/58
+sk48-d8078629        8     0    0.000    0.000 completion  141/61
+
+completion binds in 16 of 25 games; efficiency in 9
+
+-- projection --
+[check 3] mult=1.0 reproduces the observed run exactly under every model: YES (score 10.689208 vs 10.689208, levels 48 vs 48)
+
+ x turns     optimistic  vs base  levels    stuck-aware  vs base  levels        +1 only  vs base  levels
+    1.00         10.689     0.0%      48         10.689     0.0%      48         10.689     0.0%      48
+    1.25         16.830    57.5%      65         14.595    36.5%      61         14.595    36.5%      61
+    1.50         24.578   129.9%      77         18.741    75.3%      69         15.879    48.6%      64
+    2.00         37.690   252.6%     101         24.784   131.9%      84         17.701    65.6%      72
+    2.55         45.096   321.9%     112         30.647   186.7%      97         17.701    65.6%      72
+    3.00         51.031   377.4%     125         34.042   218.5%     106         17.701    65.6%      72
+
+  MONOTONICITY, and why it is not an assumption: the efficiency
+  denominator is a sum over ALL levels and is therefore fixed, so an
+  extra solved level adds w_l * S_l >= 0 to a constant denominator.
+  More turns can raise the score or leave it flat. It cannot lower it.
+
+-- per-game change at x2.00 turns --
+game                   base     proj     delta   lvls     ->      cap
+tn36-ef4dde99          3.57    53.57    +50.00      1      5    53.57
+ft09-0d8bbf25         23.81    71.43    +47.62      3      5    71.43
+tr87-cd924810         28.57    71.43    +42.86      3      5    71.43
+ka59-38d34dbb         10.71    53.57    +42.86      2      5    53.57
+sb26-7fbdac44         58.33   100.00    +41.67      6      8   100.00
+lp85-305b61c3         41.67    77.78    +36.11      5      7    77.78
+re86-8af5384d         16.67    28.45    +11.78      3      5    41.67
+cn04-2fe56bfb          4.76    14.29     +9.52      1      2    14.29
+m0r0-492f87ba          4.76    14.29     +9.52      1      2    14.29
+su15-1944f8ab         13.33    22.22     +8.89      3      4    22.22
+lf52-271a04aa          1.82    10.46     +8.65      1      3    10.91
+vc33-5430563c         16.37    24.68     +8.30      3      4    35.71
+wa30-ee6fef47          5.96    13.33     +7.38      2      3    13.33
+g50t-5849a774          3.57    10.71     +7.14      1      2    10.71
+ls20-9607627b          2.37     7.11     +4.74      1      2    10.71
+dc22-fdcac232          1.62     4.87     +3.25      1      2    14.29
+tu93-0768757b          6.77     9.63     +2.86      3      4    22.22
+r11l-495a7899          4.76     7.18     +2.42      1      2    14.29
+ar25-0c556536          8.33    10.48     +2.15      2      4    27.78
+bp35-0a0ad940          0.96     2.87     +1.91      1      2     6.67
+s5i5-18d95033          2.78     4.27     +1.50      1      2     8.33
+cd82-fb555c5d          4.76     5.58     +0.82      1      2    14.29
+sp80-589a99af          0.17     0.51     +0.34      1      2    14.29
+sc25-635fd71a          0.80     0.88     +0.08      1      2    14.29
+sk48-d8078629          0.00     0.00     +0.00      0      0     0.00
