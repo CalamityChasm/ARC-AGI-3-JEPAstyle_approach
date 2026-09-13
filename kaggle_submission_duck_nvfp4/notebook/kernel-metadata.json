@@ -1,6 +1,6 @@
 {
-  "id": "calamitychasm/arc3-duck-nvfp4-kv8",
-  "title": "arc3-duck-nvfp4-kv8",
+  "id": "calamitychasm/arc3-duck-nvfp4-prefix",
+  "title": "arc3-duck-nvfp4-prefix",
   "code_file": "duck-qwen3-8-anim-base.ipynb",
   "language": "python",
   "kernel_type": "notebook",
