@@ -1,0 +1,468 @@
+{
+  "per_game": [
+    {
+      "game": "ar25-0c556536_p0",
+      "message_count": 32,
+      "n_user_turns": 11,
+      "system": 2854,
+      "user_boilerplate": 6578,
+      "user_variable": 819,
+      "assistant_reasoning": 3473,
+      "assistant_toolcall": 3320,
+      "tool_result": 1616,
+      "image_real_tokens": 726,
+      "image_b64_chars": 15790,
+      "image_harness_estimate": 5263,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "bp35-0a0ad940_p0",
+      "message_count": 17,
+      "n_user_turns": 6,
+      "system": 2854,
+      "user_boilerplate": 3552,
+      "user_variable": 385,
+      "assistant_reasoning": 7902,
+      "assistant_toolcall": 1436,
+      "tool_result": 2418,
+      "image_real_tokens": 396,
+      "image_b64_chars": 10620,
+      "image_harness_estimate": 3540,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "cd82-fb555c5d_p0",
+      "message_count": 38,
+      "n_user_turns": 13,
+      "system": 2854,
+      "user_boilerplate": 8931,
+      "user_variable": 661,
+      "assistant_reasoning": 1756,
+      "assistant_toolcall": 2182,
+      "tool_result": 1380,
+      "image_real_tokens": 858,
+      "image_b64_chars": 16470,
+      "image_harness_estimate": 5490,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "cn04-2fe56bfb_p0",
+      "message_count": 23,
+      "n_user_turns": 8,
+      "system": 2854,
+      "user_boilerplate": 5000,
+      "user_variable": 861,
+      "assistant_reasoning": 7994,
+      "assistant_toolcall": 2819,
+      "tool_result": 3411,
+      "image_real_tokens": 528,
+      "image_b64_chars": 11372,
+      "image_harness_estimate": 3790,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "dc22-fdcac232_p0",
+      "message_count": 20,
+      "n_user_turns": 7,
+      "system": 2854,
+      "user_boilerplate": 5586,
+      "user_variable": 70,
+      "assistant_reasoning": 8139,
+      "assistant_toolcall": 1031,
+      "tool_result": 778,
+      "image_real_tokens": 462,
+      "image_b64_chars": 11914,
+      "image_harness_estimate": 3971,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "ft09-0d8bbf25_p0",
+      "message_count": 23,
+      "n_user_turns": 8,
+      "system": 2854,
+      "user_boilerplate": 4920,
+      "user_variable": 1057,
+      "assistant_reasoning": 3949,
+      "assistant_toolcall": 3989,
+      "tool_result": 2424,
+      "image_real_tokens": 528,
+      "image_b64_chars": 11280,
+      "image_harness_estimate": 3760,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "g50t-5849a774_p0",
+      "message_count": 35,
+      "n_user_turns": 12,
+      "system": 2854,
+      "user_boilerplate": 7788,
+      "user_variable": 675,
+      "assistant_reasoning": 1249,
+      "assistant_toolcall": 3040,
+      "tool_result": 2936,
+      "image_real_tokens": 792,
+      "image_b64_chars": 19204,
+      "image_harness_estimate": 6401,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "ka59-38d34dbb_p0",
+      "message_count": 23,
+      "n_user_turns": 8,
+      "system": 2854,
+      "user_boilerplate": 4912,
+      "user_variable": 1897,
+      "assistant_reasoning": 7952,
+      "assistant_toolcall": 1719,
+      "tool_result": 2244,
+      "image_real_tokens": 528,
+      "image_b64_chars": 11484,
+      "image_harness_estimate": 3828,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "lf52-271a04aa_p0",
+      "message_count": 23,
+      "n_user_turns": 8,
+      "system": 2854,
+      "user_boilerplate": 5928,
+      "user_variable": 414,
+      "assistant_reasoning": 7156,
+      "assistant_toolcall": 1300,
+      "tool_result": 1028,
+      "image_real_tokens": 528,
+      "image_b64_chars": 13276,
+      "image_harness_estimate": 4425,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "lp85-305b61c3_p0",
+      "message_count": 17,
+      "n_user_turns": 6,
+      "system": 2854,
+      "user_boilerplate": 3690,
+      "user_variable": 931,
+      "assistant_reasoning": 13442,
+      "assistant_toolcall": 1500,
+      "tool_result": 2216,
+      "image_real_tokens": 396,
+      "image_b64_chars": 12308,
+      "image_harness_estimate": 4102,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "ls20-9607627b_p0",
+      "message_count": 26,
+      "n_user_turns": 9,
+      "system": 2854,
+      "user_boilerplate": 5472,
+      "user_variable": 1180,
+      "assistant_reasoning": 6117,
+      "assistant_toolcall": 2167,
+      "tool_result": 3884,
+      "image_real_tokens": 594,
+      "image_b64_chars": 14454,
+      "image_harness_estimate": 4818,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "m0r0-492f87ba_p0",
+      "message_count": 20,
+      "n_user_turns": 7,
+      "system": 2854,
+      "user_boilerplate": 4501,
+      "user_variable": 374,
+      "assistant_reasoning": 10425,
+      "assistant_toolcall": 1449,
+      "tool_result": 1442,
+      "image_real_tokens": 462,
+      "image_b64_chars": 11166,
+      "image_harness_estimate": 3722,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "r11l-495a7899_p0",
+      "message_count": 29,
+      "n_user_turns": 10,
+      "system": 2854,
+      "user_boilerplate": 5850,
+      "user_variable": 760,
+      "assistant_reasoning": 1158,
+      "assistant_toolcall": 4056,
+      "tool_result": 1517,
+      "image_real_tokens": 660,
+      "image_b64_chars": 23252,
+      "image_harness_estimate": 7750,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "re86-8af5384d_p0",
+      "message_count": 29,
+      "n_user_turns": 10,
+      "system": 2854,
+      "user_boilerplate": 6390,
+      "user_variable": 1216,
+      "assistant_reasoning": 2841,
+      "assistant_toolcall": 1894,
+      "tool_result": 3986,
+      "image_real_tokens": 660,
+      "image_b64_chars": 15288,
+      "image_harness_estimate": 5096,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "s5i5-18d95033_p0",
+      "message_count": 26,
+      "n_user_turns": 9,
+      "system": 2854,
+      "user_boilerplate": 5265,
+      "user_variable": 865,
+      "assistant_reasoning": 8689,
+      "assistant_toolcall": 2246,
+      "tool_result": 1563,
+      "image_real_tokens": 594,
+      "image_b64_chars": 13982,
+      "image_harness_estimate": 4660,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "sb26-7fbdac44_p0",
+      "message_count": 26,
+      "n_user_turns": 9,
+      "system": 2854,
+      "user_boilerplate": 5229,
+      "user_variable": 1411,
+      "assistant_reasoning": 5944,
+      "assistant_toolcall": 1756,
+      "tool_result": 2667,
+      "image_real_tokens": 594,
+      "image_b64_chars": 15962,
+      "image_harness_estimate": 5320,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "sc25-635fd71a_p0",
+      "message_count": 23,
+      "n_user_turns": 8,
+      "system": 2854,
+      "user_boilerplate": 4744,
+      "user_variable": 818,
+      "assistant_reasoning": 7720,
+      "assistant_toolcall": 1577,
+      "tool_result": 1454,
+      "image_real_tokens": 528,
+      "image_b64_chars": 13052,
+      "image_harness_estimate": 4350,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "sk48-d8078629_p0",
+      "message_count": 22,
+      "n_user_turns": 8,
+      "system": 2854,
+      "user_boilerplate": 4768,
+      "user_variable": 456,
+      "assistant_reasoning": 9505,
+      "assistant_toolcall": 1760,
+      "tool_result": 759,
+      "image_real_tokens": 528,
+      "image_b64_chars": 11400,
+      "image_harness_estimate": 3800,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "sp80-589a99af_p0",
+      "message_count": 16,
+      "n_user_turns": 6,
+      "system": 2854,
+      "user_boilerplate": 4170,
+      "user_variable": 1140,
+      "assistant_reasoning": 14373,
+      "assistant_toolcall": 953,
+      "tool_result": 1138,
+      "image_real_tokens": 396,
+      "image_b64_chars": 7372,
+      "image_harness_estimate": 2457,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "su15-1944f8ab_p0",
+      "message_count": 26,
+      "n_user_turns": 9,
+      "system": 2854,
+      "user_boilerplate": 5211,
+      "user_variable": 2288,
+      "assistant_reasoning": 6865,
+      "assistant_toolcall": 2048,
+      "tool_result": 5466,
+      "image_real_tokens": 594,
+      "image_b64_chars": 8754,
+      "image_harness_estimate": 2918,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "tn36-ef4dde99_p0",
+      "message_count": 26,
+      "n_user_turns": 9,
+      "system": 2854,
+      "user_boilerplate": 5265,
+      "user_variable": 1472,
+      "assistant_reasoning": 4777,
+      "assistant_toolcall": 2003,
+      "tool_result": 980,
+      "image_real_tokens": 594,
+      "image_b64_chars": 16002,
+      "image_harness_estimate": 5334,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "tr87-cd924810_p0",
+      "message_count": 20,
+      "n_user_turns": 7,
+      "system": 2854,
+      "user_boilerplate": 4193,
+      "user_variable": 1237,
+      "assistant_reasoning": 5957,
+      "assistant_toolcall": 2469,
+      "tool_result": 751,
+      "image_real_tokens": 462,
+      "image_b64_chars": 17818,
+      "image_harness_estimate": 5939,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "tu93-0768757b_p0",
+      "message_count": 23,
+      "n_user_turns": 8,
+      "system": 2854,
+      "user_boilerplate": 4624,
+      "user_variable": 544,
+      "assistant_reasoning": 9330,
+      "assistant_toolcall": 2302,
+      "tool_result": 1792,
+      "image_real_tokens": 528,
+      "image_b64_chars": 8336,
+      "image_harness_estimate": 2778,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "vc33-5430563c_p0",
+      "message_count": 32,
+      "n_user_turns": 11,
+      "system": 2854,
+      "user_boilerplate": 6435,
+      "user_variable": 607,
+      "assistant_reasoning": 5386,
+      "assistant_toolcall": 1645,
+      "tool_result": 2368,
+      "image_real_tokens": 726,
+      "image_b64_chars": 14926,
+      "image_harness_estimate": 4975,
+      "image_px": [
+        256,
+        256
+      ]
+    },
+    {
+      "game": "wa30-ee6fef47_p0",
+      "message_count": 23,
+      "n_user_turns": 8,
+      "system": 2854,
+      "user_boilerplate": 4568,
+      "user_variable": 442,
+      "assistant_reasoning": 7499,
+      "assistant_toolcall": 1976,
+      "tool_result": 2367,
+      "image_real_tokens": 528,
+      "image_b64_chars": 14256,
+      "image_harness_estimate": 4752,
+      "image_px": [
+        256,
+        256
+      ]
+    }
+  ],
+  "means": {
+    "system": 2854,
+    "user_boilerplate": 5342.8,
+    "user_variable": 903.2,
+    "assistant_reasoning": 6783.92,
+    "assistant_toolcall": 2105.48,
+    "tool_result": 2103.4,
+    "image_real_tokens": 567.6
+  },
+  "total_mean": 20660.399999999998,
+  "server_mean_prompt": 20125.543689320388,
+  "image_b64_chars_mean": 13589.52,
+  "image_harness_estimate_mean": 4529.56,
+  "context_budget": 31744
+}
