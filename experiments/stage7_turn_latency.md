@@ -411,10 +411,18 @@ an extra level pays in full. Where efficiency binds, an extra level still pays
 (monotonicity above) but at the squared-efficiency discount.
 
 The structural fact that makes this worth pursuing: **all 25 games hit the wall
-with levels unsolved, and every one of them had actions already sunk into a
-level it had not finished.** From `benchmark.json`'s `actions_per_level`, the
-unfinished level had already absorbed e.g. `ar25` 348 actions, `s5i5` 201,
-`sp80` 56, `r11l` 77. That work is currently worth exactly zero.
+with levels unsolved, and every single one had actions already sunk into a level
+it had not finished** — zero exceptions, verified from `benchmark.json`'s
+`actions_per_level`. The in-progress level had absorbed between 7 (`lp85`) and
+348 (`ar25`) actions, and across the run:
+
+```
+1,825 of 3,633 actions (50.2%) were spent on levels that never completed.
+```
+
+Under this scorer those actions are worth **exactly zero**. Half the run's work
+is sitting one level-completion short of being paid for, which is a very
+different situation from "the agent has run out of things it can solve".
 
 ### 6.3 Projection [INFERRED from VERIFIED inputs]
 
