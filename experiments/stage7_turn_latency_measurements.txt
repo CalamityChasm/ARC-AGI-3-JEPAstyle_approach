@@ -108,68 +108,84 @@ source: C:\Users\desktop-06\AppData\Local\Temp\nvfp4_out
   snapshots (89%) because the KV pool pins it, so there is no range to
   regress over. See scripts/analyze_batch_scaling.py for the attempt and
   why its numbers must not be quoted.
-============================================================================================
+====================================================================================================
 RHAE PROJECTION: what does K x more analyzer turns buy?
-============================================================================================
+formula reimplemented verbatim from taaf/game.py:GameRun._compute_final_score
+====================================================================================================
 
-reported mean public-25 score: 10.689 over 25 games
-games where the COMPLETION term binds : 15
-games where the EFFICIENCY term binds : 10
-games with zero levels completed      : 1
+[check 1] reimplemented scorer vs recorded final_score: max abs error 0.00e+00 over 25 games
+[check 2] mean public-25 score 10.689 over 25 games, 48 levels
 
 -- per game --
-game                turns   acts   lvls      N   score binds       marginal action cost/level
-sb26-7fbdac44          53    152      6      8   58.33 completion  [11, 56, 15, 15, 17, 19]
-lp85-305b61c3          51     78      5      8   41.67 completion  [12, 14, 16, 15, 14]
-tr87-cd924810          52    137      3      6   28.57 completion  [30, 57, 28]
-ft09-0d8bbf25          53     65      3      ?   23.81 efficiency  [6, 7, 32]
-re86-8af5384d          53    315      3      8   16.67 completion  [23, 36, 81]
-vc33-5430563c          53    115      3      ?   16.37 efficiency  [9, 35, 31]
-su15-1944f8ab          53     92      3      9   13.33 completion  [25, 29, 23]
-ka59-38d34dbb          52    143      2      7   10.71 completion  [26, 96]
-ar25-0c556536          53    411      2      8    8.33 completion  [19, 44]
-tu93-0768757b          51    174      3      ?    6.77 efficiency  [18, 23, 60]
-wa30-ee6fef47          52    188      2      ?    5.96 efficiency  [41, 136]
-cd82-fb555c5d          54    114      1      6    4.76 completion  [39]
-cn04-2fe56bfb          52     42      1      6    4.76 completion  [26]
-m0r0-492f87ba          54     88      1      6    4.76 completion  [29]
-r11l-495a7899          53     83      1      6    4.76 completion  [6]
-g50t-5849a774          52    168      1      7    3.57 completion  [66]
-tn36-ef4dde99          53     92      1      7    3.57 completion  [25]
-s5i5-18d95033          53    219      1      8    2.78 completion  [18]
-ls20-9607627b          53     91      1      ?    2.37 efficiency  [27]
-lf52-271a04aa          53    109      1     10    1.82 completion  [25]
-dc22-fdcac232          53    139      1      ?    1.62 efficiency  [101]
-bp35-0a0ad940          51     61      1      ?    0.96 efficiency  [32]
-sc25-635fd71a          53    153      1      ?    0.80 efficiency  [88]
-sp80-589a99af          51    263      1      ?    0.17 efficiency  [207]
-sk48-d8078629          51    141      0      ?    0.00 efficiency  -
+game                 N  lvls    score      cap binds       actions/baseline per level (last = unfinished)
+sb26-7fbdac44        8     6   58.333   58.333 completion  11/18 56/28 15/18 15/19 17/31 19/23 19/58
+lp85-305b61c3        8     5   41.667   41.667 completion  12/17 14/38 16/31 15/16 14/41 7/60
+tr87-cd924810        6     3   28.571   28.571 completion  30/54 57/58 28/40 22/45
+ft09-0d8bbf25        6     3   23.809   28.571 efficiency  6/43 7/12 32/23 20/28
+re86-8af5384d        8     3   16.667   16.667 completion  23/26 36/42 81/86 175/108
+vc33-5430563c        7     3   16.371   21.429 efficiency  9/7 35/18 31/44 40/61
+su15-1944f8ab        9     3   13.333   13.333 completion  25/22 29/42 23/26 15/115
+ka59-38d34dbb        7     2   10.714   10.714 completion  26/28 96/109 21/51
+ar25-0c556536        8     2    8.333    8.333 completion  19/32 44/50 348/75
+tu93-0768757b        9     3    6.768   13.333 efficiency  18/19 23/16 60/34 73/42
+wa30-ee6fef47        9     2    5.958    6.667 efficiency  41/71 136/119 11/183
+cn04-2fe56bfb        6     1    4.762    4.762 completion  26/29 16/54
+r11l-495a7899        6     1    4.762    4.762 completion  6/22 77/33
+m0r0-492f87ba        6     1    4.762    4.762 completion  29/30 59/111
+cd82-fb555c5d        6     1    4.762    4.762 completion  39/55 75/8
+tn36-ef4dde99        7     1    3.571    3.571 completion  25/32 67/72
+g50t-5849a774        7     1    3.571    3.571 completion  66/78 102/175
+s5i5-18d95033        8     1    2.778    2.778 completion  18/20 201/89
+ls20-9607627b        7     1    2.371    3.571 efficiency  27/22 64/123
+lf52-271a04aa       10     1    1.818    1.818 completion  25/32 84/81
+dc22-fdcac232        6     1    1.625    4.762 efficiency  101/59 38/102
+bp35-0a0ad940        9     1    0.957    2.222 efficiency  32/21 29/48
+sc25-635fd71a        6     1    0.797    4.762 efficiency  88/36 65/6
+sp80-589a99af        6     1    0.169    4.762 efficiency  207/39 56/58
+sk48-d8078629        8     0    0.000    0.000 completion  141/61
 
-observed marginal-cost growth per level: n=24, median 1.17x, min 0.27x, max 5.09x
+completion binds in 16 of 25 games; efficiency in 9
 
--- projected mean score (UPPER BOUND: completion term only) --
-   E_e = min(completion, efficiency) <= completion, so scoring every
-   completion-bound game at its completion term needs no assumption
-   about the unobservable h_l. Efficiency-bound games are held FLAT:
-   S_l is monotone decreasing in a_l, so a slowly-won extra level can
-   only drag their efficiency mean down, never raise it.
+-- projection --
+[check 3] mult=1.0 reproduces the observed run exactly under every model: YES (score 10.689208 vs 10.689208, levels 48 vs 48)
 
- x turns         A linear  vs base     B marg 1.00x  vs base     B marg 1.17x  vs base
-     1.0           10.689     0.0%           10.689     0.0%           10.689     0.0%
-     1.2           12.134    13.5%           18.333    71.5%           17.000    59.0%
-     1.5           16.124    50.8%           21.587   102.0%           19.555    82.9%
-     2.0           24.787   131.9%           27.866   160.7%           25.767   141.1%
-     2.5           27.457   156.9%           34.043   218.5%           28.532   166.9%
-     3.0           35.075   228.1%           38.302   258.3%           32.772   206.6%
+ x turns     optimistic  vs base  levels    stuck-aware  vs base  levels        +1 only  vs base  levels
+    1.00         10.689     0.0%      48         10.689     0.0%      48         10.689     0.0%      48
+    1.25         16.830    57.5%      65         14.595    36.5%      61         14.595    36.5%      61
+    1.50         24.578   129.9%      77         18.741    75.3%      69         15.879    48.6%      64
+    2.00         37.690   252.6%     101         24.784   131.9%      84         17.701    65.6%      72
+    2.55         45.096   321.9%     112         30.647   186.7%      97         17.701    65.6%      72
+    3.00         51.031   377.4%     125         34.042   218.5%     106         17.701    65.6%      72
 
-levels completed across the 25 games: base 48
-  x1.0 -> A linear 48, B marg 1.00x 48, B marg 1.17x 48
-  x1.2 -> A linear 50, B marg 1.00x 70, B marg 1.17x 67
-  x1.5 -> A linear 61, B marg 1.00x 77, B marg 1.17x 73
-  x2.0 -> A linear 90, B marg 1.00x 98, B marg 1.17x 92
-  x2.5 -> A linear 98, B marg 1.00x 117, B marg 1.17x 100
-  x3.0 -> A linear 123, B marg 1.00x 130, B marg 1.17x 115
+  MONOTONICITY, and why it is not an assumption: the efficiency
+  denominator is a sum over ALL levels and is therefore fixed, so an
+  extra solved level adds w_l * S_l >= 0 to a constant denominator.
+  More turns can raise the score or leave it flat. It cannot lower it.
 
-(the x1.0 row MUST reproduce base mean 10.689 / 48 levels for models B; that is the model's correctness test)
-
-wrote experiments/stage7_turn_latency_rhae.json
+-- per-game change at x2.00 turns --
+game                   base     proj     delta   lvls     ->      cap
+tn36-ef4dde99          3.57    53.57    +50.00      1      5    53.57
+ft09-0d8bbf25         23.81    71.43    +47.62      3      5    71.43
+tr87-cd924810         28.57    71.43    +42.86      3      5    71.43
+ka59-38d34dbb         10.71    53.57    +42.86      2      5    53.57
+sb26-7fbdac44         58.33   100.00    +41.67      6      8   100.00
+lp85-305b61c3         41.67    77.78    +36.11      5      7    77.78
+re86-8af5384d         16.67    28.45    +11.78      3      5    41.67
+cn04-2fe56bfb          4.76    14.29     +9.52      1      2    14.29
+m0r0-492f87ba          4.76    14.29     +9.52      1      2    14.29
+su15-1944f8ab         13.33    22.22     +8.89      3      4    22.22
+lf52-271a04aa          1.82    10.46     +8.65      1      3    10.91
+vc33-5430563c         16.37    24.68     +8.30      3      4    35.71
+wa30-ee6fef47          5.96    13.33     +7.38      2      3    13.33
+g50t-5849a774          3.57    10.71     +7.14      1      2    10.71
+ls20-9607627b          2.37     7.11     +4.74      1      2    10.71
+dc22-fdcac232          1.62     4.87     +3.25      1      2    14.29
+tu93-0768757b          6.77     9.63     +2.86      3      4    22.22
+r11l-495a7899          4.76     7.18     +2.42      1      2    14.29
+ar25-0c556536          8.33    10.48     +2.15      2      4    27.78
+bp35-0a0ad940          0.96     2.87     +1.91      1      2     6.67
+s5i5-18d95033          2.78     4.27     +1.50      1      2     8.33
+cd82-fb555c5d          4.76     5.58     +0.82      1      2    14.29
+sp80-589a99af          0.17     0.51     +0.34      1      2    14.29
+sc25-635fd71a          0.80     0.88     +0.08      1      2    14.29
+sk48-d8078629          0.00     0.00     +0.00      0      0     0.00

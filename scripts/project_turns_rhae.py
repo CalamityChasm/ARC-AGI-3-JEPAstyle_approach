@@ -1,245 +1,291 @@
-"""Project the RHAE score of the Duck NVFP4 public-25 run under K x more turns.
+"""Project the RHAE score of a Duck public-25 run under K x more analyzer turns.
 
-Inputs
-------
-* `experiments/stage7_analyzer_timeouts_data.json` - per-game turns / actions /
-  levels_completed / level_up_actions, parsed from the run's transcripts and
-  event logs by `scripts/analyze_analyzer_timeouts.py`.
-* the run's own `score.json` - the harness's own RHAE score per game.
+Input: the run's own `benchmark.json`, which carries, per game, everything the
+score depends on -- `number_of_levels`, `base_actions_per_level` (the human
+baselines), `actions_per_level` (including the actions sunk into the level that
+was still unfinished at the wall), `levels_completed` and `final_score`.
 
-What it does
-------------
-1. Recovers each game's total level count `N` by inverting the completion term
-   `sum_{l<=k} l / sum_{l<=N} l` against the reported score. Where that yields a
-   near-integer `N`, **completion binds**; otherwise **efficiency binds** and
-   the reported score is the efficiency term directly.
-2. Models level acquisition against action count from each game's own observed
-   `level_up_actions`, under two bracketing assumptions.
-3. Reports the resulting mean public-25 score at several turn multipliers.
+Usage:
+    python scripts/project_turns_rhae.py <benchmark.json> [--json out.json]
+                                         [--multipliers 1.0,1.5,2.0]
 
-Every RHAE term follows CLAUDE.md's statement of the metric:
-    S_l  = min(1.15, h_l / a_l) ** 2
-    E_e  = min( sum_solved w_l / sum_all w_n ,  sum_solved w_l * S_l / sum_solved w_l )
-    w_l  = l
-    T    = mean over environments, as a percentage.
+THE SCORE FORMULA IS READ FROM THE HARNESS SOURCE, NOT ASSUMED
+--------------------------------------------------------------
+CLAUDE.md states RHAE as
+
+    E_e = min( sum_solved w_l / sum_all w_n ,  sum w_l*S_l / sum w_l )
+
+and flags it "high confidence, not confirmed" (the Kaggle Evaluation page is a
+JS SPA that could not be read at source). The ambiguity in that statement --
+whether the efficiency term's denominator runs over SOLVED or over ALL levels --
+**flips the sign of this entire investigation**, because it decides whether one
+more slowly-won level raises the score or lowers it.
+
+It is resolvable. The bundle that produced this run's `score.json` ships the
+scorer: `src/tufa-arc-agi-framework/src/taaf/game.py`,
+`GameRun._compute_final_score`, whose own docstring says it mirrors
+`arc_agi.scorecard.EnvironmentScoreCalculator` (v0.9.8). Verbatim:
+
+    for level_idx in range(self.number_of_levels):        # ALL levels
+        weight = level_idx + 1
+        total_weights += weight
+        completed = level_idx < self.levels_completed
+        actions  = self.actions_per_level[level_idx] ...
+        baseline = self.base_actions_per_level[level_idx]
+        if completed and actions > 0:
+            level_score = min(115.0, (baseline / actions) ** 2 * 100)
+        else:
+            level_score = 0.0
+        if level_score > 0:
+            max_weights += weight
+        total_score += level_score * weight
+    score     = total_score / total_weights
+    max_score = max_weights / total_weights * 100
+    return min(score, max_score)
+
+So the efficiency denominator is over **ALL** levels and is therefore FIXED.
+Consequences that matter here, and that the CLAUDE.md form does not make
+obvious:
+
+* the efficiency term is **monotone non-decreasing** in levels solved -- an
+  extra level adds `w_l * S_l >= 0` to a fixed denominator. More turns can
+  never *lower* the score. (Under the solved-denominator reading it could, and
+  dramatically: a first draft of this script, written to that reading, produced
+  a confident -29% at 2x turns. That number was an artifact of a misread
+  formula, and is recorded here so nobody re-derives it.)
+* the completion cap counts only levels that actually SCORED
+  (`level_score > 0`), not merely levels completed.
+* `min(115, ...)` means a level solved faster than the human baseline is worth
+  up to 1.15x a perfect one, which is why 15 of 25 games sit exactly on their
+  completion cap.
+
+`_compute_final_score` is reimplemented verbatim below and checked against every
+game's recorded `final_score` before any projection is reported.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import os
 
 
-def tri(n: int) -> int:
-    return n * (n + 1) // 2
-
-
-def completion_term(k: int, n: int) -> float:
-    """sum_{l<=k} l / sum_{l<=n} l."""
-    if n <= 0:
+def rhae_score(n_levels, base, actions, levels_completed):
+    """Verbatim reimplementation of GameRun._compute_final_score."""
+    if base is None or n_levels == 0:
         return 0.0
-    return tri(k) / tri(n)
+    total_score = 0.0
+    total_weights = 0
+    max_weights = 0
+    for level_idx in range(n_levels):
+        weight = level_idx + 1
+        total_weights += weight
+        completed = level_idx < levels_completed
+        a = actions[level_idx] if level_idx < len(actions) else 0
+        b = base[level_idx]
+        level_score = min(115.0, (b / a) ** 2 * 100) if (completed and a > 0) else 0.0
+        if level_score > 0:
+            max_weights += weight
+        total_score += level_score * weight
+    if total_weights == 0:
+        return 0.0
+    return min(total_score / total_weights, max_weights / total_weights * 100)
 
 
-def infer_total_levels(k: int, score_pct: float, max_n: int = 40, tol: float = 1e-6):
-    """Return (N, 'completion') if the score is exactly a completion term, else None."""
-    if k <= 0 or score_pct <= 0:
-        return None
-    for n in range(max(k, 1), max_n + 1):
-        if abs(completion_term(k, n) * 100.0 - score_pct) < tol * 100.0 + 1e-9:
-            return n
-    return None
+def completion_cap(n_levels, levels_completed):
+    """max_score: the weighted completion fraction, as a percentage."""
+    tot = sum(range(1, n_levels + 1))
+    got = sum(range(1, levels_completed + 1))
+    return 100.0 * got / tot if tot else 0.0
 
 
-def marginal_costs(level_up_actions: list[int]) -> list[int]:
-    """Actions spent acquiring each successive level."""
-    out = []
-    prev = 0
-    for a in level_up_actions:
-        out.append(a - prev)
-        prev = a
-    return out
+#: The three bracketing models. All three cost a not-yet-won level as
+#:
+#:      a_l = max( ratio * base_l , actions_already_spent_on_it + 1 )
+#:
+#: Using the human baseline as the SHAPE of the cost curve is a real
+#: improvement over "the next level costs what the last one cost": the
+#: baselines vary 5-20x within a single game (`m0r0`: 30, 111, 203, 26, 500,
+#: 237), so a flat extrapolation is badly wrong on most games.
+#:
+#: The `already + 1` term is the observed-resistance floor and is what makes
+#: this honest at all: a level that survived N actions without completing
+#: demonstrably costs more than N, whatever the ratio says. Without it `r11l`
+#: -- 77 actions into a level whose baseline is 33, having won level 1 in 6 --
+#: gets that level free even at mult=1.0.
+#:
+#: What the models differ on is `ratio`, and the difference is large enough
+#: that reporting only one of them would be misleading:
+#:
+#:  optimistic  ratio = mean over WON levels of actions/baseline. Assumes the
+#:              agent keeps the efficiency it showed on the levels it cleared.
+#:              On a stuck game this is plainly too kind: it projects `r11l`
+#:              (ratio 0.27, from one level won in 6 actions) straight through
+#:              five further levels at ~14 actions each, while ignoring that
+#:              level 2 has already absorbed 77 and not fallen.
+#:  stuck-aware ratio = max(that, actions_on_the_unfinished_level / its
+#:              baseline). Lets the game's CURRENT evidence of difficulty
+#:              override its historical efficiency. This is the headline model.
+#:  +1 only     stuck-aware costs, but at most one further level per game:
+#:              finish what was in progress and stop. A deliberate floor for
+#:              "more turns help", since it credits no new level the agent was
+#:              not already working on.
+MODELS = ("optimistic", "stuck-aware", "+1 only")
 
 
-def project_levels_marginal(row: dict, mult: float, growth: float, n_total: int | None) -> int:
-    """Model B: extrapolate each game's own marginal action-cost-per-level.
+def project_game(g, mult, model="stuck-aware"):
+    """Project one game's levels and score at `mult` x its observed actions.
 
-    `growth` is the geometric factor applied to each successive level's marginal
-    action cost. growth=1.0 means every further level costs what the last
-    observed one cost; growth>1 means levels get harder.
+    A game that won zero levels is projected to stay at zero under every model:
+    there is no observed ratio to extrapolate from, and inventing one is the
+    easiest way to manufacture upside that is not there.
 
-    Two hard floors keep this anchored to what was actually observed:
-
-    * the level in progress when the wall hit is known **not** to have completed
-      in the `in_progress` actions already spent on it, so its cost is floored at
-      `in_progress + 1`. Without this the model hands out free levels at
-      mult=1.0 (e.g. `r11l` spent 77 actions on level 2 after winning level 1 in
-      6, so "the next level costs 6" is refuted by the run's own data);
-    * a game that completed zero levels stays at zero - this run gives no
-      observed rate to extrapolate from, and inventing one is the easiest way to
-      manufacture an upside that is not there.
-
-    With both floors, mult=1.0 reproduces the observed level counts exactly,
-    which is the correctness test for the whole model.
+    At mult=1.0 every model reproduces the observed level counts and scores
+    EXACTLY. That is the correctness test.
     """
-    k = row["levels_completed"]
-    if k <= 0:
-        return 0
-    actions = row["actions"]
-    budget = actions * mult
-    ups = list(row["level_up_actions"])
-    costs = marginal_costs(ups)
-    spent = ups[-1]
-    # The actions already sunk into the next, unfinished level count toward it.
-    in_progress = actions - spent
+    n = g["number_of_levels"]
+    base = g["base_actions_per_level"]
+    acts = list(g["actions_per_level"])
+    k = g["levels_completed"]
+    total_actions = sum(acts)
+    budget = total_actions * mult
+
+    if k <= 0 or base is None:
+        return {"levels": k, "actions": acts,
+                "score": rhae_score(n, base, acts, k), "ratio": None}
+
+    ratios = [acts[i] / base[i] for i in range(k) if base[i] > 0]
+    ratio = sum(ratios) / len(ratios) if ratios else 1.0
+    if model != "optimistic" and k < n and base[k] > 0:
+        already = acts[k] if k < len(acts) else 0
+        ratio = max(ratio, already / base[k])
+
+    max_new = 1 if model == "+1 only" else n
+    proj = list(acts) + [0] * max(0, n - len(acts))
+    spent = float(total_actions)
     level = k
-    # observed-resistance floor: this level survived `in_progress` actions
-    next_cost = max(costs[-1] * growth, in_progress + 1.0)
-    while True:
-        if n_total is not None and level >= n_total:
-            return level
-        if spent + next_cost > budget:
-            return level
-        spent += next_cost
+    while level < n and (level - k) < max_new:
+        already = proj[level]
+        need = max(ratio * base[level], already + 1.0)
+        extra = need - already
+        if spent + extra > budget:
+            break
+        spent += extra
+        proj[level] = need
         level += 1
-        next_cost = max(1.0, next_cost * growth)
+    return {"levels": level, "actions": proj,
+            "score": rhae_score(n, base, proj, level), "ratio": ratio}
 
 
-def project_levels_linear(row: dict, mult: float, n_total: int | None) -> int:
-    """Model A: levels scale linearly with actions, capped at N.
-
-    Deliberately the crudest possible model, and an aggressive one - it assumes
-    later levels cost no more than the average of the ones already won, which
-    the marginal-cost table shows is usually false.
-    """
-    k = row["levels_completed"]
-    if k <= 0:
-        return 0
-    out = int(k * mult)
-    if n_total is not None:
-        out = min(out, n_total)
-    return out
-
-
-def main() -> None:
+def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("timeouts_json")
-    ap.add_argument("score_json")
+    ap.add_argument("benchmark_json")
     ap.add_argument("--json", default=None)
-    ap.add_argument(
-        "--multipliers", default="1.0,1.5,2.0,3.0",
-        help="turn/action multipliers to project",
-    )
+    ap.add_argument("--multipliers", default="1.0,1.25,1.5,2.0,2.55,3.0")
     args = ap.parse_args()
 
-    rows = json.load(open(args.timeouts_json, encoding="utf-8"))
-    scores = json.load(open(args.score_json, encoding="utf-8"))["games"]
+    bm = json.load(open(args.benchmark_json, encoding="utf-8"))
+    games = bm["game_runs"]
+    mults = [float(m) for m in args.multipliers.split(",")]
 
-    games = []
-    for r in rows:
-        g = r["game"]
-        sc = scores.get(g, {}).get("score")
-        if sc is None:
-            continue
-        n = infer_total_levels(r["levels_completed"], sc)
-        games.append(
-            {
-                **r,
-                "score": sc,
-                "n_total": n,
-                "binds": "completion" if n is not None else "efficiency",
-            }
-        )
-
-    base_mean = sum(x["score"] for x in games) / len(games)
-    print("=" * 92)
+    print("=" * 100)
     print("RHAE PROJECTION: what does K x more analyzer turns buy?")
-    print("=" * 92)
-    print("\nreported mean public-25 score: %.3f over %d games" % (base_mean, len(games)))
+    print("formula reimplemented verbatim from taaf/game.py:GameRun._compute_final_score")
+    print("=" * 100)
 
-    n_comp = sum(1 for x in games if x["binds"] == "completion")
-    print("games where the COMPLETION term binds : %d" % n_comp)
-    print("games where the EFFICIENCY term binds : %d" % (len(games) - n_comp))
-    print("games with zero levels completed      : %d"
-          % sum(1 for x in games if x["levels_completed"] == 0))
+    worst = 0.0
+    for g in games:
+        got = rhae_score(g["number_of_levels"], g["base_actions_per_level"],
+                         g["actions_per_level"], g["levels_completed"])
+        worst = max(worst, abs(got - g["final_score"]))
+    print("\n[check 1] reimplemented scorer vs recorded final_score: max abs error "
+          "%.2e over %d games" % (worst, len(games)))
+    if worst > 1e-9:
+        print("          !! MISMATCH -- do not trust anything below.")
+
+    base_mean = sum(g["final_score"] for g in games) / len(games)
+    base_levels = sum(g["levels_completed"] for g in games)
+    print("[check 2] mean public-25 score %.3f over %d games, %d levels"
+          % (base_mean, len(games), base_levels))
 
     print("\n-- per game --")
-    print("%-18s %6s %6s %6s %6s %7s %-11s %s"
-          % ("game", "turns", "acts", "lvls", "N", "score", "binds", "marginal action cost/level"))
-    for x in sorted(games, key=lambda y: -y["score"]):
-        print(
-            "%-18s %6d %6d %6d %6s %7.2f %-11s %s"
-            % (
-                x["game"], x["turns"], x["actions"], x["levels_completed"],
-                x["n_total"] if x["n_total"] else "?", x["score"], x["binds"],
-                marginal_costs(x["level_up_actions"]) or "-",
-            )
-        )
+    print("%-18s %3s %5s %8s %8s %-11s %s"
+          % ("game", "N", "lvls", "score", "cap", "binds",
+             "actions/baseline per level (last = unfinished)"))
+    n_comp = 0
+    for g in sorted(games, key=lambda x: -x["final_score"]):
+        cap = completion_cap(g["number_of_levels"], g["levels_completed"])
+        binds = "completion" if abs(g["final_score"] - cap) < 1e-9 else "efficiency"
+        n_comp += binds == "completion"
+        pairs = " ".join("%d/%d" % (a, b) for a, b in
+                         zip(g["actions_per_level"][:g["levels_completed"] + 1],
+                             g["base_actions_per_level"]))
+        print("%-18s %3d %5d %8.3f %8.3f %-11s %s"
+              % (g["game_id"], g["number_of_levels"], g["levels_completed"],
+                 g["final_score"], cap, binds, pairs))
+    print("\ncompletion binds in %d of %d games; efficiency in %d"
+          % (n_comp, len(games), len(games) - n_comp))
 
-    # observed growth of marginal cost per level, for the realistic model
-    ratios = []
-    for x in games:
-        cs = marginal_costs(x["level_up_actions"])
-        for a, b in zip(cs, cs[1:]):
-            if a > 0:
-                ratios.append(b / a)
-    ratios.sort()
-    med_growth = ratios[len(ratios) // 2] if ratios else 1.0
-    print("\nobserved marginal-cost growth per level: n=%d, median %.2fx, "
-          "min %.2fx, max %.2fx" % (len(ratios), med_growth, ratios[0] if ratios else 0,
-                                    ratios[-1] if ratios else 0))
-
-    mults = [float(m) for m in args.multipliers.split(",")]
-    models = [
-        ("A linear", lambda x, m: project_levels_linear(x, m, x["n_total"])),
-        ("B marg 1.00x", lambda x, m: project_levels_marginal(x, m, 1.0, x["n_total"])),
-        ("B marg %.2fx" % med_growth,
-         lambda x, m: project_levels_marginal(x, m, med_growth, x["n_total"])),
-    ]
-    print("\n-- projected mean score (UPPER BOUND: completion term only) --")
-    print("   E_e = min(completion, efficiency) <= completion, so scoring every")
-    print("   completion-bound game at its completion term needs no assumption")
-    print("   about the unobservable h_l. Efficiency-bound games are held FLAT:")
-    print("   S_l is monotone decreasing in a_l, so a slowly-won extra level can")
-    print("   only drag their efficiency mean down, never raise it.")
-    print()
-    hdr = "%8s" % "x turns"
-    for name, _ in models:
-        hdr += " %16s %8s" % (name, "vs base")
-    print(hdr)
-    out_rows = []
+    print("\n-- projection --")
+    rows = []
     for m in mults:
-        line = "%8.1f" % m
         rec = {"mult": m}
-        for name, fn in models:
-            tot = 0.0
-            lv = 0
-            for x in games:
-                k2 = fn(x, m)
-                lv += k2
-                if x["n_total"] is None:
-                    tot += x["score"]
-                else:
-                    tot += completion_term(k2, x["n_total"]) * 100.0
-            mean_s = tot / len(games)
-            rec[name] = {"mean_score": mean_s, "levels": lv}
-            line += " %16.3f %7.1f%%" % (mean_s, 100.0 * (mean_s / base_mean - 1.0))
-        out_rows.append(rec)
+        for model in MODELS:
+            tot = lv = 0.0
+            for g in games:
+                p = project_game(g, m, model)
+                tot += p["score"]
+                lv += p["levels"]
+            rec[model] = {"mean_score": tot / len(games), "levels": int(lv)}
+        rows.append(rec)
+    if abs(rows[0]["mult"] - 1.0) < 1e-9:
+        ok = all(abs(rows[0][m]["mean_score"] - base_mean) < 1e-9
+                 and rows[0][m]["levels"] == base_levels for m in MODELS)
+        print("[check 3] mult=1.0 reproduces the observed run exactly under every "
+              "model: %s (score %.6f vs %.6f, levels %d vs %d)"
+              % ("YES" if ok else "NO", rows[0][MODELS[0]]["mean_score"], base_mean,
+                 rows[0][MODELS[0]]["levels"], base_levels))
+
+    hdr = "%8s" % "x turns"
+    for model in MODELS:
+        hdr += " %14s %8s %7s" % (model, "vs base", "levels")
+    print("\n" + hdr)
+    for r in rows:
+        line = "%8.2f" % r["mult"]
+        for model in MODELS:
+            line += " %14.3f %7.1f%% %7d" % (
+                r[model]["mean_score"],
+                100.0 * (r[model]["mean_score"] / base_mean - 1.0),
+                r[model]["levels"])
         print(line)
 
-    base_levels = sum(x["levels_completed"] for x in games)
-    print("\nlevels completed across the 25 games: base %d" % base_levels)
-    for r in out_rows:
-        print("  x%.1f -> %s" % (r["mult"], ", ".join(
-            "%s %d" % (name, r[name]["levels"]) for name, _ in models)))
-    print("\n(the x1.0 row MUST reproduce base mean %.3f / %d levels for models B;"
-          " that is the model's correctness test)" % (base_mean, base_levels))
+    print("\n  MONOTONICITY, and why it is not an assumption: the efficiency")
+    print("  denominator is a sum over ALL levels and is therefore fixed, so an")
+    print("  extra solved level adds w_l * S_l >= 0 to a constant denominator.")
+    print("  More turns can raise the score or leave it flat. It cannot lower it.")
+
+    probe = 2.0 if any(abs(m - 2.0) < 1e-9 for m in mults) else mults[-1]
+    print("\n-- per-game change at x%.2f turns --" % probe)
+    print("%-18s %8s %8s %9s %6s %6s %8s"
+          % ("game", "base", "proj", "delta", "lvls", "->", "cap"))
+    deltas = []
+    for g in games:
+        p = project_game(g, probe)
+        deltas.append((p["score"] - g["final_score"], g, p))
+    for d, g, p in sorted(deltas, key=lambda t: -t[0]):
+        print("%-18s %8.2f %8.2f %+9.2f %6d %6d %8.2f"
+              % (g["game_id"], g["final_score"], p["score"], d,
+                 g["levels_completed"], p["levels"],
+                 completion_cap(g["number_of_levels"], p["levels"])))
 
     if args.json:
         with open(args.json, "w", encoding="utf-8") as fh:
-            json.dump({"base_mean": base_mean, "games": games,
-                       "median_growth": med_growth, "projection": out_rows}, fh, indent=2)
+            json.dump({"base_mean": base_mean, "base_levels": base_levels,
+                       "scorer_max_abs_error": worst, "projection": rows,
+                       "per_game_at_probe": [
+                           {"game": g["game_id"], "base": g["final_score"],
+                            "proj": p["score"], "levels": g["levels_completed"],
+                            "proj_levels": p["levels"]}
+                           for _, g, p in deltas]}, fh, indent=2)
         print("\nwrote %s" % args.json)
 
 
