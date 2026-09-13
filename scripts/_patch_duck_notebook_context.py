@@ -39,11 +39,15 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
+import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _duck_notebook_patch import build
+
 REPO = Path(__file__).resolve().parents[1]
+BASE_NB = REPO / "kaggle_submission_duck_nvfp4" / "notebook_baseline" / "duck-qwen3-8-anim-base.ipynb"
 NB = REPO / "kaggle_submission_duck_nvfp4" / "notebook" / "duck-qwen3-8-anim-base.ipynb"
 META = REPO / "kaggle_submission_duck_nvfp4" / "notebook" / "kernel-metadata.json"
 
@@ -129,54 +133,18 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--window", type=int, required=True)
     ap.add_argument("--kernel-id", required=True)
-    ap.add_argument("--allow-dirty", action="store_true",
-                    help="patch an already-patched notebook (re-point only)")
     args = ap.parse_args()
-
-    raw = NB.read_bytes()
-    digest = hashlib.md5(raw).hexdigest()
-    nb = json.loads(raw.decode("utf-8"))
-
-    already = MARKER in "".join(nb["cells"][HOOK_CELL]["source"])
-    if digest != BASELINE_MD5 and not (already and args.allow_dirty):
-        raise SystemExit(
-            f"notebook md5 {digest} != baseline {BASELINE_MD5}; refusing to patch "
-            "(pass --allow-dirty only to re-point an already-patched notebook)"
-        )
-
-    if already:
-        # Re-generate from the pristine cell body.
-        src = "".join(nb["cells"][HOOK_CELL]["source"])
-        src = src[: src.index("\n\n# [calamitychasm] stage7-context-budget")]
-        nb["cells"][HOOK_CELL]["source"] = src.splitlines(keepends=True)
-
-    cell = nb["cells"][HOOK_CELL]
-    body = "".join(cell["source"])
-    if HOOK_ANCHOR not in body:
-        raise SystemExit(f"cell {HOOK_CELL} is not the customization hook")
-
-    patch = PATCH_TEMPLATE.format(window=args.window, marker=MARKER)
-    cell["source"] = (body.rstrip("\n") + "\n" + patch).splitlines(keepends=True)
-
-    # Only the hook cell may change.
-    base = json.loads(Path(NB).read_bytes().decode("utf-8")) if not already else None
-    if base is not None:
-        for i, (x, y) in enumerate(zip(base["cells"], nb["cells"])):
-            if i == HOOK_CELL:
-                continue
-            if "".join(x["source"]) != "".join(y["source"]):
-                raise SystemExit(f"cell {i} changed unexpectedly")
-
-    NB.write_text(json.dumps(nb, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
-
-    meta = json.loads(META.read_text(encoding="utf-8"))
-    slug = args.kernel_id.split("/")[-1]
-    meta["id"] = args.kernel_id
-    meta["title"] = slug
-    META.write_text(json.dumps(meta, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-
-    print(f"patched cell {HOOK_CELL}: context window -> {args.window}")
-    print(f"kernel id -> {args.kernel_id}")
+    build(
+        base_nb=BASE_NB,
+        out_nb=NB,
+        meta=META,
+        baseline_md5=BASELINE_MD5,
+        hook_cell=HOOK_CELL,
+        hook_anchor=HOOK_ANCHOR,
+        patch=PATCH_TEMPLATE.format(window=args.window, marker=MARKER),
+        kernel_id=args.kernel_id,
+    )
+    print(f"patched cell {HOOK_CELL}: harness context window -> {args.window}")
 
 
 if __name__ == "__main__":
