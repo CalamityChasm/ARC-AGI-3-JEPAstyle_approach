@@ -330,3 +330,54 @@ the progressive summary blocks.*
 ## 8. Recommendation
 
 *Pending the runs.*
+
+---
+
+## RESULTS (2026-09-14) — both candidates regressed; the line is closed
+
+| run | public-25 | actions | vs baseline |
+|---|---:|---:|---|
+| baseline | **10.69** | 3,633 | — |
+| history dedupe | **7.09** | **1,885** | score −33.6%, actions **−48.1%** |
+
+**The transform did exactly what it was built to do** — startup telemetry:
+`HISTORY_DEDUPE active: hook=ToolAgent._chat_completion probe_chars=24547->12376`,
+i.e. the payload was genuinely halved, and all five startup assertions passed.
+
+**And actions still halved.** That is the opposite of the mechanism's whole
+prediction: fewer tokens per request should raise residency and therefore
+turns. Instead turns fell ~48%.
+
+**[INFERRED] What this says.** The deduplicated content was load-bearing.
+Stripping the repeated instruction block from history did not just shrink the
+prompt, it changed model behaviour — plausibly longer or more confused
+generations, so time-per-turn rose faster than the smaller prompt saved. The
+26% of the request that is "content the model is already reading elsewhere"
+is apparently not redundant *to the model*, only to a reader.
+
+This is the second time on this stack that a change with a sound throughput
+mechanism produced a behavioural regression invisible to token accounting
+(prefix caching was the first: identical actions, −47% score). **On this
+harness, prompt content cannot be treated as a free variable.**
+
+## Verdict: the throughput line is closed
+
+Five levers, five failures, all found on free runs, no submission quota spent:
+
+| lever | outcome |
+|---|---|
+| fp8 KV dtype | architecturally impossible (`QSA requires BF16`) |
+| KV pool 5 → 8 GiB | CUDA OOM (81.8 GiB weights / 95 GiB card) |
+| prefix caching | identical actions, −47% score (Mamba/GDN state) |
+| multimodal upscale | **inert** — 66 vision tokens at every upscale |
+| history dedupe | −34% score, −48% actions |
+
+Both sides of `residency = pool_tokens / tokens_per_request` are now exhausted
+with the model held fixed. The numerator is capped by GPU memory; the
+denominator is capped by the model needing the context it is given.
+
+**Recommendation: stop optimising throughput on this stack.** The remaining
+direction that does not trade away capability is not a serving or prompt knob
+at all. Tufa's own framing — *"solvability depends on model capability, the
+cost is dictated by the harness"* — now reads as a ceiling statement: we have
+spent the harness side out.
