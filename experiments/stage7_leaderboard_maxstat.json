@@ -1,0 +1,94 @@
+{
+  "n_teams": 3049,
+  "spearman_subs_vs_score__all teams": 0.5912,
+  "spearman_subs_vs_score__score >= 2.0": 0.3554,
+  "buckets": [
+    {
+      "bucket": "1-1",
+      "n": 771,
+      "median": 0.12,
+      "p90": 1.03
+    },
+    {
+      "bucket": "2-3",
+      "n": 704,
+      "median": 0.21,
+      "p90": 2.19
+    },
+    {
+      "bucket": "4-7",
+      "n": 583,
+      "median": 0.3,
+      "p90": 2.94
+    },
+    {
+      "bucket": "8-15",
+      "n": 402,
+      "median": 0.895,
+      "p90": 3.4
+    },
+    {
+      "bucket": "16-31",
+      "n": 302,
+      "median": 1.51,
+      "p90": 3.85
+    },
+    {
+      "bucket": "32-63",
+      "n": 188,
+      "median": 3.21,
+      "p90": 4.43
+    },
+    {
+      "bucket": "64+",
+      "n": 99,
+      "median": 3.45,
+      "p90": 4.31
+    }
+  ],
+  "anchors": [
+    {
+      "user": "wuliao0",
+      "rank": 50,
+      "score": 4.33,
+      "subs": 62
+    },
+    {
+      "user": "keithtyser",
+      "rank": 67,
+      "score": 4.17,
+      "subs": 82
+    },
+    {
+      "user": "akhileshgodugu",
+      "rank": 87,
+      "score": 4.09,
+      "subs": 54
+    },
+    {
+      "user": "tantan0327",
+      "rank": 116,
+      "score": 3.92,
+      "subs": 48
+    },
+    {
+      "user": "dantelok",
+      "rank": 266,
+      "score": 3.49,
+      "subs": 3
+    },
+    {
+      "user": "woguoat",
+      "rank": 274,
+      "score": 3.46,
+      "subs": 32
+    },
+    {
+      "user": "calamitychasm",
+      "rank": 472,
+      "score": 2.95,
+      "subs": 28
+    }
+  ],
+  "spearman_anchors": 0.8571
+}

@@ -1,0 +1,136 @@
+keithtyser/duck-qwen38-nvfp4-mtp-vllm-smoke-v1 :: serving_setup.py
+Model-identity gate, verbatim (line numbers are 1-based in that file).
+
+----- lines 36-44 -----
+   36: RUNTIME_DATASET = "keithtyser/qwen38-flash-next-vllm-nvfp4-runtime-v1"
+   37: MODEL_HF_REPO = "RadixArk/Qwen3.8-Flash-Next-NVFP4"
+   38: MODEL_HF_REVISION = "7b719225242aacd3dbd3f9407468c2ee9a9d2594"
+   39: MODEL_MANIFEST_SHA256 = "a09bdad3fe3240c73332c0f99f4388a547205cb488c127f9b9059c9267dd9a5b"
+   40: MODEL_CONFIG_SHA256 = "e765305daba0951974308f4d32c075b52a6a45974730d273f2216718a994d624"
+   41: MODEL_QUANT_CONFIG_SHA256 = "7e69ef4b94302ae5b6f453b913621f698d5631a1d023d8b3e9e3b829721b98e8"
+   42: MODEL_FILE_COUNT = 419
+   43: MODEL_TOTAL_BYTES = 135_253_622_894
+   44: MODEL_KAGGLE_PATH = Path(
+
+----- lines 600-620 -----
+  600:     value = read_json(path)
+  601:     if not isinstance(value, dict):
+  602:         raise RuntimeError(f"Invalid source identity: {path}")
+  603:     expected_setup = str(value.get("serving_setup_sha256", ""))
+  604:     actual_setup = sha256_file(Path(__file__).resolve())
+  605:     if not expected_setup or expected_setup != actual_setup:
+  606:         raise RuntimeError(
+  607:             f"Serving setup identity mismatch: {actual_setup} != {expected_setup or '<missing>'}"
+  608:         )
+  609:     if value.get("model_manifest_sha256") != MODEL_MANIFEST_SHA256:
+  610:         raise RuntimeError("Source identity has the wrong model manifest hash.")
+  611:     if value.get("runtime_manifest_sha256") != VLLM_RUNTIME_MANIFEST_SHA256:
+  612:         raise RuntimeError("Source identity has the wrong vLLM runtime manifest hash.")
+  613:     model = value.get("model") or {}
+  614:     if model.get("hf_repo") != MODEL_HF_REPO or model.get("hf_revision") != MODEL_HF_REVISION:
+  615:         raise RuntimeError("Source identity has the wrong model revision.")
+  616:     runtime = value.get("runtime") or {}
+  617:     if runtime.get("image") != VLLM_IMAGE or runtime.get("kaggle_dataset") != RUNTIME_DATASET:
+  618:         raise RuntimeError("Source identity has the wrong vLLM runtime.")
+  619:     return value
+  620: 
+
+----- lines 644-700 -----
+  644: 
+  645: def resolve_model_dir() -> Path:
+  646:     manifest_path = MODEL_KAGGLE_PATH / "MODEL_MANIFEST.json"
+  647:     if not manifest_path.is_file():
+  648:         raise FileNotFoundError(
+  649:             f"Expected mounted {MODEL_HF_REPO}@{MODEL_HF_REVISION} at "
+  650:             f"{MODEL_KAGGLE_PATH}."
+  651:         )
+  652:     value = read_json(manifest_path)
+  653:     if (
+  654:         not isinstance(value, dict)
+  655:         or value.get("repo") != MODEL_HF_REPO
+  656:         or value.get("revision") != MODEL_HF_REVISION
+  657:     ):
+  658:         raise RuntimeError(f"Mounted model identity is wrong at {MODEL_KAGGLE_PATH}.")
+  659:     return MODEL_KAGGLE_PATH
+  660: 
+  661: 
+  662: def verify_model(model_dir: Path, *, full_file_hashes: bool = True) -> dict[str, Any]:
+  663:     manifest_path = model_dir / "MODEL_MANIFEST.json"
+  664:     actual_manifest_sha = sha256_file(manifest_path)
+  665:     if actual_manifest_sha != MODEL_MANIFEST_SHA256:
+  666:         raise RuntimeError(
+  667:             f"Model manifest hash mismatch: {actual_manifest_sha} != {MODEL_MANIFEST_SHA256}"
+  668:         )
+  669:     manifest = read_json(manifest_path)
+  670:     if manifest.get("repo") != MODEL_HF_REPO or manifest.get("revision") != MODEL_HF_REVISION:
+  671:         raise RuntimeError("Mounted model provenance does not match the pinned checkpoint.")
+  672:     files = manifest.get("files")
+  673:     if not isinstance(files, list) or len(files) != MODEL_FILE_COUNT:
+  674:         raise RuntimeError(f"Expected {MODEL_FILE_COUNT} model files, found {len(files or [])}.")
+  675:     try:
+  676:         total = sum(int(row["size"]) for row in files)
+  677:     except (KeyError, TypeError, ValueError) as exc:
+  678:         raise RuntimeError("Model manifest file metadata is invalid.") from exc
+  679:     if total != MODEL_TOTAL_BYTES or total != int(manifest.get("total_bytes", -1)):
+  680:         raise RuntimeError(f"Model byte total mismatch: {total} != {MODEL_TOTAL_BYTES}")
+  681: 
+  682:     hashed_files = 0
+  683:     hashed_bytes = 0
+  684:     stat_only_weight_files = 0
+  685:     stat_only_weight_bytes = 0
+  686:     payload_files_checked = 0
+  687:     started = time.monotonic()
+  688:     if full_file_hashes:
+  689:         for index, row in enumerate(files, start=1):
+  690:             relative = str(row["path"])
+  691:             path = model_dir / relative
+  692:             expected_size = int(row["size"])
+  693:             if not path.is_file() or path.stat().st_size != expected_size:
+  694:                 raise RuntimeError(f"Missing or wrong-sized model file: {path}")
+  695:             actual_sha = sha256_file(path)
+  696:             if actual_sha != str(row["sha256"]):
+  697:                 raise RuntimeError(f"Model file hash mismatch: {relative}")
+  698:             hashed_files += 1
+  699:             hashed_bytes += expected_size
+  700:             payload_files_checked += 1
+
+----- lines 712-722 -----
+  712:         )
+  713: 
+  714:     config_path = model_dir / "config.json"
+  715:     quant_path = model_dir / "hf_quant_config.json"
+  716:     if sha256_file(config_path) != MODEL_CONFIG_SHA256:
+  717:         raise RuntimeError("Pinned model config hash does not match.")
+  718:     if sha256_file(quant_path) != MODEL_QUANT_CONFIG_SHA256:
+  719:         raise RuntimeError("Pinned ModelOpt quantization config hash does not match.")
+  720:     config = read_json(config_path)
+  721:     quant = read_json(quant_path)
+  722:     text_config = config.get("text_config") or {}
+
+----- lines 1016-1040 -----
+ 1016:     if patch_identity != required_identity:
+ 1017:         raise RuntimeError("PATCH_IDENTITY.json did not match the exact approved patch identity.")
+ 1018: 
+ 1019:     before_sha = sha256_file(path)
+ 1020:     if before_sha != VLLM_PLE_STOCK_SHA256:
+ 1021:         raise RuntimeError(f"Stock vLLM PLE source hash mismatch: {before_sha}")
+ 1022:     completed = subprocess.run(
+ 1023:         [sys.executable, "-B", str(patch_dir / PLE_PATCH_APPLICATOR), str(site)],
+ 1024:         env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+ 1025:         capture_output=True,
+ 1026:         text=True,
+ 1027:         timeout=60,
+ 1028:     )
+ 1029:     if completed.returncode != 0 or completed.stdout.strip() != "patched":
+ 1030:         raise RuntimeError(
+ 1031:             "Pinned PLE patch applicator failed: "
+ 1032:             f"returncode={completed.returncode} stdout={completed.stdout!r} "
+ 1033:             f"stderr={completed.stderr!r}"
+ 1034:         )
+ 1035:     after_sha = sha256_file(path)
+ 1036:     if after_sha != VLLM_PLE_PATCHED_SHA256:
+ 1037:         raise RuntimeError(f"Written vLLM PLE patch hash mismatch: {after_sha}")
+ 1038:     cache_artifacts = [
+ 1039:         child
+ 1040:         for root in (patch_dir, site / "vllm" / "models" / "qwen3_8_flash_next")
+
