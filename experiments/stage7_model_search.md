@@ -40,8 +40,11 @@ venv/Scripts/python.exe scripts/_build_duck_nvfp4_anim.py <pulled-src-dir> \
 2. **Residency does not buy turns on this harness, and there are now three
    independent runs proving it.** Turns obey
    `agg_gen_tok_s x T / (tokens_per_action x N_games)` to within 0.1% on every
-   run — but `tokens_per_action` is a **model/harness property that varies 3.5x**
-   (515 → 1,782) and it cancels every throughput gain. [VERIFIED, §2]
+   run — but `tokens_per_action` **varies 3.5x** (515 → 1,782) and it cancels
+   every throughput gain. [VERIFIED, §2. Whether that variation is a property of
+   the model or of the solver is *not* settled by these four runs — the fp8 row
+   changes both at once, §2.0 — and separating them is the second reason to run
+   §6.]
 3. **The ctx16k result, left blank in `stage7_context_budget.md`, is recovered:
    score 2.01, actions 3,435.** Projected 1.93x turns; delivered **0.95x**.
    That is a sixth dead lever and, more importantly, a direct falsification of
@@ -162,6 +165,33 @@ it is stronger and more useful: **on this harness, anything that makes the model
 less able to decide makes it generate more tokens before deciding, and the extra
 tokens cost more than the freed memory buys.** The residency→turns model is
 falsified, in the same direction, on three independent interventions.
+
+### 2.0 A confound in the fp8 row, stated rather than buried
+
+The ctx16k and dedupe rows are clean: same model, same solver, one variable.
+**The fp8 row is not.** It differs from the NVFP4 baseline in *two* ways, not
+one — the model, and the solver. Our FP8 kernel mounts
+`jakobbrggen/taaf-kaggle-source-anim-20260807-anim` (the **anim** solver); the
+NVFP4 baseline runs the June duck solver that ships inside Keith Tyser's bundle.
+So "1,782 vs 515 generated tokens per action" is a model-plus-solver difference,
+and attributing all of it to the model would be exactly the kind of unearned
+attribution this project has been burned by.
+
+What survives the confound unharmed is the §1 conclusion, because it does not
+need attribution: *some* configuration with 8x the residency and zero queueing
+produced 45% of the turns. Whatever the cause, freed memory did not become
+turns. What does *not* survive is any claim about which of the two changes
+caused it.
+
+The 2x2 is one cell short, and that cell is the run in §6:
+
+| | June duck solver | anim solver |
+|---|---|---|
+| **Qwen3.8-27B FP8** | never run | 3.37, 1,629 actions, 1,782 tok/action |
+| **Qwen3.8-Flash-Next NVFP4** | 10.69, 3,633 actions, 515 tok/action | ← `arc3-duck-nvfp4-anim` |
+
+Filling it in separates a model property from a solver property, which is the
+second reason to run it and was not the reason it was chosen.
 
 That also retires the brief's own framing for the model search — *"a model that
 is half the size can be substantially weaker and still win on total levels
