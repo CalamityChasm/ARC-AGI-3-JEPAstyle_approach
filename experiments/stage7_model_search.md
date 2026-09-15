@@ -334,6 +334,25 @@ added print-only hardware probe. Metadata differs only in `id`, `title`,
 `competition_sources`, `docker_image` and `machine_shape` are identical.
 **There is no configuration defect to find.**
 
+Two hypotheses that would have been reasonable, both checked and both dead
+[VERIFIED]:
+
+- **The `--retry-max-time` gotcha does not apply here.** CLAUDE.md records that
+  all three of our *older* submission notebooks had shrunk the gateway-readiness
+  wait to 90 s against the official reference's 600 s. This notebook's wait is
+  `timeout_s: float = 600.0`. Nothing to fix.
+- **We are not running a stale copy.** `wuliao0/duck-qwen3-8-anim-base` is at
+  version 10 today and still pulls at md5 `5025d1d3…b1870c` — the same file our
+  port recorded in July.
+
+This stack also fails loud rather than silent, which is worth knowing before
+spending a slot on any variant of it: the graft carries **32 hard gates**
+(`assert` / `raise RuntimeError`) covering bundle identity, solver provenance,
+the analyzer knobs, exactly-25 games with no duplicates, no crashed runs,
+non-zero actions, and a written `score.json`. The near-floor-scoring-but-
+`COMPLETE` failure mode this project was burned by repeatedly is structurally
+hard to hit here.
+
 ### 5.3 The leaderboard is substantially a max-of-n statistic
 
 `scripts/analyze_leaderboard_maxstat.py` on the 3,049-team snapshot [VERIFIED]:
