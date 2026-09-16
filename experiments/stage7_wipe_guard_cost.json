@@ -1,0 +1,395 @@
+{
+  "animout": {
+    "chars_destroyed_max": 720,
+    "chars_destroyed_median": 130,
+    "chars_destroyed_total": 2726,
+    "in_level_game_over_wipes": 16,
+    "per_game": [
+      {
+        "game_id": "bp35-0a0ad940",
+        "rows": [
+          {
+            "chars_after": 0,
+            "chars_before": 144,
+            "step": 16
+          },
+          {
+            "chars_after": 106,
+            "chars_before": 57,
+            "step": 19
+          }
+        ],
+        "wipes": 2
+      },
+      {
+        "game_id": "dc22-fdcac232",
+        "rows": [
+          {
+            "chars_after": 0,
+            "chars_before": 342,
+            "step": 28
+          }
+        ],
+        "wipes": 1
+      },
+      {
+        "game_id": "sc25-635fd71a",
+        "rows": [
+          {
+            "chars_after": 0,
+            "chars_before": 290,
+            "step": 13
+          }
+        ],
+        "wipes": 1
+      },
+      {
+        "game_id": "sp80-589a99af",
+        "rows": [
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 10
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 257,
+            "step": 16
+          },
+          {
+            "chars_after": 210,
+            "chars_before": 117,
+            "step": 19
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 372,
+            "step": 22
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 23
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 24
+          }
+        ],
+        "wipes": 6
+      },
+      {
+        "game_id": "su15-1944f8ab",
+        "rows": [
+          {
+            "chars_after": 0,
+            "chars_before": 263,
+            "step": 24
+          }
+        ],
+        "wipes": 1
+      },
+      {
+        "game_id": "tu93-0768757b",
+        "rows": [
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 5
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 9
+          },
+          {
+            "chars_after": 493,
+            "chars_before": 720,
+            "step": 17
+          }
+        ],
+        "wipes": 3
+      },
+      {
+        "game_id": "vc33-5430563c",
+        "rows": [
+          {
+            "chars_after": 172,
+            "chars_before": 164,
+            "step": 29
+          }
+        ],
+        "wipes": 1
+      },
+      {
+        "game_id": "wa30-ee6fef47",
+        "rows": [
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 34
+          }
+        ],
+        "wipes": 1
+      }
+    ],
+    "run_dir": "C:\\Users\\DESKTO~1\\AppData\\Local\\Temp\\claude\\C--Users-desktop-06-Cal-ARC-AGI-3-JEPAstyle-approach\\902520ce-29b5-44e1-ba34-7bc1c302e3b8\\scratchpad\\animout",
+    "wipes_on_an_empty_world_model": 6
+  },
+  "nvfp4_out": {
+    "chars_destroyed_max": 1078,
+    "chars_destroyed_median": 0,
+    "chars_destroyed_total": 5527,
+    "in_level_game_over_wipes": 37,
+    "per_game": [
+      {
+        "game_id": "ar25-0c556536",
+        "rows": [
+          {
+            "chars_after": 0,
+            "chars_before": 194,
+            "step": 28
+          }
+        ],
+        "wipes": 1
+      },
+      {
+        "game_id": "bp35-0a0ad940",
+        "rows": [
+          {
+            "chars_after": 0,
+            "chars_before": 97,
+            "step": 11
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 57,
+            "step": 22
+          }
+        ],
+        "wipes": 2
+      },
+      {
+        "game_id": "dc22-fdcac232",
+        "rows": [
+          {
+            "chars_after": 0,
+            "chars_before": 262,
+            "step": 13
+          }
+        ],
+        "wipes": 1
+      },
+      {
+        "game_id": "r11l-495a7899",
+        "rows": [
+          {
+            "chars_after": 0,
+            "chars_before": 251,
+            "step": 14
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 16
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 223,
+            "step": 18
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 20
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 23
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 25
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 27
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 29
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 31
+          }
+        ],
+        "wipes": 9
+      },
+      {
+        "game_id": "s5i5-18d95033",
+        "rows": [
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 35
+          }
+        ],
+        "wipes": 1
+      },
+      {
+        "game_id": "sc25-635fd71a",
+        "rows": [
+          {
+            "chars_after": 0,
+            "chars_before": 1078,
+            "step": 14
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 198,
+            "step": 27
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 28
+          }
+        ],
+        "wipes": 3
+      },
+      {
+        "game_id": "sp80-589a99af",
+        "rows": [
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 9
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 582,
+            "step": 13
+          },
+          {
+            "chars_after": 278,
+            "chars_before": 498,
+            "step": 16
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 278,
+            "step": 17
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 18
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 19
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 394,
+            "step": 28
+          }
+        ],
+        "wipes": 7
+      },
+      {
+        "game_id": "tn36-ef4dde99",
+        "rows": [
+          {
+            "chars_after": 0,
+            "chars_before": 743,
+            "step": 29
+          }
+        ],
+        "wipes": 1
+      },
+      {
+        "game_id": "tu93-0768757b",
+        "rows": [
+          {
+            "chars_after": 0,
+            "chars_before": 397,
+            "step": 5
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 10
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 11
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 12
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 275,
+            "step": 14
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 16
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 18
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 19
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 20
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 21
+          },
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 22
+          }
+        ],
+        "wipes": 11
+      },
+      {
+        "game_id": "wa30-ee6fef47",
+        "rows": [
+          {
+            "chars_after": 0,
+            "chars_before": 0,
+            "step": 26
+          }
+        ],
+        "wipes": 1
+      }
+    ],
+    "run_dir": "C:\\Users\\desktop-06\\AppData\\Local\\Temp\\nvfp4_out",
+    "wipes_on_an_empty_world_model": 22
+  }
+}
