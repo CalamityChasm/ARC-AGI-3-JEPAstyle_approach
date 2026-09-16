@@ -109,6 +109,7 @@ def build(check_only: bool = False) -> None:
     src_id = meta["id"]
     meta["id"] = KERNEL_ID
     meta["title"] = KERNEL_TITLE
+    meta["code_file"] = OUT_NB.name
     assert meta["dataset_sources"] == json.loads(SRC_META.read_text(encoding="utf-8"))["dataset_sources"]
     assert meta["enable_internet"] is False and meta["enable_gpu"] is True
     assert meta["machine_shape"] == "NvidiaRtxPro6000"
