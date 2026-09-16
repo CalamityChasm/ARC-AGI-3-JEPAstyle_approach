@@ -26,7 +26,13 @@ FINISHED_RE = re.compile(
     r"score=(?P<score>[0-9.]+) actions=(?P<actions>\d+) tokens=(?P<tokens>\d+) "
     r"per-level=(?P<per_level>[0-9/,]+)"
 )
-KEPT_RE = re.compile(r"WIPE_GUARD_KEPT n=(\d+)")
+# The startup probe emits one KEPT line and two ERROR lines of its own before it
+# zeroes the counters. They are identifiable: the probe's agent has no session
+# dir, and its exception text is self-labelling. Excluding them is the
+# difference between "10 interceptions" and the true 9.
+KEPT_RE = re.compile(r"WIPE_GUARD_KEPT n=(\d+)(?![^\\\"]*session=None)")
+PROBE_KEPT_RE = re.compile(r"WIPE_GUARD_KEPT n=\d+[^\\\"]*session=None")
+PROBE_ERR_RE = re.compile(r"WIPE_GUARD_(?:UPSTREAM_)?ERROR [^\\\"]*synthetic probe")
 FINAL_RE = re.compile(r"WIPE_GUARD_FINAL kept=(\d+) wiped=(\d+) noop=(\d+) errors=(\d+)")
 INSTALLED_RE = re.compile(r"WIPE_GUARD_INSTALLED [^\\\"]*")
 ERROR_RE = re.compile(r"WIPE_GUARD_(?:UPSTREAM_)?ERROR [^\\\"]*")
@@ -84,9 +90,10 @@ def read(target: Path) -> dict[str, Any]:
         "wasted_action_fraction": unsolved_actions / actions if actions else 0.0,
         "wipe_guard_kept_lines": len(kept),
         "wipe_guard_kept_max_n": max(kept) if kept else 0,
+        "wipe_guard_probe_lines": len(PROBE_KEPT_RE.findall(text)) + len(PROBE_ERR_RE.findall(text)),
         "wipe_guard_final": final[-1] if final else None,
         "wipe_guard_installed": bool(INSTALLED_RE.search(text)),
-        "wipe_guard_errors": len(ERROR_RE.findall(text)),
+        "wipe_guard_errors": len(ERROR_RE.findall(text)) - len(PROBE_ERR_RE.findall(text)),
         "per_game": {k: {kk: v[kk] for kk in ("state", "lvl", "lvls", "score", "actions")} for k, v in sorted(by_game.items())},
     }
 
@@ -108,6 +115,7 @@ def main() -> None:
             "actions", "levels_solved", "levels_total", "actions_solved_levels",
             "actions_never_completed_levels", "wasted_action_fraction",
             "wipe_guard_installed", "wipe_guard_kept_lines", "wipe_guard_kept_max_n",
+            "wipe_guard_probe_lines",
             "wipe_guard_final", "wipe_guard_errors",
         ):
             print(f"  {key:<32} {r[key]}")

@@ -364,15 +364,191 @@ Three distinguishable failures, and what each would look like:
 
 Kernel `calamitychasm/arc3-duck-nvfp4-anim-wg` v1, free push, public-25 path.
 Compared against the **anim** arm (9.97 / 2,615 actions), which is the
-incumbent — *not* the keithtyser baseline.
+incumbent — *not* the keithtyser baseline. The last of the 14 progressive
+summaries is taken, and independently recomputed from the 25 per-game
+`[finished]` lines: **10.08 vs 10.0768, agree.** (The first summary in this run
+reads 0.41. The trap is real; `scripts/read_duck_public25_log.py` asserts the
+two agree so it cannot be fallen into.)
 
-<!-- RESULT -->
+### 4.1 The mechanism worked, exactly and completely
+
+[VERIFIED, from the run's own log and its own event stream, computed
+independently of each other]:
+
+```
+WIPE_GUARD_INSTALLED target=inference.agent.tool_agent.ToolAgent.
+                     _update_summarized_knowledge_from_step_summary
+                     probe=9/9 fields=6 survivor=cross_level_notes
+```
+
+- **9 `WIPE_GUARD_KEPT` lines.** (The raw log has 10; one is the startup probe's
+  own, identifiable by `session=None`, emitted before the counters are zeroed.
+  Likewise 2 of the `WIPE_GUARD_ERROR` lines are the probe's deliberate hostile
+  case. The reader now excludes both: **9 interceptions, 0 real errors.**)
+- **`scripts/analyze_wipe_guard.py`, run over this run's `*_events.jsonl`,
+  independently finds 9 guardable wipes.** The guard intercepted **9 of 9 —
+  100%**, and nothing else. None of §3.4's failure modes occurred.
+- The transform is confirmed end-to-end on real data, not just by a counter:
+  in the one interception where the world model was non-empty (`tu93`,
+  239 chars), the block on the following turn reads **`239 → 239`, preserved
+  exactly**. Every comparable case in the two control runs goes to 0 or is only
+  partially rebuilt.
+
+### 4.2 The outcomes
+
+| | anim (control) | **wipe guard** | Δ |
+|---|---:|---:|---:|
+| public-25 mean | 9.97 | **10.08** | **+0.10** |
+| actions | 2,615 | 2,197 | −16% |
+| LLM calls | 1,358 | 1,388 | +2.2% |
+| no-op turn fraction | 37.7% | 39.4% | +1.7pp |
+| **levels completed** | **42 / 183** | **40 / 183** | **−2** |
+| **wasted-action fraction** | **49.3%** | **50.6%** | **+1.3pp** |
+| in-level game overs | 16 | 9 | −7 |
+| guardable wipes | 16 | 9 | — |
+| interceptions | — | **9 (100%)** | — |
+
+### 4.3 What the guard actually preserved: 239 characters
+
+The per-wipe measurement of §2.2, rerun on the treatment arm [VERIFIED]:
+
+| | anim | **wipe guard** |
+|---|---:|---:|
+| in-level game-over wipes | 16 | 9 |
+| …on an already-empty world model | 6 | **8** |
+| characters | 2,726 destroyed | **239 preserved** |
+
+Per game: `ar25` 0 · `bp35` 0, 0, 0, 0, 0, 0, 0 · `tu93` 239.
+
+**Eight of the nine interceptions guarded nothing, because the world model was
+already empty.** And this kills the charitable reading offered in §2.2: the
+"empty" wipes were hypothesised there to be *cascades* — emptiness inherited
+from an earlier wipe, which the guard would break. `bp35` is the direct test:
+**seven consecutive in-level game overs, every wipe intercepted, and the world
+model empty at every one of them.** Nothing was erasing it. The model simply was
+not emitting a labelled world-model block on those turns
+(`_update_summarized_knowledge_from_assistant` only writes a field when the
+model prefixes one). **[VERIFIED — this refutes §2.2's cascade hypothesis, which
+was mine and was wrong.]**
+
+So the guard's realised effect on this run is **239 characters retained, in one
+game**, out of a 25-game run of 2,197 actions and 1,388 model calls.
+
+### 4.4 The measurement cannot resolve an effect this size — and that is the most important thing here
+
+The guard is **structurally inert** on any game with no in-level game over: it
+is a wrapper that diverges from upstream only inside one `if`. Sixteen of the 25
+games had zero guardable wipes in *both* runs. On those sixteen the guard
+provably did nothing, so their scores should be identical.
+
+They are not [VERIFIED]:
+
+| paired per-game change, anim → wg | n | mean | sd | range | games that moved |
+|---|---:|---:|---:|---:|---:|
+| **guard provably inert** | 16 | +2.27 | **12.30** | −19.44 … **+42.86** | **12 / 16** |
+| guard active in either run | 9 | −3.75 | 10.67 | −25.00 … +4.76 | 9 / 9 |
+
+`tr87` went **4.76 → 47.62** and `re86` **27.78 → 8.33** in games the guard never
+touched. `sb26` kept its score to the digit and spent **140 → 43** actions.
+
+Two mechanisms, neither excludable from here: this stack is not run-to-run
+reproducible despite `LOCAL_ANALYZER_SEED=20260825` (continuous batching on a
+shared vLLM server is not batch-invariant), and the 25 games are **not
+independent** — they share one server, so a prompt-length change in the nine
+guarded games perturbs batching for the other sixteen. **[INFERRED as to which
+dominates; the consequence is identical either way.]**
+
+In the units that matter:
+
+```
+sd of the paired per-game score difference, on provably-inert games:  12.30
+=> standard error of a 25-game public-25 mean, single pass:            2.46
+observed treatment effect:                                            +0.10
+
+free runs per arm needed to resolve, at 95%:
+    a 2.00-point effect     ~12
+    a 1.00-point effect     ~47
+    a 0.50-point effect    ~186
+    the +0.10 observed    ~3,840
+```
+
+**A single public-25 pass carries a standard error of roughly ±2.5 points.**
+Every n=1 comparison in Stage 7 — the seven-for-seven config-locality table, the
+anim-vs-baseline 9.97-against-10.69, this run — is being read at a resolution
+the measurement does not have. The seven-for-seven *pattern* may well still be
+real (seven independent draws all landing negative is its own evidence, as that
+document argues); no individual row in it is.
 
 ---
 
 ## 5. Recommendation
 
-<!-- RECOMMENDATION -->
+**Do not spend the 2026-09-18 slot on the wipe guard.**
+
+Against the falsifier fixed in §0 — *"if wipes are intercepted but
+levels-completed and the wasted-action fraction are unchanged, the mechanism
+does not work here and the line closes"*:
+
+- wipes intercepted: **yes, 9 of 9, verified two independent ways**;
+- levels completed: **42 → 40, down**;
+- wasted-action fraction: **49.3% → 50.6%, up**.
+
+**The falsifier is met. This is a clean negative, and it is worth saying so
+plainly.**
+
+Three reasons, in descending order of how much they should be trusted:
+
+1. **The effect size is 239 characters.** [VERIFIED] Not "small and hard to
+   detect" — 8 of 9 interceptions preserved an empty world model, and the
+   `bp35` sequence shows that emptiness is not caused by the wipe. Whatever is
+   wrong with this agent on the death-heavy games, the wipe is not the binding
+   part of it.
+2. **The chassis moved the target out from under the mechanism.** [VERIFIED]
+   The brief scoped ~74 interceptions; the real figure on the incumbent is 16,
+   and this run had 9. The anim solver's `hard_noop_guard` has already more than
+   halved the death rate the guard exists to exploit. The intervention was sized
+   against the June duck and has largely been made redundant by the graft we
+   already shipped.
+3. **The experiment had no power anyway.** [VERIFIED] ±2.5 points of standard
+   error against a +0.10 effect. Even a positive result here would not have
+   justified a slot.
+
+### What this closes, and what it does not
+
+It does **not** say that retaining knowledge across deaths is a bad idea — only
+that *this* implementation, on *this* chassis, has almost nothing to retain.
+
+The `sp80` story in `stage7_sota_research.md` §4.3 is unaffected: the agent still
+has to learn a hidden 30-action budget by dying and counting, and the reason it
+does not is now visibly **not** that its notes get erased — it is that it is not
+writing the notes down. That points at the **death blacklist** (shortlist item
+6), which *creates* the record rather than preserving one. That item was listed
+as depending on this guard. **It does not. That dependency is retracted.**
+
+### The methodological recommendation, which outlives the verdict
+
+**Stop reading single free public-25 runs as rankings.** §4.4 puts a number on
+it for the first time in this project: ±2.5 points. Concretely:
+
+- Any future lever that is **structurally inert on a subset of games** gets a
+  free, same-run null arm out of that subset. Use it. This run's 16-game inert
+  subset is the only reason the noise floor could be measured at all.
+- Prefer diagnostics with far better resolution than the score — interception
+  counts, characters preserved, no-op fractions, per-level action counts. Every
+  one of those gave a clean answer here. The score gave noise.
+- This is the fourth independent line of evidence in this repo that outcome
+  counts at n=1 cannot resolve real component-level improvements (Stage 6's
+  teacher-policy value head, test-time adaptation, and the novelty-aware beta
+  cap, which went from a clean n=8 win to an exact tie at n=30). The pattern is
+  now old enough to plan around rather than rediscover.
+
+### For the record
+
+The arm is built, tested (24 tests), attributed, and pushed as
+`calamitychasm/arc3-duck-nvfp4-anim-wg` v1. It is **not** recommended for a
+slot. If it is ever revisited it should be as a paired A/B on a metric other
+than the public-25 mean, and only after something else has given the agent a
+reason to have a world model worth keeping.
 
 ---
 
@@ -391,3 +567,16 @@ incumbent — *not* the keithtyser baseline.
   is 50.9% with the row filter applied. The *conclusion* — completion binds,
   not efficiency — is unaffected; the proportion is computed from inflated
   numerator and denominator alike.
+- This document, §2.2 — the suggestion that "empty" wipes are cascades the guard
+  would break. §4.3 tested it directly and it is **wrong**: `bp35` shows seven
+  consecutive in-level game overs with every wipe intercepted and an empty world
+  model at each one.
+- `stage7_sota_research.md` §6, intervention 6 — "**Cheapest test.** Depends on
+  #1 — without the wipe guard the agent has no memory to accumulate budgets
+  into." Retracted. The death blacklist writes the record itself; §4.3 shows
+  there is no record for a guard to preserve.
+- **All Stage 7 single-free-run comparisons**, including this one — §4.4
+  measures the noise floor of a public-25 pass for the first time at **±2.5
+  points**, from 16 games on which the intervention was provably inert and which
+  nonetheless moved by up to +42.86. Individual n=1 rows should not be read as
+  rankings.
