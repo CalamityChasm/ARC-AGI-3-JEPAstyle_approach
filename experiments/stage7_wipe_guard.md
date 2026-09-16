@@ -241,6 +241,38 @@ been something to preserve each time. So the honest reading is: the guard's
 second-order saving (breaking cascades) is unmeasurable from a control run. It
 cannot be larger than the 16 interceptions allow either way.
 
+### 2.3 Does the model just restate it the next turn?
+
+Mostly not. The knowledge block is rendered from *stored* state into every
+turn's prompt, so an empty block on turn N+1 means the fields really are empty
+going into that turn — regardless of whether the turn acts. Of the wipes that
+destroyed something [VERIFIED]:
+
+| | anim | baseline |
+|---|---:|---:|
+| wipes that destroyed >0 chars | 10 | 15 |
+| …with a non-empty block again on the very next turn | **4** | **1** |
+
+`before -> after` on anim: `(144,0) (57,106) (342,0) (290,0) (257,0) (117,210)
+(372,0) (263,0) (720,493) (164,172)`.
+
+So in 6 of 10 anim cases and 14 of 15 baseline cases the agent went into the
+next turn with a blank working model. The raw observations are still in
+`history`, so this is a loss of the *summary*, not of the evidence — but the
+summary is what the prompt tells the model to revise from, and it is gone.
+
+A concrete example, `tu93` step 17, 720 characters destroyed [VERIFIED,
+transcript]:
+
+> World model: calibration done — level-3 mine (6,0) faced RIGHT and showed 'p'
+> at local (1,2) (middle-right). So p-offset = facing. Level-4 mine (0,2) has
+> 'p' at (2,1) (bottom) → faces DOWN → danger cells (1,2),(2,2). …
+> Plan: two cheap probes (R then L) to confirm the guard's per-action
+> cadence/bounce, then run the timed 12-move route.
+
+That is exactly the death-and-count knowledge §1.4 describes, erased by the
+death that produced it.
+
 **[INFERRED] This is a small intervention.** ~2.7k characters — roughly 700
 tokens — spread across 16 moments in 8 of 25 games, against ~2,989 tokens per
 turn and 940 turns. That is the honest prior going into the run, and it is
