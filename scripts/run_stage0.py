@@ -25,7 +25,7 @@ def main() -> None:
     parser.add_argument(
         "--agent",
         required=True,
-        choices=["random", "pressonce", "curiosity", "memory", "hypothesis"],
+        choices=["random", "pressonce", "curiosity", "memory", "hypothesis", "graphexploreragent", "graphexplorerjepaagent"],
         help="Agent to run.",
     )
     parser.add_argument(

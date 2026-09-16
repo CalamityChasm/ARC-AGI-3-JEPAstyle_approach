@@ -36,3 +36,9 @@ minigrid==3.1.0
 # gymnasium/minigrid above since sokoban_data.py instantiates SokobanEnv
 # directly rather than going through gym's environment registry.
 gym-sokoban==0.0.6
+
+# scripts/train_graph_win_distance_model.py (GraphExplorerStructuralAgent's
+# structural win-distance model) -- a small gradient-boosted tree, not a
+# torch model, on purpose (see that script's own docstring). Pulls in
+# joblib as a dependency, used to persist the trained model.
+scikit-learn==1.9.0

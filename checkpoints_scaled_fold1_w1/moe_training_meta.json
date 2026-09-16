@@ -1,0 +1,30 @@
+{
+  "epochs": 60,
+  "pretrain_epochs": 4,
+  "n_minigrid_transitions": 67200,
+  "n_sokoban_transitions": 0,
+  "n_openspiel_transitions": 209849,
+  "n_arcade_transitions": 81000,
+  "num_experts": 8,
+  "top_k": null,
+  "width_mult": 1.0,
+  "feature_channels": 64,
+  "batch_size": 32,
+  "lr": 0.0003,
+  "device": "cuda",
+  "n_local_transitions": 9600,
+  "n_external_transitions": 33998,
+  "external_per_game": 2000,
+  "n_games": 29,
+  "contrast_weight": 0.0,
+  "exclude_games": [
+    "r11l",
+    "bp35",
+    "m0r0",
+    "tr87",
+    "ka59"
+  ],
+  "ablate_game_id": false,
+  "resumed_from": null,
+  "checkpoint_tag": "final"
+}

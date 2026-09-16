@@ -16,6 +16,7 @@ down to patch granularity.
 """
 
 import hashlib
+from collections import deque
 from dataclasses import dataclass
 
 
@@ -47,6 +48,13 @@ class TransitionGraph:
         # known outcome from that exact state, so a Memory agent can
         # instantly recall "what worked here" without scanning every edge.
         self._best_action_from: dict[str, tuple[int, tuple[int, int] | None, int]] = {}
+        # state_key -> [(action_id, xy, next_state_key, levels_completed_delta), ...]
+        # -- an adjacency index kept in step with _edges so lookahead_best_path
+        # (and tried_actions) don't have to linear-scan every edge in the
+        # whole graph on every call; this runs once per decision, every
+        # decision, so it needs to stay O(edges from this state), not
+        # O(edges total).
+        self._outgoing: dict[str, list[tuple[int, tuple[int, int] | None, str, int]]] = {}
 
     @staticmethod
     def key_for(frame: list) -> str:
@@ -59,8 +67,17 @@ class TransitionGraph:
         xy: tuple[int, int] | None,
         next_frame: list,
         levels_completed_delta: int,
+        next_state_key: str | None = None,
     ) -> None:
-        next_key = _hash_frame(next_frame)
+        """`next_state_key`, if given, overrides this class's own
+        `_hash_frame(next_frame)` -- for a caller whose `state_key` values
+        come from a *different* hashing scheme than this class's default
+        (e.g. `GraphExplorerAgent`'s status-bar-masked hash, which needs
+        repeat visits to the same logical state to hash identically even
+        when this class's own raw-frame hash wouldn't). `next_frame` is
+        still required in that case (kept for a stable positional
+        signature across every existing caller) but goes unused."""
+        next_key = next_state_key if next_state_key is not None else _hash_frame(next_frame)
         edge_key = (state_key, action_id, xy)
         existing = self._edges.get(edge_key)
         if existing is not None:
@@ -69,6 +86,14 @@ class TransitionGraph:
             existing.levels_completed_delta = levels_completed_delta
         else:
             self._edges[edge_key] = TransitionRecord(next_key, levels_completed_delta)
+
+        out = self._outgoing.setdefault(state_key, [])
+        for i, (a, p, _nk, _d) in enumerate(out):
+            if a == action_id and p == xy:
+                out[i] = (action_id, xy, next_key, levels_completed_delta)
+                break
+        else:
+            out.append((action_id, xy, next_key, levels_completed_delta))
 
         best = self._best_action_from.get(state_key)
         if best is None or levels_completed_delta > best[2]:
@@ -81,9 +106,7 @@ class TransitionGraph:
 
     def tried_actions(self, state_key: str) -> set[tuple[int, "tuple[int, int] | None"]]:
         """Every (action_id, xy) pair already tried from this exact state."""
-        return {
-            (a, xy) for (s, a, xy) in self._edges if s == state_key
-        }
+        return {(a, xy) for (a, xy, _nk, _d) in self._outgoing.get(state_key, [])}
 
     def best_known_action(
         self, state_key: str
@@ -91,6 +114,49 @@ class TransitionGraph:
         """The best (highest levels_completed_delta) action ever observed
         from this exact state, or `None` if this state has never been seen."""
         return self._best_action_from.get(state_key)
+
+    def lookahead_best_path(
+        self, state_key: str, max_depth: int = 8
+    ) -> tuple[int, "tuple[int, int] | None", int, int] | None:
+        """BFS over already-recorded edges from `state_key`, looking for the
+        best known *multi-step* path -- generalizes `best_known_action`
+        (which only ever looks one hop ahead) to "is there a sequence of
+        moves, already fully observed in a past attempt, that leads
+        somewhere productive from here, even if the very next step alone
+        doesn't show any progress?" Since every edge is an exact, lossless
+        recall of something that actually happened (ARC-3 is deterministic
+        -- same state + same action always produces the same next state),
+        this has none of the compounding-error risk a multi-step rollout
+        through the *learned* predictor would have: every hop is a verified
+        fact, not a prediction built on a prediction.
+
+        Returns (first_action_id, first_xy, cumulative_levels_completed_delta,
+        path_length) for the best-scoring path found within `max_depth`
+        hops -- "best" means highest cumulative delta, breaking ties toward
+        the shorter path -- or `None` if no known path from this state ever
+        shows net progress. Only the *first* action matters to the caller
+        (this is a re-planning-every-turn lookahead, not a committed
+        multi-step plan -- the state might not evolve exactly as this path
+        predicts if the graph has multiple recorded outcomes for a later
+        edge, e.g. from a non-deterministic-looking game or a stale record).
+        """
+        best: tuple[int, tuple[int, int] | None, int, int] | None = None
+        visited = {state_key}
+        queue: deque = deque()
+        for (action_id, xy, next_key, delta) in self._outgoing.get(state_key, []):
+            queue.append((next_key, action_id, xy, delta, 1))
+        while queue:
+            cur_key, first_action, first_xy, cum_delta, depth = queue.popleft()
+            if cum_delta > 0 and (
+                best is None or cum_delta > best[2] or (cum_delta == best[2] and depth < best[3])
+            ):
+                best = (first_action, first_xy, cum_delta, depth)
+            if depth >= max_depth or cur_key in visited:
+                continue
+            visited.add(cur_key)
+            for (action_id, xy, next_key, delta) in self._outgoing.get(cur_key, []):
+                queue.append((next_key, first_action, first_xy, cum_delta + delta, depth + 1))
+        return best
 
     def seen(self, state_key: str) -> bool:
         return state_key in self._best_action_from

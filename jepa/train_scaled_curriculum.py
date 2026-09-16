@@ -40,6 +40,7 @@ somewhere north of ~45 minutes.
 
 import argparse
 import json
+import pickle
 import time
 from pathlib import Path
 
@@ -261,7 +262,7 @@ def build_models(
         feature_channels=online.out_channels,
         num_games=num_games,
         num_experts=num_experts,
-        expert_hidden=int(round(expert_hidden * width_mult)),
+        expert_hidden=expert_hidden,
         expert_depth=expert_depth,
         top_k=top_k,
     ).to(device)
@@ -316,8 +317,22 @@ def train(args) -> None:
     device = get_device()
     print(f"training on {device}")
 
-    print("assembling data sources...")
-    sources = assemble_sources(args)
+    if args.corpus_cache is not None and args.corpus_cache.exists():
+        t0 = time.time()
+        with open(args.corpus_cache, "rb") as f:
+            sources = pickle.load(f)
+        print(f"loaded assembled data sources from cache {args.corpus_cache} ({time.time() - t0:.1f}s)")
+    else:
+        print("assembling data sources...")
+        sources = assemble_sources(args)
+        if args.corpus_cache is not None:
+            t0 = time.time()
+            args.corpus_cache.parent.mkdir(parents=True, exist_ok=True)
+            tmp_path = args.corpus_cache.with_suffix(".tmp")
+            with open(tmp_path, "wb") as f:
+                pickle.dump(sources, f, protocol=pickle.HIGHEST_PROTOCOL)
+            tmp_path.replace(args.corpus_cache)
+            print(f"cached assembled data sources to {args.corpus_cache} ({time.time() - t0:.1f}s)")
     game_vocab = build_game_vocab(sources)
     print(f"{len(game_vocab)} distinct games in the shared vocab")
     total_transitions = sum(len(t) for t, _cat in sources.values())
@@ -382,25 +397,41 @@ def train(args) -> None:
 
     args.out.mkdir(parents=True, exist_ok=True)
 
-    def _save(completed_epochs: int) -> None:
-        torch.save({k: v.cpu() for k, v in online.state_dict().items()}, args.out / "encoder_scaled.pt")
-        torch.save({k: v.cpu() for k, v in predictor.state_dict().items()}, args.out / "moe_predictor_scaled.pt")
-        torch.save(opt.state_dict(), args.out / "optimizer.pt")
-        (args.out / "game_vocab_scaled.json").write_text(json.dumps(game_vocab, indent=2))
-        (args.out / "curriculum_meta.json").write_text(
-            json.dumps(
-                {
-                    "completed_epochs": completed_epochs,
-                    "total_epochs": args.epochs,
-                    "args": {k: (str(v) if isinstance(v, Path) else v) for k, v in vars(args).items()},
-                    "n_encoder_params": n_enc,
-                    "n_predictor_params": n_pred,
-                    "source_sizes": {name: len(tr) for name, (tr, _cat) in sources.items()},
-                },
-                indent=2,
-            )
-        )
-        print(f"  checkpoint saved: completed_epochs={completed_epochs}")
+    def _save(completed_epochs: int, prefix: str = "") -> None:
+        # prefix="" writes the resumable "latest" checkpoint (encoder_scaled.pt
+        # etc); prefix="best_" writes a SEPARATE, never-overwritten-by-"latest"
+        # snapshot of whichever epoch had the lowest pred_changed MSE so far.
+        # Both matter for different reasons: "latest" is what --resume-from
+        # needs to continue training; "best" is what you actually want to use
+        # afterward, since with only "latest" a run that peaks mid-training and
+        # drifts worse by the end (as this run's own epoch-160-vs-200 comparison
+        # showed) silently loses its best point to the next checkpoint write.
+        torch.save({k: v.cpu() for k, v in online.state_dict().items()}, args.out / f"{prefix}encoder_scaled.pt")
+        torch.save({k: v.cpu() for k, v in predictor.state_dict().items()}, args.out / f"{prefix}moe_predictor_scaled.pt")
+        if not prefix:
+            torch.save(opt.state_dict(), args.out / "optimizer.pt")
+        (args.out / f"{prefix}game_vocab_scaled.json").write_text(json.dumps(game_vocab, indent=2))
+        meta_out = {
+            "completed_epochs": completed_epochs,
+            "total_epochs": args.epochs,
+            "args": {k: (str(v) if isinstance(v, Path) else v) for k, v in vars(args).items()},
+            "n_encoder_params": n_enc,
+            "n_predictor_params": n_pred,
+            "source_sizes": {name: len(tr) for name, (tr, _cat) in sources.items()},
+        }
+        if prefix:
+            meta_out["best_pred_changed_mse"] = best_pred_changed[0]
+        (args.out / f"{prefix}curriculum_meta.json").write_text(json.dumps(meta_out, indent=2))
+        print(f"  checkpoint saved: completed_epochs={completed_epochs}" + (" (new best)" if prefix else ""))
+
+    # Mutable single-element list so the closure above can read the live value
+    # without needing `nonlocal` plumbing through _save's call sites.
+    best_pred_changed = [float("inf")]
+    if args.resume_from is not None:
+        best_meta_path = args.resume_from / "best_curriculum_meta.json"
+        if best_meta_path.exists():
+            best_pred_changed[0] = json.loads(best_meta_path.read_text()).get("best_pred_changed_mse", float("inf"))
+            print(f"resumed best-so-far pred_changed_mse={best_pred_changed[0]:.6f}")
 
     npy_rng = np.random.default_rng(1234)
     epoch_times = []
@@ -419,7 +450,20 @@ def train(args) -> None:
             )
 
         dataset = TransitionDataset(curriculum.all_transitions, game_vocab)
-        num_workers = 4 if device.type == "cuda" else 0
+        # Windows' DataLoader worker spawn (num_workers>0) pickles the *entire*
+        # dataset object to each spawned subprocess -- fine at small corpus
+        # scale, but a fresh DataLoader is built every epoch here (the sampler
+        # indices change with the curriculum each epoch), so >0 workers means
+        # re-pickling the whole pooled corpus to 4 fresh processes every single
+        # epoch. At this script's scale (a multi-million-transition pool is
+        # the whole point of the mega-corpus) that dominates wall-clock time by
+        # an order of magnitude -- confirmed directly (169.6s for a 50-step
+        # calibration epoch at num_workers=4 on a 2.1M-transition pool, vs. the
+        # VRAM probe's compute-only ~713ms/step, which predicts ~36s). Same
+        # threshold this project already established for `train_moe_predictor.py`
+        # (see CLAUDE.md's `stage6-expanded-roster` gotcha) -- reused directly,
+        # not re-derived.
+        num_workers = 4 if (device.type == "cuda" and len(dataset) <= 100_000) else 0
         loader = DataLoader(
             dataset,
             batch_size=args.batch_size,
@@ -460,17 +504,36 @@ def train(args) -> None:
         epoch_time = time.time() - t_epoch_start
         epoch_times.append(epoch_time)
 
-        if log_this_epoch:
+        is_checkpoint_epoch = args.checkpoint_every > 0 and epoch_1idx % args.checkpoint_every == 0
+        is_final_epoch = epoch_1idx == args.epochs
+        # Evaluate at every checkpoint boundary, not just the sparse
+        # verbose-print schedule -- "always save the best" needs a real
+        # comparison at every point a checkpoint could become the new best,
+        # not just the ~7 points this run happened to print. `pred_changed`
+        # (raw MSE, lower=better) is used for the comparison rather than the
+        # identity-relative percentage this project usually reports, since
+        # that percentage is exactly what got noisy near the end of this
+        # run's own training (both pred and identity MSE collapsing toward
+        # an absolute floor together) -- a raw, absolute MSE doesn't have
+        # that vanishing-denominator failure mode.
+        if log_this_epoch or is_checkpoint_epoch or is_final_epoch:
             stats = evaluate(online, predictor, arc3_local_val_loader or val_loader, device)
-            print(
-                f"  train_loss={total_loss / n_batches:.4f}  lb_loss={total_lb_loss / n_batches:.3f}  "
-                f"val_pred_mse={stats['pred']:.5f}  val_identity_mse={stats['identity']:.5f}  |  "
-                f"changed-patches: pred={stats['pred_changed']:.5f} identity={stats['identity_changed']:.5f}  "
-                f"changed-patches improvement={(stats['identity_changed'] - stats['pred_changed']) / max(stats['identity_changed'], 1e-8) * 100:.1f}%  "
-                f"epoch_time={epoch_time:.1f}s"
-            )
+            is_new_best = stats["pred_changed"] < best_pred_changed[0]
+            if log_this_epoch:
+                print(
+                    f"  train_loss={total_loss / n_batches:.4f}  lb_loss={total_lb_loss / n_batches:.3f}  "
+                    f"val_pred_mse={stats['pred']:.5f}  val_identity_mse={stats['identity']:.5f}  |  "
+                    f"changed-patches: pred={stats['pred_changed']:.5f} identity={stats['identity_changed']:.5f}  "
+                    f"changed-patches improvement={(stats['identity_changed'] - stats['pred_changed']) / max(stats['identity_changed'], 1e-8) * 100:.1f}%  "
+                    f"epoch_time={epoch_time:.1f}s"
+                )
+            elif is_checkpoint_epoch:
+                print(f"  epoch {epoch_1idx}: pred_changed={stats['pred_changed']:.6f}" + (" (new best)" if is_new_best else ""))
+            if is_new_best:
+                best_pred_changed[0] = stats["pred_changed"]
+                _save(epoch_1idx, prefix="best_")
 
-        if args.checkpoint_every > 0 and epoch_1idx % args.checkpoint_every == 0:
+        if is_checkpoint_epoch:
             _save(epoch_1idx)
 
     _save(args.epochs)
@@ -522,6 +585,19 @@ def _add_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--out", type=Path, default=REPO_ROOT / "checkpoints_scaled")
     parser.add_argument("--checkpoint-every", type=int, default=0)
     parser.add_argument("--resume-from", type=Path, default=None)
+    parser.add_argument(
+        "--corpus-cache", type=Path, default=None,
+        help=(
+            "Pickle the assembled sources here on first run, load from here "
+            "on every later invocation instead of regenerating. assemble_sources() "
+            "runs unconditionally on every process start (data isn't otherwise "
+            "persisted), which is fine for a single run but means every "
+            "--resume-from leg of a chunked multi-day run would otherwise pay "
+            "the full generation cost (~minutes, dominated by OpenSpiel) again "
+            "before any training happens. Point this at a stable path (e.g. on "
+            "E: for a large corpus) to pay that cost exactly once."
+        ),
+    )
 
 
 if __name__ == "__main__":

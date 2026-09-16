@@ -40,7 +40,14 @@ def _load_lines(path: Path) -> list[dict]:
             raw = raw.strip()
             if not raw:
                 continue
-            event = json.loads(raw)
+            try:
+                event = json.loads(raw)
+            except json.JSONDecodeError:
+                # A recorder line can be truncated mid-write (e.g. the
+                # process was killed or the disk filled up) -- skip a
+                # malformed final line rather than losing the whole file's
+                # earlier, well-formed level-up segments.
+                continue
             data = event.get("data", {})
             if "frame" in data and "action_input" in data and data["frame"]:
                 lines.append(event)

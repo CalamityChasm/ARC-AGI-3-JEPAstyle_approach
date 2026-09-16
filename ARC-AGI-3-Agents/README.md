@@ -102,6 +102,22 @@ AGENTOPS_API_KEY=aos_your_api_key_here
 
 If you're creating a custom agent, the tracing is automatically applied through the `@trace_agent_session` decorator on the `main()` method. No additional code changes are needed.
 
+## Included third-party agent: GraphExplorerAgent
+
+`agents/templates/graph_explorer_agent.py` and `graph_explorer_core.py` are
+a port of the exploration agent from Evgenii Rudakov, Ryan Shock, and
+Nathan Cowley, *"Graph-Based Exploration for ARC-AGI-3 Interactive
+Reasoning Tasks"* (AAAI 2026 Workshop on AI for Scientific Research,
+[arXiv:2512.24156](https://arxiv.org/abs/2512.24156)), originally published
+at [github.com/dolphin-in-a-coma/arc-agi-3-just-explore](https://github.com/dolphin-in-a-coma/arc-agi-3-just-explore)
+under the MIT License. Their system placed 3rd on the ARC-AGI-3 Preview
+Challenge private leaderboard using training-free exact-state graph
+exploration (no learned model). See
+`agents/templates/graph_explorer_THIRD_PARTY_LICENSE` for the required
+upstream license text/copyright notice, and the module docstrings in the
+two files above for the specific adaptations made to fit this repo's
+current `arcengine`-based framework version.
+
 ## Contest Submission
 
 To submit your agent for the ARC-AGI-3 competition, please use this form: https://forms.gle/wMLZrEFGDh33DhzV9.

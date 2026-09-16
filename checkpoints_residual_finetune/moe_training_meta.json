@@ -1,0 +1,10 @@
+{
+  "note": "continued-training fine-tune from true production checkpoint, real local ARC-3 data only",
+  "epochs": 20,
+  "lr": 0.0001,
+  "batch_size": 32,
+  "n_local_transitions": 13800,
+  "n_games": 26,
+  "device": "cuda",
+  "warm_started_from": "C:\\Users\\desktop-06\\Cal\\ARC-AGI-3-JEPAstyle_approach\\checkpoints"
+}

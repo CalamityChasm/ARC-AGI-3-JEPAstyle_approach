@@ -9,6 +9,10 @@ from .templates.langgraph_functional_agent import LangGraphFunc, LangGraphTextOn
 from .templates.langgraph_random_agent import LangGraphRandom
 from .templates.langgraph_thinking import LangGraphThinking
 from .templates.curiosity_agent import Curiosity
+from .templates.graph_explorer_agent import GraphExplorerAgent
+from .templates.graph_explorer_jepa_agent import GraphExplorerJepaAgent
+from .templates.graph_explorer_structural_agent import GraphExplorerStructuralAgent
+from .templates.graph_explorer_learned_agent import GraphExplorerLearnedAgent
 from .templates.hypothesis_agent import Hypothesis
 from .templates.llm_agents import LLM, FastLLM, GuidedLLM, ReasoningLLM
 from .templates.memory_agent import Memory
@@ -32,6 +36,12 @@ for rec in Recorder.list():
 
 # update the agent dictionary to include subclasses of LLM class
 AVAILABLE_AGENTS["reasoningagent"] = ReasoningAgent
+# GraphExplorerJepaAgent subclasses GraphExplorerAgent, not Agent directly,
+# so Agent.__subclasses__() above (only direct subclasses) misses it --
+# same situation as ReasoningAgent, same fix.
+AVAILABLE_AGENTS["graphexplorerjepaagent"] = GraphExplorerJepaAgent
+AVAILABLE_AGENTS["graphexplorerstructuralagent"] = GraphExplorerStructuralAgent
+AVAILABLE_AGENTS["graphexplorerlearnedagent"] = GraphExplorerLearnedAgent
 
 __all__ = [
     "Swarm",
@@ -51,6 +61,8 @@ __all__ = [
     "Curiosity",
     "Memory",
     "Hypothesis",
+    "GraphExplorerAgent",
+    "GraphExplorerJepaAgent",
     "Agent",
     "Recorder",
     "Playback",

@@ -34,8 +34,21 @@ means here.
 - `ARC-AGI-3-Agents/` — a vendored copy of the competition's agent
   framework, plus this project's own agents in
   `ARC-AGI-3-Agents/agents/templates/` (`hypothesis_agent.py` is the
-  current one; `curiosity_agent.py` and `memory_agent.py` are earlier,
-  simpler stages kept for comparison).
+  current JEPA-based one; `curiosity_agent.py` and `memory_agent.py` are
+  earlier, simpler stages kept for comparison). Also includes
+  `graph_explorer_agent.py`, a **training-free** agent ported from Evgenii
+  Rudakov, Ryan Shock, and Nathan Cowley's *"Graph-Based Exploration for
+  ARC-AGI-3 Interactive Reasoning Tasks"* (arXiv:2512.24156) — their
+  system placed 3rd on the ARC-AGI-3 Preview Challenge private
+  leaderboard using no learned model at all, just exact-state graph
+  exploration with frontier-distance-guided action selection and
+  classical-CV frame segmentation. Kept deliberately separate from the
+  JEPA world model (no shared code, no shared checkpoints) so it can be
+  evaluated and submitted on its own merits first — see
+  `ARC-AGI-3-Agents/agents/templates/graph_explorer_THIRD_PARTY_LICENSE`
+  for the upstream MIT license/copyright notice this port carries
+  forward, and `CLAUDE.md`'s own section on it for the full port notes
+  and local test results.
 - `scripts/` — local tooling: run an agent across all local games
   (`run_stage0.py`), get the framework's own real scorecard (which
   computes the actual Kaggle scoring formula offline — `run_scorecard.py`),
@@ -78,7 +91,9 @@ python scripts/run_stage0.py --agent hypothesis --game r11l   # one game
 ```
 
 Other agents available the same way: `random`, `pressonce`, `curiosity`,
-`memory`. Recordings land in `ARC-AGI-3-Agents/recordings/` (gitignored).
+`memory`, `graphexploreragent` (the ported training-free graph-exploration
+agent, see above). Recordings land in `ARC-AGI-3-Agents/recordings/`
+(gitignored).
 
 ### Local backtesting
 

@@ -104,6 +104,28 @@ class Hypothesis(Agent):
     # real Q-scoring/MoE inference path work" when a scored run fails with
     # no other diagnostic signal available. Off by default.
     DIAG_MODE = os.getenv("HYPOTHESIS_DIAG_MODE") == "1"
+    # Restored dead-end avoidance (see experiments/
+    # stage6_transition_graph_health.md) -- filter already-tried-and-
+    # unproductive actions out of the candidate loop while untried ones
+    # remain. On by default (this is the fix); set
+    # HYPOTHESIS_DEADEND_FILTER=0 to reproduce the pre-fix baseline for a
+    # controlled agent-level ablation.
+    DEADEND_FILTER = os.getenv("HYPOTHESIS_DEADEND_FILTER", "1") != "0"
+    # Graph-based multi-hop lookahead (jepa/memory.py: TransitionGraph.
+    # lookahead_best_path) -- generalizes the single-hop "recall a known
+    # winning action" check below to "is there a sequence of moves, each
+    # one an exact fact already observed, that's known to lead somewhere
+    # productive a few steps from here, even if the very next step alone
+    # shows no progress?" Every hop is a verified past transition, not a
+    # prediction stacked on a prediction, so this carries none of the
+    # compounding-error risk a multi-step rollout through the *learned*
+    # predictor would have (see experiments/stage6_graph_lookahead.md).
+    # max_depth=1 is mathematically identical to the old one-hop-only
+    # best_known_action check (BFS at depth 1 only ever examines immediate
+    # neighbors) -- env-gated so an agent-level backtest can toggle
+    # old-vs-new behavior on the same committed code, same pattern as
+    # DEADEND_FILTER/FORCE_BETA.
+    LOOKAHEAD_MAX_DEPTH = int(os.getenv("HYPOTHESIS_LOOKAHEAD_MAX_DEPTH", "8"))
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -385,17 +407,20 @@ class Hypothesis(Agent):
                 f"hypothesis agent: exploiting recent level gain ({self._exploit_remaining} repeats left)"
             )
         else:
-            remembered = self.graph.best_known_action(state_key)
+            remembered = self.graph.lookahead_best_path(state_key, max_depth=self.LOOKAHEAD_MAX_DEPTH)
             available = latest_frame.available_actions or [
                 a.value for a in GameAction if a is not GameAction.RESET
             ]
-            if remembered is not None and remembered[2] > 0:
-                action_id, xy, _delta = remembered
+            if remembered is not None:
+                action_id, xy, cum_delta, depth = remembered
                 action = GameAction.from_id(action_id)
                 if action.is_complex() and xy is not None:
                     action.set_data({"x": xy[0], "y": xy[1]})
-                action.reasoning = "hypothesis agent: recalling a known winning action from this exact state"
-                logger.info(f"{self.game_id} - hypothesis agent: recalling known winning action {action_id} at {xy}")
+                action.reasoning = f"hypothesis agent: following a known productive path ({depth} hop(s) to +{cum_delta})"
+                logger.info(
+                    f"{self.game_id} - hypothesis agent: graph lookahead found action {action_id} at {xy} "
+                    f"leading to +{cum_delta} levels in {depth} known hop(s)"
+                )
             elif self._probe_plan and self._probe_plan[0] in available:
                 action_id = self._probe_plan.pop(0)
                 xy = None
@@ -412,9 +437,30 @@ class Hypothesis(Agent):
                 action.reasoning = "hypothesis agent: epsilon-random fallback"
             else:
                 beta = self.FORCE_BETA if self.FORCE_BETA is not None else self.hypotheses.beta()
-                best_q, best_action_id, best_xy = -1e18, available[0], None
+                # Restore Memory's (Stage 3) dead-end-avoidance behavior,
+                # which Hypothesis never inherited when it was built on top
+                # of Memory in Stage 5 -- confirmed missing by a direct
+                # replay-based health check (scripts/
+                # diagnose_transition_graph_health.py) that found 41% of
+                # ALL actions across a 25-game, ~49k-decision harvest were
+                # exact repeats of an (state, action, xy) triple already
+                # known, from this exact state, to have done nothing.
+                # ACTION6 is deliberately exempt: a single click doesn't
+                # exhaust its outcome space the way a simple action's single
+                # possible effect does, so "tried at some xy" isn't
+                # "exhausted" the way it is for a simple action.
+                if self.DEADEND_FILTER:
+                    tried = self.graph.tried_actions(state_key)
+                    untried = [
+                        c for c in available
+                        if c == GameAction.ACTION6.value or (c, None) not in tried
+                    ]
+                    candidates = untried if untried else available
+                else:
+                    candidates = available
+                best_q, best_action_id, best_xy = -1e18, candidates[0], None
                 trace = []
-                for candidate in available:
+                for candidate in candidates:
                     q, xy_candidate = self._score_action(feat, candidate, beta)
                     trace.append((candidate, q))
                     if q > best_q:

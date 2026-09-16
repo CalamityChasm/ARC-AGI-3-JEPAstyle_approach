@@ -393,6 +393,24 @@ confounding it with an unrelated data change on top.
 
 ### Launch command
 
+**Real bug found and fixed before launching this for real (not caught by
+the smoke test, which never exercised `--resume-from`):**
+`assemble_sources()` runs unconditionally on every process start --
+nothing about the mega-corpus is persisted to disk otherwise. Since
+`--resume-from` starts a fresh process for every leg, every one of the
+~100 legs in this plan would have silently regenerated the *entire*
+corpus (dominated by ~2.18M OpenSpiel transitions) before doing any
+training, adding an estimated ~6-8 minutes of pure redundant overhead to
+every single leg -- roughly 10-13 hours wasted across the full run, and
+enough to push some legs uncomfortably close to the ~45min kill limit.
+Fixed with a new `--corpus-cache <path>` flag: pickles the assembled
+sources on first run, loads from that pickle on every later invocation
+instead of regenerating. Verified directly at smoke scale, not just
+reasoned about: first run showed `cached assembled data sources ...
+(2.9s)`, a resumed run showed `loaded assembled data sources from cache
+... (2.3s)` and correctly picked up at `completed_epochs=2, continuing to
+4` -- real, confirmed behavior, not assumed from reading the code.
+
 ```
 python -m jepa.train_scaled_curriculum ^
   --width-mult 8 --blocks-per-stage 3 --num-experts 24 --expert-hidden 512 --expert-depth 1 ^
@@ -404,6 +422,7 @@ python -m jepa.train_scaled_curriculum ^
   --openspiel-episodes-per-game 1400 --openspiel-steps-per-episode 60 ^
   --arc-synthetic-episodes-per-type 168 --arc-synthetic-steps-per-episode 80 ^
   --out E:\jepa_overflow\checkpoints_scaled_launch ^
+  --corpus-cache E:\jepa_overflow\checkpoints_scaled_launch\corpus_cache.pkl ^
   --checkpoint-every 2
 ```
 
@@ -417,9 +436,10 @@ and sanity-check against this estimate before trusting later legs.
 default to 0 in the script -- both must be passed explicitly or those
 sources silently drop out of the mix entirely.)
 
-**Resume** (every leg after the first):
+**Resume** (every leg after the first -- note `--corpus-cache` is still
+passed so the cache gets *read*, not regenerated):
 ```
-python -m jepa.train_scaled_curriculum --resume-from E:\jepa_overflow\checkpoints_scaled_launch [... same flags ...]
+python -m jepa.train_scaled_curriculum --resume-from E:\jepa_overflow\checkpoints_scaled_launch --corpus-cache E:\jepa_overflow\checkpoints_scaled_launch\corpus_cache.pkl [... same flags ...]
 ```
 
 ### Timing estimate, and what to verify on the first real leg
@@ -476,6 +496,53 @@ per-epoch time is known.
 middle of "days" as stated, not at either extreme. If a firm ceiling
 (e.g. "stop by Wednesday") or a firm minimum is preferred instead, that's
 a real preference to state before launch, not something to infer.
+
+### Two more real bugs found and fixed during the actual first-leg launch attempt
+
+Not caught by the smoke test above (which only ran at `width_mult=1`,
+tiny corpus) -- both would have quietly wrecked the real run if launched
+as originally planned:
+
+1. **The `expert_hidden` double-scaling bug the VRAM probe found and
+   fixed (section 1 above) was never ported to `train_scaled_curriculum.py`
+   itself** -- `build_models()` still did `expert_hidden=int(round(expert_hidden
+   * width_mult))`, silently building a model with `expert_hidden=4096`
+   instead of the intended `512` at `width_mult=8`. Not a hypothetical:
+   the real first-leg attempt (full-scale flags, `--epochs 1
+   --steps-per-epoch 50` as a calibration run) crashed with a genuine
+   `CUDA out of memory` error, and the printed param count
+   (`predictor params: 107,889,832`) matched a directly-reconstructed
+   `expert_hidden=4096` model exactly, confirming the cause rather than
+   guessing at it. Fixed by removing the scaling in `build_models()` --
+   `expert_hidden` is passed through as-is now, matching the probe's own
+   (correct) convention. Re-verified after the fix: `total: 85,185,192`
+   params, matching the probe's `85,184,680` almost exactly (the ~500-param
+   gap is the real 62-game vocab vs. the probe's fixed 30-game
+   placeholder) -- no OOM.
+2. **The per-epoch `DataLoader` used `num_workers=4` unconditionally on
+   CUDA, rebuilt fresh every epoch** -- this project already knows Windows'
+   worker-spawn pickles the *entire* dataset to each subprocess (see
+   CLAUDE.md's `stage6-expanded-roster` gotcha), but that lesson wasn't
+   applied here. Since this script rebuilds the DataLoader every epoch
+   (the curriculum's sampling weights shift each epoch, so the sampler
+   indices change), re-spawning 4 workers around a **2.1M-transition**
+   pooled corpus happened on *every single epoch*, not once per run.
+   Measured directly: `169.6s` for a 50-step calibration epoch (should be
+   ~36s from the VRAM probe's compute-only 713.4ms/step) -- a ~4.7x
+   slowdown, worse at real `steps_per_epoch=1000` scale and compounding
+   over ~100 planned legs. Fixed by making `num_workers` corpus-size-aware
+   (`4` only below 100k transitions, `0` above -- same threshold this
+   project already validated for `train_moe_predictor.py`). Re-verified:
+   `36.6s` for the same 50-step epoch after the fix, matching the
+   compute-only estimate. At `steps_per_epoch=1000`, this scales to
+   ~12.2min/epoch, confirming the launch plan's own ~12-18min/epoch
+   estimate above rather than contradicting it.
+
+Both fixes are in `jepa/train_scaled_curriculum.py` now, not just this
+worktree/branch. The real leg-1 launch (`--epochs 200 --steps-per-epoch
+1000`, both fixes applied) is running as of this writing -- see the
+Status section of this repo's `CLAUDE.md` for the outcome once legs are
+underway.
 
 ## Honest limitations of this prep, not glossed over
 

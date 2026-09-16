@@ -55,7 +55,17 @@ def load_transitions_from_dir(recordings_dir: Path) -> list:
     """
     transitions = []
     for path in sorted(recordings_dir.glob("*.recording.jsonl")):
-        frames = _load_frame_lines(path)
+        # recordings_dir is a live, concurrently-modified directory in
+        # practice (other sessions/agents harvest into and clean up out of
+        # it -- see CLAUDE.md's "recordings/ grows without bound" gotcha) --
+        # a file present at glob time can vanish before it's opened. Skip
+        # it rather than crashing the whole load; it's one file out of a
+        # large corpus, not a data-integrity problem worth failing on.
+        try:
+            frames = _load_frame_lines(path)
+        except FileNotFoundError:
+            print(f"skipping {path.name}: vanished between glob and open (concurrent modification)")
+            continue
         for i in range(len(frames) - 1):
             cur, nxt = frames[i], frames[i + 1]
             action = nxt["action_input"]

@@ -1,0 +1,33 @@
+{
+  "algorithm": "reptile",
+  "epochs": 60,
+  "pretrain_epochs": 20,
+  "n_minigrid_transitions": 67200,
+  "n_sokoban_transitions": 0,
+  "num_experts": 8,
+  "top_k": null,
+  "batch_size": 32,
+  "lr": 0.0003,
+  "device": "cuda",
+  "n_local_transitions": 27900,
+  "n_external_transitions": 33998,
+  "external_per_game": 2000,
+  "n_games": 21,
+  "contrast_weight": 0.0,
+  "exclude_games": [
+    "r11l",
+    "bp35",
+    "m0r0",
+    "tr87",
+    "ka59"
+  ],
+  "checkpoint_tag": "final",
+  "meta_iters_per_epoch": 60,
+  "meta_tasks_per_batch": 4,
+  "inner_steps": 8,
+  "inner_lr": 5e-05,
+  "inner_batch_size": 16,
+  "meta_epsilon": 1.0,
+  "epsilon_anneal": false,
+  "meta_seed": 0
+}
