@@ -117,6 +117,17 @@ assert _RS_PRESERVED_FIELD in _RS_EMPTY_WM, (
 assert len(_RS_EMPTY_WM) == 7, f"restart-at-stall: world model has {len(_RS_EMPTY_WM)} fields, expected 7"
 
 _RS_LOCK = threading.Lock()
+# The synthetic probe drives the real wrapper, so its marker lines would land
+# in the kernel log and be counted by scripts/read_duck_public25_log.py even
+# though its counters are zeroed afterwards. Silence them at the source.
+_RS_QUIET = [False]
+
+
+def _rs_print(msg):
+    if not _RS_QUIET[0]:
+        print(msg, flush=True)
+
+
 _RS_STATS = {"fired": 0, "turns": 0, "capped": 0, "no_step": 0, "errors": 0}
 _RS_GAMES = set()
 
@@ -199,15 +210,14 @@ def _restart_at_stall(self, state_path, action_num, *args, **kwargs):
                 _rs_bump("turns", turns)
                 with _RS_LOCK:
                     _RS_GAMES.add(str(session))
-                print(
+                _rs_print(
                     f"RESTART_STALL_FIRED n={n} level={level} turns={turns} "
                     f"nth_on_level={st['restarts']} seed={_rs_tool_agent._LOCAL_ANALYZER_SEED} "
-                    f"kept_{_RS_PRESERVED_FIELD}={carried}c session={session}",
-                    flush=True,
+                    f"kept_{_RS_PRESERVED_FIELD}={carried}c session={session}"
                 )
     except Exception as exc:  # bookkeeping must never cost a turn
         _rs_bump("errors")
-        print(f"RESTART_STALL_ERROR {type(exc).__name__}: {exc}", flush=True)
+        _rs_print(f"RESTART_STALL_ERROR {type(exc).__name__}: {exc}")
 
     # Deliberately NOT wrapped: analyze() returns the turn's result to the
     # solver, so swallowing an exception here would change control flow rather
@@ -251,6 +261,7 @@ def _rs_probe():
             and agent._last_action_result is None
         )
 
+    _RS_QUIET[0] = True
     orig_original = globals()["_RS_ORIGINAL"]
     orig_level = globals()["_rs_level"]
     orig_seed = _rs_tool_agent._LOCAL_ANALYZER_SEED
@@ -336,6 +347,7 @@ def _rs_probe():
         a8 = _fresh()
         assert _restart_at_stall(a8, _StubPath(ok=False), 1, analysis_step=1) == "RESULT"
     finally:
+        _RS_QUIET[0] = False
         globals()["_RS_ORIGINAL"] = orig_original
         globals()["_rs_level"] = orig_level
         _rs_tool_agent._LOCAL_ANALYZER_SEED = orig_seed

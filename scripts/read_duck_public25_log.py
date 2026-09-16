@@ -7,7 +7,7 @@ grepping without `tail`, silently reports a catastrophe that did not happen.
 
 This takes the LAST summary and independently recomputes the mean from the 25
 per-game `[finished]` lines, then asserts the two agree. It also totals actions
-and recovers the wipe-guard's own `WIPE_GUARD_KEPT` / `WIPE_GUARD_FINAL` lines.
+and recovers the treatment arms' own marker lines (`WIPE_GUARD_*`, `RESTART_STALL_*`).
 
 Usage:
     venv/Scripts/python.exe scripts/read_duck_public25_log.py <run-dir-or-log> ...
@@ -30,6 +30,18 @@ KEPT_RE = re.compile(r"WIPE_GUARD_KEPT n=(\d+)")
 FINAL_RE = re.compile(r"WIPE_GUARD_FINAL kept=(\d+) wiped=(\d+) noop=(\d+) errors=(\d+)")
 INSTALLED_RE = re.compile(r"WIPE_GUARD_INSTALLED [^\\\"]*")
 ERROR_RE = re.compile(r"WIPE_GUARD_(?:UPSTREAM_)?ERROR [^\\\"]*")
+RS_FIRED_RE = re.compile(
+    r"RESTART_STALL_FIRED n=(?P<n>\d+) level=(?P<level>\S+) turns=(?P<turns>\d+) "
+    r"nth_on_level=(?P<nth>\d+) seed=(?P<seed>\d+) kept_cross_level_notes=(?P<kept>\d+)c "
+    r"session=(?P<session>\S+)"
+)
+RS_FINAL_RE = re.compile(
+    r"RESTART_STALL_FINAL fired=(?P<fired>\d+) turns_discarded=(?P<turns>\d+) "
+    r"capped=(?P<capped>\d+) no_step=(?P<no_step>\d+) errors=(?P<errors>\d+) "
+    r"games=(?P<games>\d+) seed_now=(?P<seed>\d+)"
+)
+RS_INSTALLED_RE = re.compile(r"RESTART_STALL_INSTALLED [^\\\"]*")
+RS_ERROR_RE = re.compile(r"RESTART_STALL_ERROR [^\\\"]*")
 
 
 def _log_path(target: Path) -> Path:
@@ -69,6 +81,10 @@ def read(target: Path) -> dict[str, Any]:
     kept = [int(m) for m in KEPT_RE.findall(text)]
     final = FINAL_RE.findall(text)
 
+    rs_fired = [m.groupdict() for m in RS_FIRED_RE.finditer(text)]
+    rs_final = [m.groupdict() for m in RS_FINAL_RE.finditer(text)]
+    rs_sessions = sorted({f["session"] for f in rs_fired})
+
     return {
         "log": str(_log_path(target)),
         "summaries_emitted": len(means),
@@ -87,6 +103,14 @@ def read(target: Path) -> dict[str, Any]:
         "wipe_guard_final": final[-1] if final else None,
         "wipe_guard_installed": bool(INSTALLED_RE.search(text)),
         "wipe_guard_errors": len(ERROR_RE.findall(text)),
+        "restart_stall_installed": bool(RS_INSTALLED_RE.search(text)),
+        "restart_stall_fired_lines": len(rs_fired),
+        "restart_stall_sessions": len(rs_sessions),
+        "restart_stall_turns_discarded": sum(int(f["turns"]) for f in rs_fired),
+        "restart_stall_levels": sorted({f["level"] for f in rs_fired}),
+        "restart_stall_notes_kept_chars": sum(int(f["kept"]) for f in rs_fired),
+        "restart_stall_final": rs_final[-1] if rs_final else None,
+        "restart_stall_errors": len(RS_ERROR_RE.findall(text)),
         "per_game": {k: {kk: v[kk] for kk in ("state", "lvl", "lvls", "score", "actions")} for k, v in sorted(by_game.items())},
     }
 
@@ -109,6 +133,10 @@ def main() -> None:
             "actions_never_completed_levels", "wasted_action_fraction",
             "wipe_guard_installed", "wipe_guard_kept_lines", "wipe_guard_kept_max_n",
             "wipe_guard_final", "wipe_guard_errors",
+            "restart_stall_installed", "restart_stall_fired_lines",
+            "restart_stall_sessions", "restart_stall_turns_discarded",
+            "restart_stall_levels", "restart_stall_notes_kept_chars",
+            "restart_stall_final", "restart_stall_errors",
         ):
             print(f"  {key:<32} {r[key]}")
 

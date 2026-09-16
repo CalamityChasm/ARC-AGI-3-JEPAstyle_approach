@@ -495,3 +495,61 @@ def test_notebook_carries_this_exact_cell():
     cells = json.loads(nb.read_text(encoding="utf-8"))["cells"]
     want = CELL.read_text(encoding="utf-8")
     assert any("".join(c["source"]) == want for c in cells), "notebook holds a drifted copy"
+
+
+# --- the reader must actually match what the cell prints -----------------------------------------
+
+
+def test_reader_regexes_match_the_real_printed_lines(tmp_path, capsys):
+    """A drifted marker format would make the log reader silently report zero."""
+    import importlib.util
+
+    # Installed inside the test, not via the fixture, so the INSTALLED banner
+    # printed at install time lands in this test's own capture.
+    ns, ta = _install(tmp_path)
+    agent = ta.ToolAgent()
+    _drive(ta, agent, ns["RESTART_STALL_TURNS"])
+    ns["_rs_report"]()
+    out = capsys.readouterr().out
+
+    spec = importlib.util.spec_from_file_location(
+        "_rd", Path(__file__).resolve().parents[1] / "scripts" / "read_duck_public25_log.py"
+    )
+    rd = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(rd)
+
+    assert rd.RS_INSTALLED_RE.search(out), "RESTART_STALL_INSTALLED not matched by the reader"
+    fired = list(rd.RS_FIRED_RE.finditer(out))
+    # Exactly one: the synthetic probe must not leak marker lines into the log,
+    # or the reader's firing count is inflated for every real run.
+    assert len(fired) == 1, f"RESTART_STALL_FIRED not matched exactly once: {out!r}"
+    assert fired[0].group("turns") == str(ns["RESTART_STALL_TURNS"])
+    final = list(rd.RS_FINAL_RE.finditer(out))
+    assert len(final) == 1, f"RESTART_STALL_FINAL not matched: {out!r}"
+    assert final[0].group("fired") == "1"
+    assert final[0].group("errors") == "0"
+    for mod in [m for m in sys.modules if m.startswith("inference")]:
+        del sys.modules[mod]
+
+
+def test_reader_regexes_match_the_error_line(installed, capsys):
+    import importlib.util
+
+    ns, ta = installed
+    agent = ta.ToolAgent()
+
+    class _Hostile:
+        def __getattr__(self, name):
+            raise RuntimeError("hostile")
+
+    agent.__dict__["_restart_at_stall"] = _Hostile()
+    ta.ToolAgent.analyze(agent, _StatePath("/run/g1/state.json"), 1, analysis_step=1)
+    out = capsys.readouterr().out
+    assert out.count("RESTART_STALL_ERROR") == 1, out
+
+    spec = importlib.util.spec_from_file_location(
+        "_rd2", Path(__file__).resolve().parents[1] / "scripts" / "read_duck_public25_log.py"
+    )
+    rd = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(rd)
+    assert rd.RS_ERROR_RE.search(out), f"RESTART_STALL_ERROR not matched: {out!r}"
