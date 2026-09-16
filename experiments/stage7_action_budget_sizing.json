@@ -1,0 +1,3588 @@
+{
+  "anim": {
+    "ar25": {
+      "game": "ar25-0c556536",
+      "game_id": "ar25",
+      "state": "gave_up",
+      "levels_done": 4,
+      "levels_total": 8,
+      "score": 27.78,
+      "actions": 120,
+      "tokens": 81679,
+      "per_level": [
+        [
+          18,
+          32
+        ],
+        [
+          25,
+          50
+        ],
+        [
+          45,
+          75
+        ],
+        [
+          23,
+          37
+        ],
+        [
+          9,
+          89
+        ],
+        [
+          0,
+          159
+        ],
+        [
+          0,
+          233
+        ],
+        [
+          0,
+          73
+        ]
+      ],
+      "per_level_sum": 120,
+      "per_level_consistent": true,
+      "sunk_actions": 9,
+      "productive_actions": 111,
+      "stall_level": 5,
+      "stall_level_actions": 9,
+      "stall_level_human": 89,
+      "stall_ratio": 0.10112359550561797,
+      "levels_engaged": 5,
+      "human_total": 748,
+      "S_l": [
+        1.3225,
+        1.3225,
+        1.3225,
+        1.3225
+      ],
+      "acting_turns": 27,
+      "level_changes": 4,
+      "stall_runs": [
+        5,
+        8,
+        8,
+        1,
+        5
+      ],
+      "final_stall_turns": 5,
+      "max_stall_turns": 8,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "bp35": {
+      "game": "bp35-0a0ad940",
+      "game_id": "bp35",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 9,
+      "score": 0.85,
+      "actions": 45,
+      "tokens": 52731,
+      "per_level": [
+        [
+          34,
+          21
+        ],
+        [
+          11,
+          48
+        ],
+        [
+          0,
+          44
+        ],
+        [
+          0,
+          38
+        ],
+        [
+          0,
+          33
+        ],
+        [
+          0,
+          87
+        ],
+        [
+          0,
+          86
+        ],
+        [
+          0,
+          131
+        ],
+        [
+          0,
+          163
+        ]
+      ],
+      "per_level_sum": 45,
+      "per_level_consistent": true,
+      "sunk_actions": 11,
+      "productive_actions": 34,
+      "stall_level": 2,
+      "stall_level_actions": 11,
+      "stall_level_human": 48,
+      "stall_ratio": 0.22916666666666666,
+      "levels_engaged": 2,
+      "human_total": 651,
+      "S_l": [
+        0.3815
+      ],
+      "acting_turns": 19,
+      "level_changes": 1,
+      "stall_runs": [
+        12,
+        7
+      ],
+      "final_stall_turns": 7,
+      "max_stall_turns": 12,
+      "deaths": 2,
+      "deaths_by_level": {
+        "2": [
+          4,
+          7
+        ]
+      },
+      "inferred_budgets": {},
+      "death_actions": [
+        "ACTION3",
+        "ACTION6"
+      ]
+    },
+    "cd82": {
+      "game": "cd82-fb555c5d",
+      "game_id": "cd82",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 6,
+      "score": 4.76,
+      "actions": 65,
+      "tokens": 99271,
+      "per_level": [
+        [
+          34,
+          55
+        ],
+        [
+          31,
+          8
+        ],
+        [
+          0,
+          41
+        ],
+        [
+          0,
+          21
+        ],
+        [
+          0,
+          23
+        ],
+        [
+          0,
+          23
+        ]
+      ],
+      "per_level_sum": 65,
+      "per_level_consistent": true,
+      "sunk_actions": 31,
+      "productive_actions": 34,
+      "stall_level": 2,
+      "stall_level_actions": 31,
+      "stall_level_human": 8,
+      "stall_ratio": 3.875,
+      "levels_engaged": 2,
+      "human_total": 171,
+      "S_l": [
+        1.3225
+      ],
+      "acting_turns": 27,
+      "level_changes": 1,
+      "stall_runs": [
+        18,
+        9
+      ],
+      "final_stall_turns": 9,
+      "max_stall_turns": 18,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "cn04": {
+      "game": "cn04-2fe56bfb",
+      "game_id": "cn04",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 6,
+      "score": 4.76,
+      "actions": 34,
+      "tokens": 49535,
+      "per_level": [
+        [
+          24,
+          29
+        ],
+        [
+          10,
+          54
+        ],
+        [
+          0,
+          85
+        ],
+        [
+          0,
+          300
+        ],
+        [
+          0,
+          208
+        ],
+        [
+          0,
+          113
+        ]
+      ],
+      "per_level_sum": 34,
+      "per_level_consistent": true,
+      "sunk_actions": 10,
+      "productive_actions": 24,
+      "stall_level": 2,
+      "stall_level_actions": 10,
+      "stall_level_human": 54,
+      "stall_ratio": 0.18518518518518517,
+      "levels_engaged": 2,
+      "human_total": 789,
+      "S_l": [
+        1.3225
+      ],
+      "acting_turns": 11,
+      "level_changes": 1,
+      "stall_runs": [
+        7,
+        4
+      ],
+      "final_stall_turns": 4,
+      "max_stall_turns": 7,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "dc22": {
+      "game": "dc22-fdcac232",
+      "game_id": "dc22",
+      "state": "gave_up",
+      "levels_done": 0,
+      "levels_total": 6,
+      "score": 0.0,
+      "actions": 97,
+      "tokens": 77653,
+      "per_level": [
+        [
+          97,
+          59
+        ],
+        [
+          0,
+          102
+        ],
+        [
+          0,
+          67
+        ],
+        [
+          0,
+          98
+        ],
+        [
+          0,
+          324
+        ],
+        [
+          0,
+          578
+        ]
+      ],
+      "per_level_sum": 97,
+      "per_level_consistent": true,
+      "sunk_actions": 97,
+      "productive_actions": 0,
+      "stall_level": 1,
+      "stall_level_actions": 97,
+      "stall_level_human": 59,
+      "stall_ratio": 1.6440677966101696,
+      "levels_engaged": 1,
+      "human_total": 1228,
+      "S_l": [],
+      "acting_turns": 29,
+      "level_changes": 0,
+      "stall_runs": [
+        29
+      ],
+      "final_stall_turns": 29,
+      "max_stall_turns": 29,
+      "deaths": 1,
+      "deaths_by_level": {
+        "1": [
+          94
+        ]
+      },
+      "inferred_budgets": {},
+      "death_actions": [
+        "ACTION6"
+      ]
+    },
+    "ft09": {
+      "game": "ft09-0d8bbf25",
+      "game_id": "ft09",
+      "state": "gave_up",
+      "levels_done": 4,
+      "levels_total": 6,
+      "score": 47.62,
+      "actions": 63,
+      "tokens": 73111,
+      "per_level": [
+        [
+          4,
+          43
+        ],
+        [
+          7,
+          12
+        ],
+        [
+          14,
+          23
+        ],
+        [
+          17,
+          28
+        ],
+        [
+          21,
+          65
+        ],
+        [
+          0,
+          37
+        ]
+      ],
+      "per_level_sum": 63,
+      "per_level_consistent": true,
+      "sunk_actions": 21,
+      "productive_actions": 42,
+      "stall_level": 5,
+      "stall_level_actions": 21,
+      "stall_level_human": 65,
+      "stall_ratio": 0.3230769230769231,
+      "levels_engaged": 5,
+      "human_total": 208,
+      "S_l": [
+        1.3225,
+        1.3225,
+        1.3225,
+        1.3225
+      ],
+      "acting_turns": 13,
+      "level_changes": 4,
+      "stall_runs": [
+        1,
+        2,
+        2,
+        4,
+        4
+      ],
+      "final_stall_turns": 4,
+      "max_stall_turns": 4,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "g50t": {
+      "game": "g50t-5849a774",
+      "game_id": "g50t",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 7,
+      "score": 1.67,
+      "actions": 202,
+      "tokens": 95696,
+      "per_level": [
+        [
+          114,
+          78
+        ],
+        [
+          88,
+          175
+        ],
+        [
+          0,
+          179
+        ],
+        [
+          0,
+          230
+        ],
+        [
+          0,
+          96
+        ],
+        [
+          0,
+          54
+        ],
+        [
+          0,
+          67
+        ]
+      ],
+      "per_level_sum": 202,
+      "per_level_consistent": true,
+      "sunk_actions": 88,
+      "productive_actions": 114,
+      "stall_level": 2,
+      "stall_level_actions": 88,
+      "stall_level_human": 175,
+      "stall_ratio": 0.5028571428571429,
+      "levels_engaged": 2,
+      "human_total": 879,
+      "S_l": [
+        0.4681
+      ],
+      "acting_turns": 23,
+      "level_changes": 1,
+      "stall_runs": [
+        17,
+        6
+      ],
+      "final_stall_turns": 6,
+      "max_stall_turns": 17,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "ka59": {
+      "game": "ka59-38d34dbb",
+      "game_id": "ka59",
+      "state": "gave_up",
+      "levels_done": 2,
+      "levels_total": 7,
+      "score": 10.71,
+      "actions": 159,
+      "tokens": 41363,
+      "per_level": [
+        [
+          19,
+          28
+        ],
+        [
+          65,
+          109
+        ],
+        [
+          75,
+          51
+        ],
+        [
+          0,
+          51
+        ],
+        [
+          0,
+          33
+        ],
+        [
+          0,
+          132
+        ],
+        [
+          0,
+          326
+        ]
+      ],
+      "per_level_sum": 159,
+      "per_level_consistent": true,
+      "sunk_actions": 75,
+      "productive_actions": 84,
+      "stall_level": 3,
+      "stall_level_actions": 75,
+      "stall_level_human": 51,
+      "stall_ratio": 1.4705882352941178,
+      "levels_engaged": 3,
+      "human_total": 730,
+      "S_l": [
+        1.3225,
+        1.3225
+      ],
+      "acting_turns": 40,
+      "level_changes": 2,
+      "stall_runs": [
+        12,
+        13,
+        15
+      ],
+      "final_stall_turns": 15,
+      "max_stall_turns": 15,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "lf52": {
+      "game": "lf52-271a04aa",
+      "game_id": "lf52",
+      "state": "gave_up",
+      "levels_done": 2,
+      "levels_total": 10,
+      "score": 4.21,
+      "actions": 115,
+      "tokens": 46327,
+      "per_level": [
+        [
+          9,
+          32
+        ],
+        [
+          106,
+          81
+        ],
+        [
+          0,
+          60
+        ],
+        [
+          0,
+          71
+        ],
+        [
+          0,
+          205
+        ],
+        [
+          0,
+          148
+        ],
+        [
+          0,
+          244
+        ],
+        [
+          0,
+          109
+        ],
+        [
+          0,
+          164
+        ],
+        [
+          0,
+          225
+        ]
+      ],
+      "per_level_sum": 115,
+      "per_level_consistent": true,
+      "sunk_actions": 0,
+      "productive_actions": 115,
+      "stall_level": 3,
+      "stall_level_actions": 0,
+      "stall_level_human": 60,
+      "stall_ratio": 0.0,
+      "levels_engaged": 2,
+      "human_total": 1339,
+      "S_l": [
+        1.3225,
+        0.5839
+      ],
+      "acting_turns": 31,
+      "level_changes": 2,
+      "stall_runs": [
+        4,
+        26,
+        1
+      ],
+      "final_stall_turns": 1,
+      "max_stall_turns": 26,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "lp85": {
+      "game": "lp85-305b61c3",
+      "game_id": "lp85",
+      "state": "gave_up",
+      "levels_done": 5,
+      "levels_total": 8,
+      "score": 39.35,
+      "actions": 89,
+      "tokens": 81190,
+      "per_level": [
+        [
+          8,
+          17
+        ],
+        [
+          11,
+          38
+        ],
+        [
+          18,
+          31
+        ],
+        [
+          26,
+          16
+        ],
+        [
+          13,
+          41
+        ],
+        [
+          13,
+          60
+        ],
+        [
+          0,
+          26
+        ],
+        [
+          0,
+          159
+        ]
+      ],
+      "per_level_sum": 89,
+      "per_level_consistent": true,
+      "sunk_actions": 13,
+      "productive_actions": 76,
+      "stall_level": 6,
+      "stall_level_actions": 13,
+      "stall_level_human": 60,
+      "stall_ratio": 0.21666666666666667,
+      "levels_engaged": 6,
+      "human_total": 388,
+      "S_l": [
+        1.3225,
+        1.3225,
+        1.3225,
+        0.3787,
+        1.3225
+      ],
+      "acting_turns": 23,
+      "level_changes": 5,
+      "stall_runs": [
+        3,
+        3,
+        4,
+        5,
+        4,
+        4
+      ],
+      "final_stall_turns": 4,
+      "max_stall_turns": 5,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "ls20": {
+      "game": "ls20-9607627b",
+      "game_id": "ls20",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 7,
+      "score": 0.22,
+      "actions": 89,
+      "tokens": 49896,
+      "per_level": [
+        [
+          89,
+          22
+        ],
+        [
+          0,
+          123
+        ],
+        [
+          0,
+          73
+        ],
+        [
+          0,
+          84
+        ],
+        [
+          0,
+          96
+        ],
+        [
+          0,
+          192
+        ],
+        [
+          0,
+          186
+        ]
+      ],
+      "per_level_sum": 89,
+      "per_level_consistent": true,
+      "sunk_actions": 0,
+      "productive_actions": 89,
+      "stall_level": 2,
+      "stall_level_actions": 0,
+      "stall_level_human": 123,
+      "stall_ratio": 0.0,
+      "levels_engaged": 1,
+      "human_total": 776,
+      "S_l": [
+        0.0611
+      ],
+      "acting_turns": 20,
+      "level_changes": 1,
+      "stall_runs": [
+        19,
+        1
+      ],
+      "final_stall_turns": 1,
+      "max_stall_turns": 19,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "m0r0": {
+      "game": "m0r0-492f87ba",
+      "game_id": "m0r0",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 6,
+      "score": 3.71,
+      "actions": 95,
+      "tokens": 62056,
+      "per_level": [
+        [
+          34,
+          30
+        ],
+        [
+          61,
+          111
+        ],
+        [
+          0,
+          203
+        ],
+        [
+          0,
+          26
+        ],
+        [
+          0,
+          500
+        ],
+        [
+          0,
+          237
+        ]
+      ],
+      "per_level_sum": 95,
+      "per_level_consistent": true,
+      "sunk_actions": 61,
+      "productive_actions": 34,
+      "stall_level": 2,
+      "stall_level_actions": 61,
+      "stall_level_human": 111,
+      "stall_ratio": 0.5495495495495496,
+      "levels_engaged": 2,
+      "human_total": 1107,
+      "S_l": [
+        0.7785
+      ],
+      "acting_turns": 17,
+      "level_changes": 1,
+      "stall_runs": [
+        8,
+        9
+      ],
+      "final_stall_turns": 9,
+      "max_stall_turns": 9,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "r11l": {
+      "game": "r11l-495a7899",
+      "game_id": "r11l",
+      "state": "gave_up",
+      "levels_done": 2,
+      "levels_total": 6,
+      "score": 14.29,
+      "actions": 28,
+      "tokens": 46723,
+      "per_level": [
+        [
+          6,
+          22
+        ],
+        [
+          11,
+          33
+        ],
+        [
+          11,
+          51
+        ],
+        [
+          0,
+          26
+        ],
+        [
+          0,
+          52
+        ],
+        [
+          0,
+          49
+        ]
+      ],
+      "per_level_sum": 28,
+      "per_level_consistent": true,
+      "sunk_actions": 11,
+      "productive_actions": 17,
+      "stall_level": 3,
+      "stall_level_actions": 11,
+      "stall_level_human": 51,
+      "stall_ratio": 0.21568627450980393,
+      "levels_engaged": 3,
+      "human_total": 233,
+      "S_l": [
+        1.3225,
+        1.3225
+      ],
+      "acting_turns": 9,
+      "level_changes": 2,
+      "stall_runs": [
+        3,
+        4,
+        2
+      ],
+      "final_stall_turns": 2,
+      "max_stall_turns": 4,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "re86": {
+      "game": "re86-8af5384d",
+      "game_id": "re86",
+      "state": "gave_up",
+      "levels_done": 4,
+      "levels_total": 8,
+      "score": 27.78,
+      "actions": 185,
+      "tokens": 76166,
+      "per_level": [
+        [
+          21,
+          26
+        ],
+        [
+          38,
+          42
+        ],
+        [
+          68,
+          86
+        ],
+        [
+          57,
+          108
+        ],
+        [
+          1,
+          189
+        ],
+        [
+          0,
+          139
+        ],
+        [
+          0,
+          424
+        ],
+        [
+          0,
+          241
+        ]
+      ],
+      "per_level_sum": 185,
+      "per_level_consistent": true,
+      "sunk_actions": 1,
+      "productive_actions": 184,
+      "stall_level": 5,
+      "stall_level_actions": 1,
+      "stall_level_human": 189,
+      "stall_ratio": 0.005291005291005291,
+      "levels_engaged": 5,
+      "human_total": 1255,
+      "S_l": [
+        1.3225,
+        1.2216,
+        1.3225,
+        1.3225
+      ],
+      "acting_turns": 22,
+      "level_changes": 4,
+      "stall_runs": [
+        5,
+        5,
+        5,
+        5,
+        2
+      ],
+      "final_stall_turns": 2,
+      "max_stall_turns": 5,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "s5i5": {
+      "game": "s5i5-18d95033",
+      "game_id": "s5i5",
+      "state": "gave_up",
+      "levels_done": 2,
+      "levels_total": 8,
+      "score": 7.47,
+      "actions": 122,
+      "tokens": 78786,
+      "per_level": [
+        [
+          32,
+          20
+        ],
+        [
+          48,
+          89
+        ],
+        [
+          42,
+          106
+        ],
+        [
+          0,
+          54
+        ],
+        [
+          0,
+          162
+        ],
+        [
+          0,
+          38
+        ],
+        [
+          0,
+          86
+        ],
+        [
+          0,
+          83
+        ]
+      ],
+      "per_level_sum": 122,
+      "per_level_consistent": true,
+      "sunk_actions": 42,
+      "productive_actions": 80,
+      "stall_level": 3,
+      "stall_level_actions": 42,
+      "stall_level_human": 106,
+      "stall_ratio": 0.39622641509433965,
+      "levels_engaged": 3,
+      "human_total": 638,
+      "S_l": [
+        0.3906,
+        1.3225
+      ],
+      "acting_turns": 33,
+      "level_changes": 2,
+      "stall_runs": [
+        9,
+        11,
+        13
+      ],
+      "final_stall_turns": 13,
+      "max_stall_turns": 13,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "sb26": {
+      "game": "sb26-7fbdac44",
+      "game_id": "sb26",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 8,
+      "score": 2.78,
+      "actions": 140,
+      "tokens": 52481,
+      "per_level": [
+        [
+          11,
+          18
+        ],
+        [
+          129,
+          28
+        ],
+        [
+          0,
+          18
+        ],
+        [
+          0,
+          19
+        ],
+        [
+          0,
+          31
+        ],
+        [
+          0,
+          23
+        ],
+        [
+          0,
+          58
+        ],
+        [
+          0,
+          18
+        ]
+      ],
+      "per_level_sum": 140,
+      "per_level_consistent": true,
+      "sunk_actions": 129,
+      "productive_actions": 11,
+      "stall_level": 2,
+      "stall_level_actions": 129,
+      "stall_level_human": 28,
+      "stall_ratio": 4.607142857142857,
+      "levels_engaged": 2,
+      "human_total": 213,
+      "S_l": [
+        1.3225
+      ],
+      "acting_turns": 31,
+      "level_changes": 1,
+      "stall_runs": [
+        4,
+        27
+      ],
+      "final_stall_turns": 27,
+      "max_stall_turns": 27,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "sc25": {
+      "game": "sc25-635fd71a",
+      "game_id": "sc25",
+      "state": "gave_up",
+      "levels_done": 0,
+      "levels_total": 6,
+      "score": 0.0,
+      "actions": 94,
+      "tokens": 70372,
+      "per_level": [
+        [
+          94,
+          36
+        ],
+        [
+          0,
+          6
+        ],
+        [
+          0,
+          32
+        ],
+        [
+          0,
+          83
+        ],
+        [
+          0,
+          143
+        ],
+        [
+          0,
+          50
+        ]
+      ],
+      "per_level_sum": 94,
+      "per_level_consistent": true,
+      "sunk_actions": 94,
+      "productive_actions": 0,
+      "stall_level": 1,
+      "stall_level_actions": 94,
+      "stall_level_human": 36,
+      "stall_ratio": 2.611111111111111,
+      "levels_engaged": 1,
+      "human_total": 350,
+      "S_l": [],
+      "acting_turns": 22,
+      "level_changes": 0,
+      "stall_runs": [
+        22
+      ],
+      "final_stall_turns": 22,
+      "max_stall_turns": 22,
+      "deaths": 1,
+      "deaths_by_level": {
+        "1": [
+          59
+        ]
+      },
+      "inferred_budgets": {},
+      "death_actions": [
+        "ACTION3"
+      ]
+    },
+    "sk48": {
+      "game": "sk48-d8078629",
+      "game_id": "sk48",
+      "state": "gave_up",
+      "levels_done": 0,
+      "levels_total": 8,
+      "score": 0.0,
+      "actions": 157,
+      "tokens": 109777,
+      "per_level": [
+        [
+          157,
+          61
+        ],
+        [
+          0,
+          177
+        ],
+        [
+          0,
+          101
+        ],
+        [
+          0,
+          103
+        ],
+        [
+          0,
+          230
+        ],
+        [
+          0,
+          181
+        ],
+        [
+          0,
+          125
+        ],
+        [
+          0,
+          92
+        ]
+      ],
+      "per_level_sum": 157,
+      "per_level_consistent": true,
+      "sunk_actions": 157,
+      "productive_actions": 0,
+      "stall_level": 1,
+      "stall_level_actions": 157,
+      "stall_level_human": 61,
+      "stall_ratio": 2.5737704918032787,
+      "levels_engaged": 1,
+      "human_total": 1070,
+      "S_l": [],
+      "acting_turns": 28,
+      "level_changes": 0,
+      "stall_runs": [
+        28
+      ],
+      "final_stall_turns": 28,
+      "max_stall_turns": 28,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "sp80": {
+      "game": "sp80-589a99af",
+      "game_id": "sp80",
+      "state": "gave_up",
+      "levels_done": 0,
+      "levels_total": 6,
+      "score": 0.0,
+      "actions": 215,
+      "tokens": 64810,
+      "per_level": [
+        [
+          215,
+          39
+        ],
+        [
+          0,
+          58
+        ],
+        [
+          0,
+          25
+        ],
+        [
+          0,
+          148
+        ],
+        [
+          0,
+          96
+        ],
+        [
+          0,
+          152
+        ]
+      ],
+      "per_level_sum": 215,
+      "per_level_consistent": true,
+      "sunk_actions": 215,
+      "productive_actions": 0,
+      "stall_level": 1,
+      "stall_level_actions": 215,
+      "stall_level_human": 39,
+      "stall_ratio": 5.512820512820513,
+      "levels_engaged": 1,
+      "human_total": 518,
+      "S_l": [],
+      "acting_turns": 25,
+      "level_changes": 0,
+      "stall_runs": [
+        25
+      ],
+      "final_stall_turns": 25,
+      "max_stall_turns": 25,
+      "deaths": 6,
+      "deaths_by_level": {
+        "1": [
+          30,
+          31,
+          31,
+          31,
+          31,
+          31
+        ]
+      },
+      "inferred_budgets": {
+        "1": 31
+      },
+      "death_actions": [
+        "ACTION1",
+        "ACTION5",
+        "ACTION3",
+        "ACTION4",
+        "ACTION4",
+        "ACTION4"
+      ]
+    },
+    "su15": {
+      "game": "su15-1944f8ab",
+      "game_id": "su15",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 9,
+      "score": 2.03,
+      "actions": 55,
+      "tokens": 66718,
+      "per_level": [
+        [
+          23,
+          22
+        ],
+        [
+          32,
+          42
+        ],
+        [
+          0,
+          26
+        ],
+        [
+          0,
+          115
+        ],
+        [
+          0,
+          36
+        ],
+        [
+          0,
+          31
+        ],
+        [
+          0,
+          8
+        ],
+        [
+          0,
+          40
+        ],
+        [
+          0,
+          41
+        ]
+      ],
+      "per_level_sum": 55,
+      "per_level_consistent": true,
+      "sunk_actions": 32,
+      "productive_actions": 23,
+      "stall_level": 2,
+      "stall_level_actions": 32,
+      "stall_level_human": 42,
+      "stall_ratio": 0.7619047619047619,
+      "levels_engaged": 2,
+      "human_total": 361,
+      "S_l": [
+        0.9149
+      ],
+      "acting_turns": 26,
+      "level_changes": 1,
+      "stall_runs": [
+        7,
+        19
+      ],
+      "final_stall_turns": 19,
+      "max_stall_turns": 19,
+      "deaths": 1,
+      "deaths_by_level": {
+        "2": [
+          26
+        ]
+      },
+      "inferred_budgets": {},
+      "death_actions": [
+        "ACTION6"
+      ]
+    },
+    "tn36": {
+      "game": "tn36-ef4dde99",
+      "game_id": "tn36",
+      "state": "gave_up",
+      "levels_done": 0,
+      "levels_total": 7,
+      "score": 0.0,
+      "actions": 49,
+      "tokens": 70696,
+      "per_level": [
+        [
+          49,
+          32
+        ],
+        [
+          0,
+          72
+        ],
+        [
+          0,
+          26
+        ],
+        [
+          0,
+          40
+        ],
+        [
+          0,
+          30
+        ],
+        [
+          0,
+          55
+        ],
+        [
+          0,
+          62
+        ]
+      ],
+      "per_level_sum": 49,
+      "per_level_consistent": true,
+      "sunk_actions": 49,
+      "productive_actions": 0,
+      "stall_level": 1,
+      "stall_level_actions": 49,
+      "stall_level_human": 32,
+      "stall_ratio": 1.53125,
+      "levels_engaged": 1,
+      "human_total": 317,
+      "S_l": [],
+      "acting_turns": 22,
+      "level_changes": 0,
+      "stall_runs": [
+        22
+      ],
+      "final_stall_turns": 22,
+      "max_stall_turns": 22,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "tr87": {
+      "game": "tr87-cd924810",
+      "game_id": "tr87",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 6,
+      "score": 4.76,
+      "actions": 38,
+      "tokens": 85878,
+      "per_level": [
+        [
+          36,
+          54
+        ],
+        [
+          2,
+          58
+        ],
+        [
+          0,
+          40
+        ],
+        [
+          0,
+          45
+        ],
+        [
+          0,
+          71
+        ],
+        [
+          0,
+          146
+        ]
+      ],
+      "per_level_sum": 38,
+      "per_level_consistent": true,
+      "sunk_actions": 2,
+      "productive_actions": 36,
+      "stall_level": 2,
+      "stall_level_actions": 2,
+      "stall_level_human": 58,
+      "stall_ratio": 0.034482758620689655,
+      "levels_engaged": 2,
+      "human_total": 414,
+      "S_l": [
+        1.3225
+      ],
+      "acting_turns": 7,
+      "level_changes": 1,
+      "stall_runs": [
+        4,
+        3
+      ],
+      "final_stall_turns": 3,
+      "max_stall_turns": 4,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "tu93": {
+      "game": "tu93-0768757b",
+      "game_id": "tu93",
+      "state": "gave_up",
+      "levels_done": 4,
+      "levels_total": 9,
+      "score": 21.46,
+      "actions": 100,
+      "tokens": 73320,
+      "per_level": [
+        [
+          19,
+          19
+        ],
+        [
+          29,
+          16
+        ],
+        [
+          25,
+          34
+        ],
+        [
+          27,
+          42
+        ],
+        [
+          0,
+          123
+        ],
+        [
+          0,
+          80
+        ],
+        [
+          0,
+          14
+        ],
+        [
+          0,
+          23
+        ],
+        [
+          0,
+          111
+        ]
+      ],
+      "per_level_sum": 100,
+      "per_level_consistent": true,
+      "sunk_actions": 0,
+      "productive_actions": 100,
+      "stall_level": 5,
+      "stall_level_actions": 0,
+      "stall_level_human": 123,
+      "stall_ratio": 0.0,
+      "levels_engaged": 4,
+      "human_total": 462,
+      "S_l": [
+        1.0,
+        0.3044,
+        1.3225,
+        1.3225
+      ],
+      "acting_turns": 18,
+      "level_changes": 4,
+      "stall_runs": [
+        3,
+        8,
+        2,
+        4,
+        1
+      ],
+      "final_stall_turns": 1,
+      "max_stall_turns": 8,
+      "deaths": 3,
+      "deaths_by_level": {
+        "2": [
+          5,
+          14
+        ],
+        "4": [
+          10
+        ]
+      },
+      "inferred_budgets": {},
+      "death_actions": [
+        "ACTION4",
+        "ACTION1",
+        "ACTION3"
+      ]
+    },
+    "vc33": {
+      "game": "vc33-5430563c",
+      "game_id": "vc33",
+      "state": "gave_up",
+      "levels_done": 3,
+      "levels_total": 7,
+      "score": 21.22,
+      "actions": 111,
+      "tokens": 76454,
+      "per_level": [
+        [
+          16,
+          7
+        ],
+        [
+          13,
+          18
+        ],
+        [
+          31,
+          44
+        ],
+        [
+          51,
+          61
+        ],
+        [
+          0,
+          131
+        ],
+        [
+          0,
+          34
+        ],
+        [
+          0,
+          152
+        ]
+      ],
+      "per_level_sum": 111,
+      "per_level_consistent": true,
+      "sunk_actions": 51,
+      "productive_actions": 60,
+      "stall_level": 4,
+      "stall_level_actions": 51,
+      "stall_level_human": 61,
+      "stall_ratio": 0.8360655737704918,
+      "levels_engaged": 4,
+      "human_total": 447,
+      "S_l": [
+        0.1914,
+        1.3225,
+        1.3225
+      ],
+      "acting_turns": 29,
+      "level_changes": 3,
+      "stall_runs": [
+        5,
+        3,
+        5,
+        16
+      ],
+      "final_stall_turns": 16,
+      "max_stall_turns": 16,
+      "deaths": 1,
+      "deaths_by_level": {
+        "4": [
+          51
+        ]
+      },
+      "inferred_budgets": {},
+      "death_actions": [
+        "ACTION6"
+      ]
+    },
+    "wa30": {
+      "game": "wa30-ee6fef47",
+      "game_id": "wa30",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 9,
+      "score": 1.89,
+      "actions": 148,
+      "tokens": 69002,
+      "per_level": [
+        [
+          77,
+          71
+        ],
+        [
+          71,
+          119
+        ],
+        [
+          0,
+          183
+        ],
+        [
+          0,
+          98
+        ],
+        [
+          0,
+          368
+        ],
+        [
+          0,
+          68
+        ],
+        [
+          0,
+          79
+        ],
+        [
+          0,
+          442
+        ],
+        [
+          0,
+          415
+        ]
+      ],
+      "per_level_sum": 148,
+      "per_level_consistent": true,
+      "sunk_actions": 71,
+      "productive_actions": 77,
+      "stall_level": 2,
+      "stall_level_actions": 71,
+      "stall_level_human": 119,
+      "stall_ratio": 0.5966386554621849,
+      "levels_engaged": 2,
+      "human_total": 1843,
+      "S_l": [
+        0.8502
+      ],
+      "acting_turns": 34,
+      "level_changes": 1,
+      "stall_runs": [
+        17,
+        17
+      ],
+      "final_stall_turns": 17,
+      "max_stall_turns": 17,
+      "deaths": 1,
+      "deaths_by_level": {
+        "2": [
+          71
+        ]
+      },
+      "inferred_budgets": {},
+      "death_actions": [
+        "ACTION5"
+      ]
+    }
+  },
+  "baseline": {
+    "ar25": {
+      "game": "ar25-0c556536",
+      "game_id": "ar25",
+      "state": "gave_up",
+      "levels_done": 2,
+      "levels_total": 8,
+      "score": 8.33,
+      "actions": 411,
+      "tokens": 59282,
+      "per_level": [
+        [
+          19,
+          32
+        ],
+        [
+          44,
+          50
+        ],
+        [
+          348,
+          75
+        ],
+        [
+          0,
+          37
+        ],
+        [
+          0,
+          89
+        ],
+        [
+          0,
+          159
+        ],
+        [
+          0,
+          233
+        ],
+        [
+          0,
+          73
+        ]
+      ],
+      "per_level_sum": 411,
+      "per_level_consistent": true,
+      "sunk_actions": 348,
+      "productive_actions": 63,
+      "stall_level": 3,
+      "stall_level_actions": 348,
+      "stall_level_human": 75,
+      "stall_ratio": 4.64,
+      "levels_engaged": 3,
+      "human_total": 748,
+      "S_l": [
+        1.3225,
+        1.2913
+      ],
+      "acting_turns": 35,
+      "level_changes": 2,
+      "stall_runs": [
+        2,
+        8,
+        25
+      ],
+      "final_stall_turns": 25,
+      "max_stall_turns": 25,
+      "deaths": 1,
+      "deaths_by_level": {
+        "3": [
+          190
+        ]
+      },
+      "inferred_budgets": {},
+      "death_actions": [
+        "ACTION2"
+      ]
+    },
+    "bp35": {
+      "game": "bp35-0a0ad940",
+      "game_id": "bp35",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 9,
+      "score": 0.96,
+      "actions": 61,
+      "tokens": 87109,
+      "per_level": [
+        [
+          32,
+          21
+        ],
+        [
+          29,
+          48
+        ],
+        [
+          0,
+          44
+        ],
+        [
+          0,
+          38
+        ],
+        [
+          0,
+          33
+        ],
+        [
+          0,
+          87
+        ],
+        [
+          0,
+          86
+        ],
+        [
+          0,
+          131
+        ],
+        [
+          0,
+          163
+        ]
+      ],
+      "per_level_sum": 61,
+      "per_level_consistent": true,
+      "sunk_actions": 29,
+      "productive_actions": 32,
+      "stall_level": 2,
+      "stall_level_actions": 29,
+      "stall_level_human": 48,
+      "stall_ratio": 0.6041666666666666,
+      "levels_engaged": 2,
+      "human_total": 651,
+      "S_l": [
+        0.4307
+      ],
+      "acting_turns": 24,
+      "level_changes": 1,
+      "stall_runs": [
+        8,
+        16
+      ],
+      "final_stall_turns": 16,
+      "max_stall_turns": 16,
+      "deaths": 2,
+      "deaths_by_level": {
+        "2": [
+          4,
+          20
+        ]
+      },
+      "inferred_budgets": {},
+      "death_actions": [
+        "ACTION6",
+        "ACTION6"
+      ]
+    },
+    "cd82": {
+      "game": "cd82-fb555c5d",
+      "game_id": "cd82",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 6,
+      "score": 4.76,
+      "actions": 114,
+      "tokens": 66512,
+      "per_level": [
+        [
+          39,
+          55
+        ],
+        [
+          75,
+          8
+        ],
+        [
+          0,
+          41
+        ],
+        [
+          0,
+          21
+        ],
+        [
+          0,
+          23
+        ],
+        [
+          0,
+          23
+        ]
+      ],
+      "per_level_sum": 114,
+      "per_level_consistent": true,
+      "sunk_actions": 75,
+      "productive_actions": 39,
+      "stall_level": 2,
+      "stall_level_actions": 75,
+      "stall_level_human": 8,
+      "stall_ratio": 9.375,
+      "levels_engaged": 2,
+      "human_total": 171,
+      "S_l": [
+        1.3225
+      ],
+      "acting_turns": 39,
+      "level_changes": 1,
+      "stall_runs": [
+        11,
+        28
+      ],
+      "final_stall_turns": 28,
+      "max_stall_turns": 28,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "cn04": {
+      "game": "cn04-2fe56bfb",
+      "game_id": "cn04",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 6,
+      "score": 4.76,
+      "actions": 42,
+      "tokens": 73287,
+      "per_level": [
+        [
+          26,
+          29
+        ],
+        [
+          16,
+          54
+        ],
+        [
+          0,
+          85
+        ],
+        [
+          0,
+          300
+        ],
+        [
+          0,
+          208
+        ],
+        [
+          0,
+          113
+        ]
+      ],
+      "per_level_sum": 42,
+      "per_level_consistent": true,
+      "sunk_actions": 16,
+      "productive_actions": 26,
+      "stall_level": 2,
+      "stall_level_actions": 16,
+      "stall_level_human": 54,
+      "stall_ratio": 0.2962962962962963,
+      "levels_engaged": 2,
+      "human_total": 789,
+      "S_l": [
+        1.2441
+      ],
+      "acting_turns": 13,
+      "level_changes": 1,
+      "stall_runs": [
+        7,
+        6
+      ],
+      "final_stall_turns": 6,
+      "max_stall_turns": 7,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "dc22": {
+      "game": "dc22-fdcac232",
+      "game_id": "dc22",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 6,
+      "score": 1.62,
+      "actions": 139,
+      "tokens": 70897,
+      "per_level": [
+        [
+          101,
+          59
+        ],
+        [
+          38,
+          102
+        ],
+        [
+          0,
+          67
+        ],
+        [
+          0,
+          98
+        ],
+        [
+          0,
+          324
+        ],
+        [
+          0,
+          578
+        ]
+      ],
+      "per_level_sum": 139,
+      "per_level_consistent": true,
+      "sunk_actions": 38,
+      "productive_actions": 101,
+      "stall_level": 2,
+      "stall_level_actions": 38,
+      "stall_level_human": 102,
+      "stall_ratio": 0.37254901960784315,
+      "levels_engaged": 2,
+      "human_total": 1228,
+      "S_l": [
+        0.3412
+      ],
+      "acting_turns": 24,
+      "level_changes": 1,
+      "stall_runs": [
+        18,
+        6
+      ],
+      "final_stall_turns": 6,
+      "max_stall_turns": 18,
+      "deaths": 1,
+      "deaths_by_level": {
+        "1": [
+          64
+        ]
+      },
+      "inferred_budgets": {},
+      "death_actions": [
+        "ACTION6"
+      ]
+    },
+    "ft09": {
+      "game": "ft09-0d8bbf25",
+      "game_id": "ft09",
+      "state": "gave_up",
+      "levels_done": 3,
+      "levels_total": 6,
+      "score": 23.81,
+      "actions": 65,
+      "tokens": 78221,
+      "per_level": [
+        [
+          6,
+          43
+        ],
+        [
+          7,
+          12
+        ],
+        [
+          32,
+          23
+        ],
+        [
+          20,
+          28
+        ],
+        [
+          0,
+          65
+        ],
+        [
+          0,
+          37
+        ]
+      ],
+      "per_level_sum": 65,
+      "per_level_consistent": true,
+      "sunk_actions": 20,
+      "productive_actions": 45,
+      "stall_level": 4,
+      "stall_level_actions": 20,
+      "stall_level_human": 28,
+      "stall_ratio": 0.7142857142857143,
+      "levels_engaged": 4,
+      "human_total": 208,
+      "S_l": [
+        1.3225,
+        1.3225,
+        0.5166
+      ],
+      "acting_turns": 13,
+      "level_changes": 3,
+      "stall_runs": [
+        2,
+        1,
+        3,
+        7
+      ],
+      "final_stall_turns": 7,
+      "max_stall_turns": 7,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "g50t": {
+      "game": "g50t-5849a774",
+      "game_id": "g50t",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 7,
+      "score": 3.57,
+      "actions": 168,
+      "tokens": 79920,
+      "per_level": [
+        [
+          66,
+          78
+        ],
+        [
+          102,
+          175
+        ],
+        [
+          0,
+          179
+        ],
+        [
+          0,
+          230
+        ],
+        [
+          0,
+          96
+        ],
+        [
+          0,
+          54
+        ],
+        [
+          0,
+          67
+        ]
+      ],
+      "per_level_sum": 168,
+      "per_level_consistent": true,
+      "sunk_actions": 102,
+      "productive_actions": 66,
+      "stall_level": 2,
+      "stall_level_actions": 102,
+      "stall_level_human": 175,
+      "stall_ratio": 0.5828571428571429,
+      "levels_engaged": 2,
+      "human_total": 879,
+      "S_l": [
+        1.3225
+      ],
+      "acting_turns": 28,
+      "level_changes": 1,
+      "stall_runs": [
+        12,
+        16
+      ],
+      "final_stall_turns": 16,
+      "max_stall_turns": 16,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "ka59": {
+      "game": "ka59-38d34dbb",
+      "game_id": "ka59",
+      "state": "gave_up",
+      "levels_done": 2,
+      "levels_total": 7,
+      "score": 10.71,
+      "actions": 143,
+      "tokens": 94153,
+      "per_level": [
+        [
+          26,
+          28
+        ],
+        [
+          96,
+          109
+        ],
+        [
+          21,
+          51
+        ],
+        [
+          0,
+          51
+        ],
+        [
+          0,
+          33
+        ],
+        [
+          0,
+          132
+        ],
+        [
+          0,
+          326
+        ]
+      ],
+      "per_level_sum": 143,
+      "per_level_consistent": true,
+      "sunk_actions": 21,
+      "productive_actions": 122,
+      "stall_level": 3,
+      "stall_level_actions": 21,
+      "stall_level_human": 51,
+      "stall_ratio": 0.4117647058823529,
+      "levels_engaged": 3,
+      "human_total": 730,
+      "S_l": [
+        1.1598,
+        1.2892
+      ],
+      "acting_turns": 31,
+      "level_changes": 2,
+      "stall_runs": [
+        9,
+        18,
+        4
+      ],
+      "final_stall_turns": 4,
+      "max_stall_turns": 18,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "lf52": {
+      "game": "lf52-271a04aa",
+      "game_id": "lf52",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 10,
+      "score": 1.82,
+      "actions": 109,
+      "tokens": 70710,
+      "per_level": [
+        [
+          25,
+          32
+        ],
+        [
+          84,
+          81
+        ],
+        [
+          0,
+          60
+        ],
+        [
+          0,
+          71
+        ],
+        [
+          0,
+          205
+        ],
+        [
+          0,
+          148
+        ],
+        [
+          0,
+          244
+        ],
+        [
+          0,
+          109
+        ],
+        [
+          0,
+          164
+        ],
+        [
+          0,
+          225
+        ]
+      ],
+      "per_level_sum": 109,
+      "per_level_consistent": true,
+      "sunk_actions": 84,
+      "productive_actions": 25,
+      "stall_level": 2,
+      "stall_level_actions": 84,
+      "stall_level_human": 81,
+      "stall_ratio": 1.037037037037037,
+      "levels_engaged": 2,
+      "human_total": 1339,
+      "S_l": [
+        1.3225
+      ],
+      "acting_turns": 31,
+      "level_changes": 1,
+      "stall_runs": [
+        10,
+        21
+      ],
+      "final_stall_turns": 21,
+      "max_stall_turns": 21,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "lp85": {
+      "game": "lp85-305b61c3",
+      "game_id": "lp85",
+      "state": "gave_up",
+      "levels_done": 5,
+      "levels_total": 8,
+      "score": 41.67,
+      "actions": 78,
+      "tokens": 81069,
+      "per_level": [
+        [
+          12,
+          17
+        ],
+        [
+          14,
+          38
+        ],
+        [
+          16,
+          31
+        ],
+        [
+          15,
+          16
+        ],
+        [
+          14,
+          41
+        ],
+        [
+          7,
+          60
+        ],
+        [
+          0,
+          26
+        ],
+        [
+          0,
+          159
+        ]
+      ],
+      "per_level_sum": 78,
+      "per_level_consistent": true,
+      "sunk_actions": 7,
+      "productive_actions": 71,
+      "stall_level": 6,
+      "stall_level_actions": 7,
+      "stall_level_human": 60,
+      "stall_ratio": 0.11666666666666667,
+      "levels_engaged": 6,
+      "human_total": 388,
+      "S_l": [
+        1.3225,
+        1.3225,
+        1.3225,
+        1.1378,
+        1.3225
+      ],
+      "acting_turns": 20,
+      "level_changes": 5,
+      "stall_runs": [
+        3,
+        2,
+        2,
+        4,
+        6,
+        3
+      ],
+      "final_stall_turns": 3,
+      "max_stall_turns": 6,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "ls20": {
+      "game": "ls20-9607627b",
+      "game_id": "ls20",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 7,
+      "score": 2.37,
+      "actions": 91,
+      "tokens": 64098,
+      "per_level": [
+        [
+          27,
+          22
+        ],
+        [
+          64,
+          123
+        ],
+        [
+          0,
+          73
+        ],
+        [
+          0,
+          84
+        ],
+        [
+          0,
+          96
+        ],
+        [
+          0,
+          192
+        ],
+        [
+          0,
+          186
+        ]
+      ],
+      "per_level_sum": 91,
+      "per_level_consistent": true,
+      "sunk_actions": 64,
+      "productive_actions": 27,
+      "stall_level": 2,
+      "stall_level_actions": 64,
+      "stall_level_human": 123,
+      "stall_ratio": 0.5203252032520326,
+      "levels_engaged": 2,
+      "human_total": 776,
+      "S_l": [
+        0.6639
+      ],
+      "acting_turns": 16,
+      "level_changes": 1,
+      "stall_runs": [
+        6,
+        10
+      ],
+      "final_stall_turns": 10,
+      "max_stall_turns": 10,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "m0r0": {
+      "game": "m0r0-492f87ba",
+      "game_id": "m0r0",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 6,
+      "score": 4.76,
+      "actions": 88,
+      "tokens": 78191,
+      "per_level": [
+        [
+          29,
+          30
+        ],
+        [
+          59,
+          111
+        ],
+        [
+          0,
+          203
+        ],
+        [
+          0,
+          26
+        ],
+        [
+          0,
+          500
+        ],
+        [
+          0,
+          237
+        ]
+      ],
+      "per_level_sum": 88,
+      "per_level_consistent": true,
+      "sunk_actions": 59,
+      "productive_actions": 29,
+      "stall_level": 2,
+      "stall_level_actions": 59,
+      "stall_level_human": 111,
+      "stall_ratio": 0.5315315315315315,
+      "levels_engaged": 2,
+      "human_total": 1107,
+      "S_l": [
+        1.0702
+      ],
+      "acting_turns": 13,
+      "level_changes": 1,
+      "stall_runs": [
+        6,
+        7
+      ],
+      "final_stall_turns": 7,
+      "max_stall_turns": 7,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "r11l": {
+      "game": "r11l-495a7899",
+      "game_id": "r11l",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 6,
+      "score": 4.76,
+      "actions": 83,
+      "tokens": 57791,
+      "per_level": [
+        [
+          6,
+          22
+        ],
+        [
+          77,
+          33
+        ],
+        [
+          0,
+          51
+        ],
+        [
+          0,
+          26
+        ],
+        [
+          0,
+          52
+        ],
+        [
+          0,
+          49
+        ]
+      ],
+      "per_level_sum": 83,
+      "per_level_consistent": true,
+      "sunk_actions": 77,
+      "productive_actions": 6,
+      "stall_level": 2,
+      "stall_level_actions": 77,
+      "stall_level_human": 33,
+      "stall_ratio": 2.3333333333333335,
+      "levels_engaged": 2,
+      "human_total": 233,
+      "S_l": [
+        1.3225
+      ],
+      "acting_turns": 32,
+      "level_changes": 1,
+      "stall_runs": [
+        3,
+        29
+      ],
+      "final_stall_turns": 29,
+      "max_stall_turns": 29,
+      "deaths": 9,
+      "deaths_by_level": {
+        "2": [
+          13,
+          7,
+          7,
+          7,
+          10,
+          7,
+          7,
+          7,
+          7
+        ]
+      },
+      "inferred_budgets": {
+        "2": 7
+      },
+      "death_actions": [
+        "ACTION6",
+        "ACTION6",
+        "ACTION6",
+        "ACTION6",
+        "ACTION6",
+        "ACTION6",
+        "ACTION6",
+        "ACTION6",
+        "ACTION6"
+      ]
+    },
+    "re86": {
+      "game": "re86-8af5384d",
+      "game_id": "re86",
+      "state": "gave_up",
+      "levels_done": 3,
+      "levels_total": 8,
+      "score": 16.67,
+      "actions": 315,
+      "tokens": 61260,
+      "per_level": [
+        [
+          23,
+          26
+        ],
+        [
+          36,
+          42
+        ],
+        [
+          81,
+          86
+        ],
+        [
+          175,
+          108
+        ],
+        [
+          0,
+          189
+        ],
+        [
+          0,
+          139
+        ],
+        [
+          0,
+          424
+        ],
+        [
+          0,
+          241
+        ]
+      ],
+      "per_level_sum": 315,
+      "per_level_consistent": true,
+      "sunk_actions": 175,
+      "productive_actions": 140,
+      "stall_level": 4,
+      "stall_level_actions": 175,
+      "stall_level_human": 108,
+      "stall_ratio": 1.6203703703703705,
+      "levels_engaged": 4,
+      "human_total": 1255,
+      "S_l": [
+        1.2779,
+        1.3225,
+        1.1273
+      ],
+      "acting_turns": 26,
+      "level_changes": 3,
+      "stall_runs": [
+        4,
+        5,
+        4,
+        13
+      ],
+      "final_stall_turns": 13,
+      "max_stall_turns": 13,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "s5i5": {
+      "game": "s5i5-18d95033",
+      "game_id": "s5i5",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 8,
+      "score": 2.78,
+      "actions": 219,
+      "tokens": 60178,
+      "per_level": [
+        [
+          18,
+          20
+        ],
+        [
+          201,
+          89
+        ],
+        [
+          0,
+          106
+        ],
+        [
+          0,
+          54
+        ],
+        [
+          0,
+          162
+        ],
+        [
+          0,
+          38
+        ],
+        [
+          0,
+          86
+        ],
+        [
+          0,
+          83
+        ]
+      ],
+      "per_level_sum": 219,
+      "per_level_consistent": true,
+      "sunk_actions": 201,
+      "productive_actions": 18,
+      "stall_level": 2,
+      "stall_level_actions": 201,
+      "stall_level_human": 89,
+      "stall_ratio": 2.258426966292135,
+      "levels_engaged": 2,
+      "human_total": 638,
+      "S_l": [
+        1.2346
+      ],
+      "acting_turns": 45,
+      "level_changes": 1,
+      "stall_runs": [
+        7,
+        38
+      ],
+      "final_stall_turns": 38,
+      "max_stall_turns": 38,
+      "deaths": 1,
+      "deaths_by_level": {
+        "2": [
+          151
+        ]
+      },
+      "inferred_budgets": {},
+      "death_actions": [
+        "ACTION6"
+      ]
+    },
+    "sb26": {
+      "game": "sb26-7fbdac44",
+      "game_id": "sb26",
+      "state": "gave_up",
+      "levels_done": 6,
+      "levels_total": 8,
+      "score": 58.33,
+      "actions": 152,
+      "tokens": 74149,
+      "per_level": [
+        [
+          11,
+          18
+        ],
+        [
+          56,
+          28
+        ],
+        [
+          15,
+          18
+        ],
+        [
+          15,
+          19
+        ],
+        [
+          17,
+          31
+        ],
+        [
+          19,
+          23
+        ],
+        [
+          19,
+          58
+        ],
+        [
+          0,
+          18
+        ]
+      ],
+      "per_level_sum": 152,
+      "per_level_consistent": true,
+      "sunk_actions": 19,
+      "productive_actions": 133,
+      "stall_level": 7,
+      "stall_level_actions": 19,
+      "stall_level_human": 58,
+      "stall_ratio": 0.3275862068965517,
+      "levels_engaged": 7,
+      "human_total": 213,
+      "S_l": [
+        1.3225,
+        0.25,
+        1.3225,
+        1.3225,
+        1.3225,
+        1.3225
+      ],
+      "acting_turns": 29,
+      "level_changes": 6,
+      "stall_runs": [
+        4,
+        13,
+        2,
+        2,
+        2,
+        2,
+        4
+      ],
+      "final_stall_turns": 4,
+      "max_stall_turns": 13,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "sc25": {
+      "game": "sc25-635fd71a",
+      "game_id": "sc25",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 6,
+      "score": 0.8,
+      "actions": 153,
+      "tokens": 59630,
+      "per_level": [
+        [
+          88,
+          36
+        ],
+        [
+          65,
+          6
+        ],
+        [
+          0,
+          32
+        ],
+        [
+          0,
+          83
+        ],
+        [
+          0,
+          143
+        ],
+        [
+          0,
+          50
+        ]
+      ],
+      "per_level_sum": 153,
+      "per_level_consistent": true,
+      "sunk_actions": 65,
+      "productive_actions": 88,
+      "stall_level": 2,
+      "stall_level_actions": 65,
+      "stall_level_human": 6,
+      "stall_ratio": 10.833333333333334,
+      "levels_engaged": 2,
+      "human_total": 350,
+      "S_l": [
+        0.1674
+      ],
+      "acting_turns": 31,
+      "level_changes": 1,
+      "stall_runs": [
+        19,
+        12
+      ],
+      "final_stall_turns": 12,
+      "max_stall_turns": 19,
+      "deaths": 3,
+      "deaths_by_level": {
+        "1": [
+          47
+        ],
+        "2": [
+          25,
+          22
+        ]
+      },
+      "inferred_budgets": {},
+      "death_actions": [
+        "ACTION2",
+        "ACTION6",
+        "ACTION6"
+      ]
+    },
+    "sk48": {
+      "game": "sk48-d8078629",
+      "game_id": "sk48",
+      "state": "gave_up",
+      "levels_done": 0,
+      "levels_total": 8,
+      "score": 0.0,
+      "actions": 141,
+      "tokens": 90877,
+      "per_level": [
+        [
+          141,
+          61
+        ],
+        [
+          0,
+          177
+        ],
+        [
+          0,
+          101
+        ],
+        [
+          0,
+          103
+        ],
+        [
+          0,
+          230
+        ],
+        [
+          0,
+          181
+        ],
+        [
+          0,
+          125
+        ],
+        [
+          0,
+          92
+        ]
+      ],
+      "per_level_sum": 141,
+      "per_level_consistent": true,
+      "sunk_actions": 141,
+      "productive_actions": 0,
+      "stall_level": 1,
+      "stall_level_actions": 141,
+      "stall_level_human": 61,
+      "stall_ratio": 2.3114754098360657,
+      "levels_engaged": 1,
+      "human_total": 1070,
+      "S_l": [],
+      "acting_turns": 36,
+      "level_changes": 0,
+      "stall_runs": [
+        36
+      ],
+      "final_stall_turns": 36,
+      "max_stall_turns": 36,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "sp80": {
+      "game": "sp80-589a99af",
+      "game_id": "sp80",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 6,
+      "score": 0.17,
+      "actions": 263,
+      "tokens": 95339,
+      "per_level": [
+        [
+          207,
+          39
+        ],
+        [
+          56,
+          58
+        ],
+        [
+          0,
+          25
+        ],
+        [
+          0,
+          148
+        ],
+        [
+          0,
+          96
+        ],
+        [
+          0,
+          152
+        ]
+      ],
+      "per_level_sum": 263,
+      "per_level_consistent": true,
+      "sunk_actions": 56,
+      "productive_actions": 207,
+      "stall_level": 2,
+      "stall_level_actions": 56,
+      "stall_level_human": 58,
+      "stall_ratio": 0.9655172413793104,
+      "levels_engaged": 2,
+      "human_total": 518,
+      "S_l": [
+        0.0355
+      ],
+      "acting_turns": 33,
+      "level_changes": 1,
+      "stall_runs": [
+        20,
+        13
+      ],
+      "final_stall_turns": 13,
+      "max_stall_turns": 20,
+      "deaths": 7,
+      "deaths_by_level": {
+        "1": [
+          30,
+          31,
+          31,
+          31,
+          31,
+          31
+        ],
+        "2": [
+          36
+        ]
+      },
+      "inferred_budgets": {
+        "1": 31
+      },
+      "death_actions": [
+        "ACTION4",
+        "ACTION4",
+        "ACTION6",
+        "ACTION4",
+        "ACTION4",
+        "ACTION4",
+        "ACTION5"
+      ]
+    },
+    "su15": {
+      "game": "su15-1944f8ab",
+      "game_id": "su15",
+      "state": "gave_up",
+      "levels_done": 3,
+      "levels_total": 9,
+      "score": 13.33,
+      "actions": 92,
+      "tokens": 57875,
+      "per_level": [
+        [
+          25,
+          22
+        ],
+        [
+          29,
+          42
+        ],
+        [
+          23,
+          26
+        ],
+        [
+          15,
+          115
+        ],
+        [
+          0,
+          36
+        ],
+        [
+          0,
+          31
+        ],
+        [
+          0,
+          8
+        ],
+        [
+          0,
+          40
+        ],
+        [
+          0,
+          41
+        ]
+      ],
+      "per_level_sum": 92,
+      "per_level_consistent": true,
+      "sunk_actions": 15,
+      "productive_actions": 77,
+      "stall_level": 4,
+      "stall_level_actions": 15,
+      "stall_level_human": 115,
+      "stall_ratio": 0.13043478260869565,
+      "levels_engaged": 4,
+      "human_total": 361,
+      "S_l": [
+        0.7744,
+        1.3225,
+        1.2779
+      ],
+      "acting_turns": 33,
+      "level_changes": 3,
+      "stall_runs": [
+        5,
+        16,
+        8,
+        4
+      ],
+      "final_stall_turns": 4,
+      "max_stall_turns": 16,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "tn36": {
+      "game": "tn36-ef4dde99",
+      "game_id": "tn36",
+      "state": "gave_up",
+      "levels_done": 1,
+      "levels_total": 7,
+      "score": 3.57,
+      "actions": 92,
+      "tokens": 66501,
+      "per_level": [
+        [
+          25,
+          32
+        ],
+        [
+          67,
+          72
+        ],
+        [
+          0,
+          26
+        ],
+        [
+          0,
+          40
+        ],
+        [
+          0,
+          30
+        ],
+        [
+          0,
+          55
+        ],
+        [
+          0,
+          62
+        ]
+      ],
+      "per_level_sum": 92,
+      "per_level_consistent": true,
+      "sunk_actions": 67,
+      "productive_actions": 25,
+      "stall_level": 2,
+      "stall_level_actions": 67,
+      "stall_level_human": 72,
+      "stall_ratio": 0.9305555555555556,
+      "levels_engaged": 2,
+      "human_total": 317,
+      "S_l": [
+        1.3225
+      ],
+      "acting_turns": 31,
+      "level_changes": 1,
+      "stall_runs": [
+        9,
+        22
+      ],
+      "final_stall_turns": 22,
+      "max_stall_turns": 22,
+      "deaths": 1,
+      "deaths_by_level": {
+        "2": [
+          62
+        ]
+      },
+      "inferred_budgets": {},
+      "death_actions": [
+        "ACTION6"
+      ]
+    },
+    "tr87": {
+      "game": "tr87-cd924810",
+      "game_id": "tr87",
+      "state": "gave_up",
+      "levels_done": 3,
+      "levels_total": 6,
+      "score": 28.57,
+      "actions": 137,
+      "tokens": 82038,
+      "per_level": [
+        [
+          30,
+          54
+        ],
+        [
+          57,
+          58
+        ],
+        [
+          28,
+          40
+        ],
+        [
+          22,
+          45
+        ],
+        [
+          0,
+          71
+        ],
+        [
+          0,
+          146
+        ]
+      ],
+      "per_level_sum": 137,
+      "per_level_consistent": true,
+      "sunk_actions": 22,
+      "productive_actions": 115,
+      "stall_level": 4,
+      "stall_level_actions": 22,
+      "stall_level_human": 45,
+      "stall_ratio": 0.4888888888888889,
+      "levels_engaged": 4,
+      "human_total": 414,
+      "S_l": [
+        1.3225,
+        1.0354,
+        1.3225
+      ],
+      "acting_turns": 17,
+      "level_changes": 3,
+      "stall_runs": [
+        8,
+        2,
+        3,
+        4
+      ],
+      "final_stall_turns": 4,
+      "max_stall_turns": 8,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "tu93": {
+      "game": "tu93-0768757b",
+      "game_id": "tu93",
+      "state": "gave_up",
+      "levels_done": 3,
+      "levels_total": 9,
+      "score": 6.77,
+      "actions": 174,
+      "tokens": 90695,
+      "per_level": [
+        [
+          18,
+          19
+        ],
+        [
+          23,
+          16
+        ],
+        [
+          60,
+          34
+        ],
+        [
+          73,
+          42
+        ],
+        [
+          0,
+          123
+        ],
+        [
+          0,
+          80
+        ],
+        [
+          0,
+          14
+        ],
+        [
+          0,
+          23
+        ],
+        [
+          0,
+          111
+        ]
+      ],
+      "per_level_sum": 174,
+      "per_level_consistent": true,
+      "sunk_actions": 73,
+      "productive_actions": 101,
+      "stall_level": 4,
+      "stall_level_actions": 73,
+      "stall_level_human": 42,
+      "stall_ratio": 1.7380952380952381,
+      "levels_engaged": 4,
+      "human_total": 462,
+      "S_l": [
+        1.1142,
+        0.4839,
+        0.3211
+      ],
+      "acting_turns": 22,
+      "level_changes": 3,
+      "stall_runs": [
+        2,
+        6,
+        4,
+        10
+      ],
+      "final_stall_turns": 10,
+      "max_stall_turns": 10,
+      "deaths": 11,
+      "deaths_by_level": {
+        "2": [
+          5
+        ],
+        "3": [
+          5,
+          8,
+          22
+        ],
+        "4": [
+          6,
+          7,
+          15,
+          4,
+          21,
+          16,
+          4
+        ]
+      },
+      "inferred_budgets": {},
+      "death_actions": [
+        "ACTION4",
+        "ACTION3",
+        "ACTION3",
+        "ACTION2",
+        "ACTION4",
+        "ACTION4",
+        "ACTION1",
+        "ACTION4",
+        "ACTION1",
+        "ACTION3",
+        "ACTION4"
+      ]
+    },
+    "vc33": {
+      "game": "vc33-5430563c",
+      "game_id": "vc33",
+      "state": "gave_up",
+      "levels_done": 3,
+      "levels_total": 7,
+      "score": 16.37,
+      "actions": 115,
+      "tokens": 80007,
+      "per_level": [
+        [
+          9,
+          7
+        ],
+        [
+          35,
+          18
+        ],
+        [
+          31,
+          44
+        ],
+        [
+          40,
+          61
+        ],
+        [
+          0,
+          131
+        ],
+        [
+          0,
+          34
+        ],
+        [
+          0,
+          152
+        ]
+      ],
+      "per_level_sum": 115,
+      "per_level_consistent": true,
+      "sunk_actions": 40,
+      "productive_actions": 75,
+      "stall_level": 4,
+      "stall_level_actions": 40,
+      "stall_level_human": 61,
+      "stall_ratio": 0.6557377049180327,
+      "levels_engaged": 4,
+      "human_total": 447,
+      "S_l": [
+        0.6049,
+        0.2645,
+        1.3225
+      ],
+      "acting_turns": 30,
+      "level_changes": 3,
+      "stall_runs": [
+        3,
+        7,
+        4,
+        16
+      ],
+      "final_stall_turns": 16,
+      "max_stall_turns": 16,
+      "deaths": 0,
+      "deaths_by_level": {},
+      "inferred_budgets": {},
+      "death_actions": []
+    },
+    "wa30": {
+      "game": "wa30-ee6fef47",
+      "game_id": "wa30",
+      "state": "gave_up",
+      "levels_done": 2,
+      "levels_total": 9,
+      "score": 5.96,
+      "actions": 188,
+      "tokens": 91107,
+      "per_level": [
+        [
+          41,
+          71
+        ],
+        [
+          136,
+          119
+        ],
+        [
+          11,
+          183
+        ],
+        [
+          0,
+          98
+        ],
+        [
+          0,
+          368
+        ],
+        [
+          0,
+          68
+        ],
+        [
+          0,
+          79
+        ],
+        [
+          0,
+          442
+        ],
+        [
+          0,
+          415
+        ]
+      ],
+      "per_level_sum": 188,
+      "per_level_consistent": true,
+      "sunk_actions": 11,
+      "productive_actions": 177,
+      "stall_level": 3,
+      "stall_level_actions": 11,
+      "stall_level_human": 183,
+      "stall_ratio": 0.060109289617486336,
+      "levels_engaged": 3,
+      "human_total": 1843,
+      "S_l": [
+        1.3225,
+        0.7656
+      ],
+      "acting_turns": 43,
+      "level_changes": 2,
+      "stall_runs": [
+        10,
+        28,
+        5
+      ],
+      "final_stall_turns": 5,
+      "max_stall_turns": 28,
+      "deaths": 1,
+      "deaths_by_level": {
+        "2": [
+          71
+        ]
+      },
+      "inferred_budgets": {},
+      "death_actions": [
+        "ACTION2"
+      ]
+    }
+  }
+}

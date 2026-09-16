@@ -1,0 +1,1126 @@
+{
+  "anim": [
+    {
+      "game_id": "ar25",
+      "level": 1,
+      "turns": 5,
+      "actions": 9,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ar25",
+      "level": 2,
+      "turns": 8,
+      "actions": 26,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ar25",
+      "level": 3,
+      "turns": 8,
+      "actions": 48,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ar25",
+      "level": 4,
+      "turns": 1,
+      "actions": 5,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ar25",
+      "level": 5,
+      "turns": 6,
+      "actions": 32,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "bp35",
+      "level": 1,
+      "turns": 12,
+      "actions": 32,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "bp35",
+      "level": 2,
+      "turns": 8,
+      "actions": 13,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "cd82",
+      "level": 1,
+      "turns": 18,
+      "actions": 33,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "cd82",
+      "level": 2,
+      "turns": 10,
+      "actions": 32,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "cn04",
+      "level": 1,
+      "turns": 7,
+      "actions": 19,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "cn04",
+      "level": 2,
+      "turns": 5,
+      "actions": 15,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "dc22",
+      "level": 1,
+      "turns": 30,
+      "actions": 97,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "ft09",
+      "level": 1,
+      "turns": 1,
+      "actions": 1,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ft09",
+      "level": 2,
+      "turns": 2,
+      "actions": 4,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ft09",
+      "level": 3,
+      "turns": 2,
+      "actions": 7,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ft09",
+      "level": 4,
+      "turns": 4,
+      "actions": 16,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ft09",
+      "level": 5,
+      "turns": 5,
+      "actions": 35,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "g50t",
+      "level": 1,
+      "turns": 17,
+      "actions": 97,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "g50t",
+      "level": 2,
+      "turns": 7,
+      "actions": 105,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "ka59",
+      "level": 1,
+      "turns": 12,
+      "actions": 12,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ka59",
+      "level": 2,
+      "turns": 13,
+      "actions": 56,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ka59",
+      "level": 3,
+      "turns": 16,
+      "actions": 91,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "lf52",
+      "level": 1,
+      "turns": 4,
+      "actions": 4,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "lf52",
+      "level": 2,
+      "turns": 26,
+      "actions": 110,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "lf52",
+      "level": 3,
+      "turns": 2,
+      "actions": 1,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "lp85",
+      "level": 1,
+      "turns": 3,
+      "actions": 3,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "lp85",
+      "level": 2,
+      "turns": 3,
+      "actions": 7,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "lp85",
+      "level": 3,
+      "turns": 4,
+      "actions": 12,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "lp85",
+      "level": 4,
+      "turns": 5,
+      "actions": 31,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "lp85",
+      "level": 5,
+      "turns": 4,
+      "actions": 17,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "lp85",
+      "level": 6,
+      "turns": 5,
+      "actions": 19,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "ls20",
+      "level": 1,
+      "turns": 19,
+      "actions": 78,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ls20",
+      "level": 2,
+      "turns": 2,
+      "actions": 11,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "m0r0",
+      "level": 1,
+      "turns": 8,
+      "actions": 33,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "m0r0",
+      "level": 2,
+      "turns": 10,
+      "actions": 62,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "r11l",
+      "level": 1,
+      "turns": 3,
+      "actions": 3,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "r11l",
+      "level": 2,
+      "turns": 4,
+      "actions": 8,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "r11l",
+      "level": 3,
+      "turns": 3,
+      "actions": 17,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "re86",
+      "level": 1,
+      "turns": 5,
+      "actions": 11,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "re86",
+      "level": 2,
+      "turns": 5,
+      "actions": 38,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "re86",
+      "level": 3,
+      "turns": 5,
+      "actions": 38,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "re86",
+      "level": 4,
+      "turns": 5,
+      "actions": 89,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "re86",
+      "level": 5,
+      "turns": 3,
+      "actions": 9,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "s5i5",
+      "level": 1,
+      "turns": 9,
+      "actions": 31,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "s5i5",
+      "level": 2,
+      "turns": 11,
+      "actions": 43,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "s5i5",
+      "level": 3,
+      "turns": 14,
+      "actions": 48,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "sb26",
+      "level": 1,
+      "turns": 4,
+      "actions": 10,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "sb26",
+      "level": 2,
+      "turns": 28,
+      "actions": 130,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "sc25",
+      "level": 1,
+      "turns": 23,
+      "actions": 94,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "sk48",
+      "level": 1,
+      "turns": 29,
+      "actions": 157,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "sp80",
+      "level": 1,
+      "turns": 26,
+      "actions": 215,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "su15",
+      "level": 1,
+      "turns": 7,
+      "actions": 14,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "su15",
+      "level": 2,
+      "turns": 20,
+      "actions": 41,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "tn36",
+      "level": 1,
+      "turns": 23,
+      "actions": 49,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "tr87",
+      "level": 1,
+      "turns": 4,
+      "actions": 30,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "tr87",
+      "level": 2,
+      "turns": 4,
+      "actions": 8,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "tu93",
+      "level": 1,
+      "turns": 3,
+      "actions": 3,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "tu93",
+      "level": 2,
+      "turns": 8,
+      "actions": 42,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "tu93",
+      "level": 3,
+      "turns": 2,
+      "actions": 9,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "tu93",
+      "level": 4,
+      "turns": 4,
+      "actions": 29,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "tu93",
+      "level": 5,
+      "turns": 2,
+      "actions": 17,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "vc33",
+      "level": 1,
+      "turns": 5,
+      "actions": 14,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "vc33",
+      "level": 2,
+      "turns": 3,
+      "actions": 11,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "vc33",
+      "level": 3,
+      "turns": 5,
+      "actions": 13,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "vc33",
+      "level": 4,
+      "turns": 17,
+      "actions": 73,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "wa30",
+      "level": 1,
+      "turns": 17,
+      "actions": 64,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "wa30",
+      "level": 2,
+      "turns": 18,
+      "actions": 84,
+      "cleared": false,
+      "final": true
+    }
+  ],
+  "baseline": [
+    {
+      "game_id": "ar25",
+      "level": 1,
+      "turns": 2,
+      "actions": 4,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ar25",
+      "level": 2,
+      "turns": 8,
+      "actions": 50,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ar25",
+      "level": 3,
+      "turns": 26,
+      "actions": 357,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "bp35",
+      "level": 1,
+      "turns": 8,
+      "actions": 26,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "bp35",
+      "level": 2,
+      "turns": 17,
+      "actions": 35,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "cd82",
+      "level": 1,
+      "turns": 11,
+      "actions": 38,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "cd82",
+      "level": 2,
+      "turns": 29,
+      "actions": 76,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "cn04",
+      "level": 1,
+      "turns": 7,
+      "actions": 20,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "cn04",
+      "level": 2,
+      "turns": 7,
+      "actions": 22,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "dc22",
+      "level": 1,
+      "turns": 18,
+      "actions": 95,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "dc22",
+      "level": 2,
+      "turns": 7,
+      "actions": 44,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "ft09",
+      "level": 1,
+      "turns": 2,
+      "actions": 2,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ft09",
+      "level": 2,
+      "turns": 1,
+      "actions": 4,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ft09",
+      "level": 3,
+      "turns": 3,
+      "actions": 17,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ft09",
+      "level": 4,
+      "turns": 8,
+      "actions": 42,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "g50t",
+      "level": 1,
+      "turns": 12,
+      "actions": 59,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "g50t",
+      "level": 2,
+      "turns": 17,
+      "actions": 109,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "ka59",
+      "level": 1,
+      "turns": 9,
+      "actions": 25,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ka59",
+      "level": 2,
+      "turns": 18,
+      "actions": 87,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ka59",
+      "level": 3,
+      "turns": 5,
+      "actions": 31,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "lf52",
+      "level": 1,
+      "turns": 10,
+      "actions": 17,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "lf52",
+      "level": 2,
+      "turns": 22,
+      "actions": 92,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "lp85",
+      "level": 1,
+      "turns": 3,
+      "actions": 7,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "lp85",
+      "level": 2,
+      "turns": 2,
+      "actions": 11,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "lp85",
+      "level": 3,
+      "turns": 2,
+      "actions": 9,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "lp85",
+      "level": 4,
+      "turns": 4,
+      "actions": 18,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "lp85",
+      "level": 5,
+      "turns": 6,
+      "actions": 17,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "lp85",
+      "level": 6,
+      "turns": 4,
+      "actions": 16,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "ls20",
+      "level": 1,
+      "turns": 6,
+      "actions": 22,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "ls20",
+      "level": 2,
+      "turns": 11,
+      "actions": 69,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "m0r0",
+      "level": 1,
+      "turns": 6,
+      "actions": 27,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "m0r0",
+      "level": 2,
+      "turns": 8,
+      "actions": 61,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "r11l",
+      "level": 1,
+      "turns": 3,
+      "actions": 3,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "r11l",
+      "level": 2,
+      "turns": 30,
+      "actions": 80,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "re86",
+      "level": 1,
+      "turns": 4,
+      "actions": 10,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "re86",
+      "level": 2,
+      "turns": 5,
+      "actions": 40,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "re86",
+      "level": 3,
+      "turns": 4,
+      "actions": 55,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "re86",
+      "level": 4,
+      "turns": 14,
+      "actions": 210,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "s5i5",
+      "level": 1,
+      "turns": 7,
+      "actions": 11,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "s5i5",
+      "level": 2,
+      "turns": 39,
+      "actions": 208,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "sb26",
+      "level": 1,
+      "turns": 4,
+      "actions": 10,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "sb26",
+      "level": 2,
+      "turns": 13,
+      "actions": 56,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "sb26",
+      "level": 3,
+      "turns": 2,
+      "actions": 15,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "sb26",
+      "level": 4,
+      "turns": 2,
+      "actions": 15,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "sb26",
+      "level": 5,
+      "turns": 2,
+      "actions": 17,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "sb26",
+      "level": 6,
+      "turns": 2,
+      "actions": 19,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "sb26",
+      "level": 7,
+      "turns": 5,
+      "actions": 20,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "sc25",
+      "level": 1,
+      "turns": 19,
+      "actions": 73,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "sc25",
+      "level": 2,
+      "turns": 13,
+      "actions": 80,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "sk48",
+      "level": 1,
+      "turns": 37,
+      "actions": 141,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "sp80",
+      "level": 1,
+      "turns": 20,
+      "actions": 201,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "sp80",
+      "level": 2,
+      "turns": 14,
+      "actions": 62,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "su15",
+      "level": 1,
+      "turns": 5,
+      "actions": 8,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "su15",
+      "level": 2,
+      "turns": 16,
+      "actions": 43,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "su15",
+      "level": 3,
+      "turns": 8,
+      "actions": 21,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "su15",
+      "level": 4,
+      "turns": 5,
+      "actions": 20,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "tn36",
+      "level": 1,
+      "turns": 9,
+      "actions": 24,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "tn36",
+      "level": 2,
+      "turns": 23,
+      "actions": 68,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "tr87",
+      "level": 1,
+      "turns": 8,
+      "actions": 25,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "tr87",
+      "level": 2,
+      "turns": 2,
+      "actions": 45,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "tr87",
+      "level": 3,
+      "turns": 3,
+      "actions": 25,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "tr87",
+      "level": 4,
+      "turns": 5,
+      "actions": 42,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "tu93",
+      "level": 1,
+      "turns": 2,
+      "actions": 2,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "tu93",
+      "level": 2,
+      "turns": 6,
+      "actions": 36,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "tu93",
+      "level": 3,
+      "turns": 4,
+      "actions": 38,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "tu93",
+      "level": 4,
+      "turns": 11,
+      "actions": 98,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "vc33",
+      "level": 1,
+      "turns": 3,
+      "actions": 6,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "vc33",
+      "level": 2,
+      "turns": 7,
+      "actions": 28,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "vc33",
+      "level": 3,
+      "turns": 4,
+      "actions": 37,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "vc33",
+      "level": 4,
+      "turns": 17,
+      "actions": 44,
+      "cleared": false,
+      "final": true
+    },
+    {
+      "game_id": "wa30",
+      "level": 1,
+      "turns": 10,
+      "actions": 32,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "wa30",
+      "level": 2,
+      "turns": 28,
+      "actions": 143,
+      "cleared": true,
+      "final": false
+    },
+    {
+      "game_id": "wa30",
+      "level": 3,
+      "turns": 6,
+      "actions": 13,
+      "cleared": false,
+      "final": true
+    }
+  ]
+}
