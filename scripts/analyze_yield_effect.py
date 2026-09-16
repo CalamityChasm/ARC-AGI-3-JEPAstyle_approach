@@ -270,6 +270,49 @@ def analyse(name: str, run_dir: Path) -> dict[str, Any]:
     }
 
 
+def breakeven_model(calls: int, executed: int) -> list[dict[str, float]]:
+    """What raising the yield budget can and cannot buy, before seeing the result.
+
+    ``stage7_sota_research.md`` §1.5 puts an upper bound of **+85% productive
+    turns** on removing the no-ops. That bound is not reachable by *this* lever,
+    and the reason is in the same document's own §1.2: calls per game is pinned
+    near 54 by wall-clock / latency, not by the yield budget. A second call
+    inside a turn is therefore **not free** -- it consumes a call that would
+    otherwise have started a fresh turn.
+
+    Model. Let ``p`` = P(the first call of a turn acts), measured as
+    executed/calls on the baseline. Let ``q`` = P(the second call acts, given
+    the first did not) -- the unknown this experiment actually measures. With a
+    fixed call budget ``C``:
+
+        calls per turn  = p*1 + (1-p)*2 = 2 - p
+        turns           = C / (2 - p)
+        executed turns  = turns * (p + (1-p)*q)
+
+    So the ceiling is ``q = 1``: **+30%**, not +85%. Break-even is ``q ~ 0.5``:
+    below that, raising the budget *reduces* productive turns, because the
+    model spends its second call inspecting again rather than acting.
+
+    The one prior datapoint at yield 180 (the anim graft: 1,358 calls, 922
+    turns, 586 executed) implies ``q ~ 0.23`` -- well under break-even -- which
+    predicts this run lands **negative**. That run changed the solver at the
+    same time, which is exactly why this single-variable test exists.
+    """
+    p = executed / calls if calls else 0.0
+    calls_per_turn = 2 - p
+    turns = calls / calls_per_turn if calls_per_turn else 0.0
+    return [
+        {
+            "q": q,
+            "calls_per_turn": calls_per_turn,
+            "turns": turns,
+            "executed": turns * (p + (1 - p) * q),
+            "vs_baseline": (turns * (p + (1 - p) * q)) / executed - 1 if executed else 0.0,
+        }
+        for q in (0.0, 0.25, 0.5, 0.75, 1.0)
+    ]
+
+
 def _pct(new: float | None, old: float | None) -> str:
     if not old or new is None:
         return "     -"
@@ -325,6 +368,22 @@ def main() -> None:
         if len(results) > 1:
             line += _pct(results[-1].get(key), base.get(key)).rjust(10)
         print(line)
+
+    print()
+    print("break-even model on the baseline (see breakeven_model.__doc__):")
+    print("  q = P(2nd call acts | 1st did not); calls/game is pinned by latency")
+    for row in breakeven_model(int(base["llm_calls"]), int(base["executed_turns"])):
+        print(
+            f"    q={row['q']:.2f} -> turns {row['turns']:.0f}, "
+            f"executed {row['executed']:.0f} ({row['vs_baseline']:+.0%} vs baseline)"
+        )
+    if len(results) > 1:
+        v = results[-1]
+        # Recover the realised q from the variant's own turn accounting.
+        p = base["executed_turns"] / base["llm_calls"] if base["llm_calls"] else 0.0
+        ex_rate = v["executed_turns"] / v["analyzer_turns"] if v["analyzer_turns"] else 0.0
+        q = (ex_rate - p) / (1 - p) if p < 1 else 0.0
+        print(f"  realised q on {v['name']}: {q:.2f} (break-even ~0.50)")
 
     print()
     for r in results:
