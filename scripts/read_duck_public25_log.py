@@ -28,8 +28,8 @@ FINISHED_RE = re.compile(
 )
 KEPT_RE = re.compile(r"WIPE_GUARD_KEPT n=(\d+)")
 FINAL_RE = re.compile(r"WIPE_GUARD_FINAL kept=(\d+) wiped=(\d+) noop=(\d+) errors=(\d+)")
-INSTALLED_RE = re.compile(r"WIPE_GUARD_INSTALLED [^\\\"]*")
-ERROR_RE = re.compile(r"WIPE_GUARD_(?:UPSTREAM_)?ERROR [^\\\"]*")
+INSTALLED_RE = re.compile(r"WIPE_GUARD_INSTALLED [^\\\"\n]*")
+ERROR_RE = re.compile(r"WIPE_GUARD_(?:UPSTREAM_)?ERROR [^\\\"\n]*")
 RS_FIRED_RE = re.compile(
     r"RESTART_STALL_FIRED n=(?P<n>\d+) level=(?P<level>\S+) turns=(?P<turns>\d+) "
     r"nth_on_level=(?P<nth>\d+) seed=(?P<seed>\d+) kept_cross_level_notes=(?P<kept>\d+)c "
@@ -40,8 +40,8 @@ RS_FINAL_RE = re.compile(
     r"capped=(?P<capped>\d+) no_step=(?P<no_step>\d+) errors=(?P<errors>\d+) "
     r"games=(?P<games>\d+) seed_now=(?P<seed>\d+)"
 )
-RS_INSTALLED_RE = re.compile(r"RESTART_STALL_INSTALLED [^\\\"]*")
-RS_ERROR_RE = re.compile(r"RESTART_STALL_ERROR [^\\\"]*")
+RS_INSTALLED_RE = re.compile(r"RESTART_STALL_INSTALLED [^\\\"\n]*")
+RS_ERROR_RE = re.compile(r"RESTART_STALL_ERROR [^\\\"\n]*")
 
 
 def _log_path(target: Path) -> Path:
@@ -81,8 +81,17 @@ def read(target: Path) -> dict[str, Any]:
     kept = [int(m) for m in KEPT_RE.findall(text)]
     final = FINAL_RE.findall(text)
 
-    rs_fired = [m.groupdict() for m in RS_FIRED_RE.finditer(text)]
-    rs_final = [m.groupdict() for m in RS_FINAL_RE.finditer(text)]
+    # Everything the restart arm prints during its own synthetic probe happens
+    # BEFORE the install banner. Slice there, so a build whose probe is not
+    # silenced cannot inflate the firing count. (Kernel v1 of
+    # arc3-duck-nvfp4-anim-rs was such a build: 3 phantom FIRED + 1 phantom
+    # ERROR. The counters in RESTART_STALL_FINAL were always correct, because
+    # the probe zeroes them; the LINES were not.)
+    rs_banner = RS_INSTALLED_RE.search(text)
+    rs_text = text[rs_banner.end():] if rs_banner else text
+    rs_probe_fired = len(RS_FIRED_RE.findall(text)) - len(RS_FIRED_RE.findall(rs_text))
+    rs_fired = [m.groupdict() for m in RS_FIRED_RE.finditer(rs_text)]
+    rs_final = [m.groupdict() for m in RS_FINAL_RE.finditer(rs_text)]
     rs_sessions = sorted({f["session"] for f in rs_fired})
 
     return {
@@ -110,7 +119,8 @@ def read(target: Path) -> dict[str, Any]:
         "restart_stall_levels": sorted({f["level"] for f in rs_fired}),
         "restart_stall_notes_kept_chars": sum(int(f["kept"]) for f in rs_fired),
         "restart_stall_final": rs_final[-1] if rs_final else None,
-        "restart_stall_errors": len(RS_ERROR_RE.findall(text)),
+        "restart_stall_errors": len(RS_ERROR_RE.findall(rs_text)),
+        "restart_stall_probe_lines_ignored": rs_probe_fired,
         "per_game": {k: {kk: v[kk] for kk in ("state", "lvl", "lvls", "score", "actions")} for k, v in sorted(by_game.items())},
     }
 
@@ -137,6 +147,7 @@ def main() -> None:
             "restart_stall_sessions", "restart_stall_turns_discarded",
             "restart_stall_levels", "restart_stall_notes_kept_chars",
             "restart_stall_final", "restart_stall_errors",
+            "restart_stall_probe_lines_ignored",
         ):
             print(f"  {key:<32} {r[key]}")
 

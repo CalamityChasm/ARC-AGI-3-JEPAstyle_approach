@@ -553,3 +553,33 @@ def test_reader_regexes_match_the_error_line(installed, capsys):
     rd = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(rd)
     assert rd.RS_ERROR_RE.search(out), f"RESTART_STALL_ERROR not matched: {out!r}"
+
+
+def test_reader_ignores_probe_lines_printed_before_the_banner():
+    """Kernel v1 shipped a build whose probe was not silenced; the reader must
+    still report the true firing count for that artifact."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "_rd3", Path(__file__).resolve().parents[1] / "scripts" / "read_duck_public25_log.py"
+    )
+    rd = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(rd)
+
+    fired = (
+        "RESTART_STALL_FIRED n={n} level=1 turns=20 nth_on_level=1 seed=2026082{n} "
+        "kept_cross_level_notes=19c session=/run/g{n}\n"
+    )
+    log = (
+        fired.format(n=1) + fired.format(n=2) + fired.format(n=3)
+        + "RESTART_STALL_ERROR RuntimeError: probe\n"
+        + "RESTART_STALL_INSTALLED target=inference.agent.tool_agent.ToolAgent.analyze probe=9/9\n"
+        + fired.format(n=4)
+        + "RESTART_STALL_FINAL fired=1 turns_discarded=20 capped=0 no_step=0 "
+          "errors=0 games=1 seed_now=20260826\n"
+    )
+    banner = rd.RS_INSTALLED_RE.search(log)
+    after = log[banner.end():]
+    assert len(rd.RS_FIRED_RE.findall(after)) == 1
+    assert len(rd.RS_ERROR_RE.findall(after)) == 0
+    assert len(rd.RS_FIRED_RE.findall(log)) == 4  # what a naive count would give
