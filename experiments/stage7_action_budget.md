@@ -435,6 +435,19 @@ module global takes effect on the next call [VERIFIED, and asserted at install
 time]. Without it, a re-draw against a deterministic environment would repeat
 the same opening.
 
+**Concurrency, stated rather than glossed.** The harness plays the 25 games in a
+`ThreadPoolExecutor` and builds **one `ToolAgent` per game**
+(`solver.py:1383`, `analyzer = self._make_analyzer(...)` inside the per-game
+play path) [VERIFIED], so the per-instance turn counter cannot be raced and the
+counters are behind a lock anyway. The seed is the one exception: it is a
+module global, so a restart in game A also changes the seed the other 24 games
+sample with from that point on. `thui-rs-v0` has the same property. It is
+neutral in expectation — no seed value is better than another, and every game
+starts from the same fixed 20260825 regardless — but it does mean the arm is
+not perfectly isolated to the stalled game, and making it so would require
+patching the payload builder rather than a module global. [INFERRED that this
+is neutral; it is not separately measured.]
+
 ### 5.2 Safety
 
 - **It can never kill a game.** All bookkeeping is inside `try/except`; the call
