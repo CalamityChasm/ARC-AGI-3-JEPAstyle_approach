@@ -1,0 +1,760 @@
+{
+  "games": [
+    {
+      "game_id": "ar25-0c556536",
+      "n_levels": 8,
+      "levels_solved": 2,
+      "deepest_level": 3,
+      "human_actions_total": 748,
+      "our_actions_total": 465,
+      "actions_on_unsolved_level": 383,
+      "term1_completion": 0.08333333333333333,
+      "term2_efficiency": 0.07531635802469136,
+      "binding": "efficiency",
+      "model_E": 0.07531635802469136,
+      "reported_E": 0.08333333333333331,
+      "S_l_min": 0.6944444444444445,
+      "S_l_capped_count": 1,
+      "per_level_actions": {
+        "1": 22,
+        "2": 60,
+        "3": 383
+      },
+      "human_per_level": [
+        32,
+        50,
+        75,
+        37,
+        89,
+        159,
+        233,
+        73
+      ]
+    },
+    {
+      "game_id": "bp35-0a0ad940",
+      "n_levels": 9,
+      "levels_solved": 1,
+      "deepest_level": 2,
+      "human_actions_total": 651,
+      "our_actions_total": 113,
+      "actions_on_unsolved_level": 64,
+      "term1_completion": 0.022222222222222223,
+      "term2_efficiency": 0.004081632653061224,
+      "binding": "efficiency",
+      "model_E": 0.004081632653061224,
+      "reported_E": 0.0095703125,
+      "S_l_min": 0.18367346938775508,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 49,
+        "2": 64
+      },
+      "human_per_level": [
+        21,
+        48,
+        44,
+        38,
+        33,
+        87,
+        86,
+        131,
+        163
+      ]
+    },
+    {
+      "game_id": "cd82-fb555c5d",
+      "n_levels": 6,
+      "levels_solved": 1,
+      "deepest_level": 2,
+      "human_actions_total": 171,
+      "our_actions_total": 169,
+      "actions_on_unsolved_level": 115,
+      "term1_completion": 0.047619047619047616,
+      "term2_efficiency": 0.04939904631262657,
+      "binding": "completion",
+      "model_E": 0.047619047619047616,
+      "reported_E": 0.047619047619047616,
+      "S_l_min": 1.037379972565158,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 54,
+        "2": 115
+      },
+      "human_per_level": [
+        55,
+        8,
+        41,
+        21,
+        23,
+        23
+      ]
+    },
+    {
+      "game_id": "cn04-2fe56bfb",
+      "n_levels": 6,
+      "levels_solved": 1,
+      "deepest_level": 2,
+      "human_actions_total": 789,
+      "our_actions_total": 95,
+      "actions_on_unsolved_level": 56,
+      "term1_completion": 0.047619047619047616,
+      "term2_efficiency": 0.026329795560564796,
+      "binding": "efficiency",
+      "model_E": 0.026329795560564796,
+      "reported_E": 0.047619047619047616,
+      "S_l_min": 0.5529257067718607,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 39,
+        "2": 56
+      },
+      "human_per_level": [
+        29,
+        54,
+        85,
+        300,
+        208,
+        113
+      ]
+    },
+    {
+      "game_id": "dc22-fdcac232",
+      "n_levels": 6,
+      "levels_solved": 1,
+      "deepest_level": 2,
+      "human_actions_total": 1228,
+      "our_actions_total": 193,
+      "actions_on_unsolved_level": 58,
+      "term1_completion": 0.047619047619047616,
+      "term2_efficiency": 0.009095303416291072,
+      "binding": "efficiency",
+      "model_E": 0.009095303416291072,
+      "reported_E": 0.016249574038026147,
+      "S_l_min": 0.1910013717421125,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 135,
+        "2": 58
+      },
+      "human_per_level": [
+        59,
+        102,
+        67,
+        98,
+        324,
+        578
+      ]
+    },
+    {
+      "game_id": "ft09-0d8bbf25",
+      "n_levels": 6,
+      "levels_solved": 3,
+      "deepest_level": 4,
+      "human_actions_total": 208,
+      "our_actions_total": 119,
+      "actions_on_unsolved_level": 60,
+      "term1_completion": 0.2857142857142857,
+      "term2_efficiency": 0.23616071428571428,
+      "binding": "efficiency",
+      "model_E": 0.23616071428571428,
+      "reported_E": 0.2380859375,
+      "S_l_min": 0.33062499999999995,
+      "S_l_capped_count": 2,
+      "per_level_actions": {
+        "1": 9,
+        "2": 10,
+        "3": 40,
+        "4": 60
+      },
+      "human_per_level": [
+        43,
+        12,
+        23,
+        28,
+        65,
+        37
+      ]
+    },
+    {
+      "game_id": "g50t-5849a774",
+      "n_levels": 7,
+      "levels_solved": 1,
+      "deepest_level": 2,
+      "human_actions_total": 879,
+      "our_actions_total": 221,
+      "actions_on_unsolved_level": 128,
+      "term1_completion": 0.03571428571428571,
+      "term2_efficiency": 0.025122640107031368,
+      "binding": "efficiency",
+      "model_E": 0.025122640107031368,
+      "reported_E": 0.03571428571428571,
+      "S_l_min": 0.7034339229968783,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 93,
+        "2": 128
+      },
+      "human_per_level": [
+        78,
+        175,
+        179,
+        230,
+        96,
+        54,
+        67
+      ]
+    },
+    {
+      "game_id": "ka59-38d34dbb",
+      "n_levels": 7,
+      "levels_solved": 2,
+      "deepest_level": 3,
+      "human_actions_total": 730,
+      "our_actions_total": 196,
+      "actions_on_unsolved_level": 28,
+      "term1_completion": 0.10714285714285714,
+      "term2_efficiency": 0.06929704938616071,
+      "binding": "efficiency",
+      "model_E": 0.06929704938616071,
+      "reported_E": 0.10714285714285714,
+      "S_l_min": 0.48999999999999994,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 40,
+        "2": 128,
+        "3": 28
+      },
+      "human_per_level": [
+        28,
+        109,
+        51,
+        51,
+        33,
+        132,
+        326
+      ]
+    },
+    {
+      "game_id": "lf52-271a04aa",
+      "n_levels": 10,
+      "levels_solved": 1,
+      "deepest_level": 2,
+      "human_actions_total": 1339,
+      "our_actions_total": 163,
+      "actions_on_unsolved_level": 122,
+      "term1_completion": 0.01818181818181818,
+      "term2_efficiency": 0.01107565842842464,
+      "binding": "efficiency",
+      "model_E": 0.01107565842842464,
+      "reported_E": 0.01818181818181818,
+      "S_l_min": 0.6091612135633552,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 41,
+        "2": 122
+      },
+      "human_per_level": [
+        32,
+        81,
+        60,
+        71,
+        205,
+        148,
+        244,
+        109,
+        164,
+        225
+      ]
+    },
+    {
+      "game_id": "lp85-305b61c3",
+      "n_levels": 8,
+      "levels_solved": 5,
+      "deepest_level": 6,
+      "human_actions_total": 388,
+      "our_actions_total": 130,
+      "actions_on_unsolved_level": 18,
+      "term1_completion": 0.4166666666666667,
+      "term2_efficiency": 0.4389814387332854,
+      "binding": "completion",
+      "model_E": 0.4166666666666667,
+      "reported_E": 0.41666666666666674,
+      "S_l_min": 0.4444444444444444,
+      "S_l_capped_count": 3,
+      "per_level_actions": {
+        "1": 19,
+        "2": 21,
+        "3": 21,
+        "4": 24,
+        "5": 27,
+        "6": 18
+      },
+      "human_per_level": [
+        17,
+        38,
+        31,
+        16,
+        41,
+        60,
+        26,
+        159
+      ]
+    },
+    {
+      "game_id": "ls20-9607627b",
+      "n_levels": 7,
+      "levels_solved": 1,
+      "deepest_level": 2,
+      "human_actions_total": 776,
+      "our_actions_total": 145,
+      "actions_on_unsolved_level": 103,
+      "term1_completion": 0.03571428571428571,
+      "term2_efficiency": 0.009799157758341432,
+      "binding": "efficiency",
+      "model_E": 0.009799157758341432,
+      "reported_E": 0.023711542230060743,
+      "S_l_min": 0.2743764172335601,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 42,
+        "2": 103
+      },
+      "human_per_level": [
+        22,
+        123,
+        73,
+        84,
+        96,
+        192,
+        186
+      ]
+    },
+    {
+      "game_id": "m0r0-492f87ba",
+      "n_levels": 6,
+      "levels_solved": 1,
+      "deepest_level": 2,
+      "human_actions_total": 1107,
+      "our_actions_total": 143,
+      "actions_on_unsolved_level": 93,
+      "term1_completion": 0.047619047619047616,
+      "term2_efficiency": 0.017142857142857144,
+      "binding": "efficiency",
+      "model_E": 0.017142857142857144,
+      "reported_E": 0.047619047619047616,
+      "S_l_min": 0.36,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 50,
+        "2": 93
+      },
+      "human_per_level": [
+        30,
+        111,
+        203,
+        26,
+        500,
+        237
+      ]
+    },
+    {
+      "game_id": "r11l-495a7899",
+      "n_levels": 6,
+      "levels_solved": 1,
+      "deepest_level": 2,
+      "human_actions_total": 233,
+      "our_actions_total": 137,
+      "actions_on_unsolved_level": 127,
+      "term1_completion": 0.047619047619047616,
+      "term2_efficiency": 0.06297619047619046,
+      "binding": "completion",
+      "model_E": 0.047619047619047616,
+      "reported_E": 0.047619047619047616,
+      "S_l_min": 1.3224999999999998,
+      "S_l_capped_count": 1,
+      "per_level_actions": {
+        "1": 10,
+        "2": 127
+      },
+      "human_per_level": [
+        22,
+        33,
+        51,
+        26,
+        52,
+        49
+      ]
+    },
+    {
+      "game_id": "re86-8af5384d",
+      "n_levels": 8,
+      "levels_solved": 3,
+      "deepest_level": 4,
+      "human_actions_total": 1255,
+      "our_actions_total": 369,
+      "actions_on_unsolved_level": 209,
+      "term1_completion": 0.16666666666666666,
+      "term2_efficiency": 0.1557412282099118,
+      "binding": "efficiency",
+      "model_E": 0.1557412282099118,
+      "reported_E": 0.16666666666666663,
+      "S_l_min": 0.8931288491728052,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 27,
+        "2": 42,
+        "3": 91,
+        "4": 209
+      },
+      "human_per_level": [
+        26,
+        42,
+        86,
+        108,
+        189,
+        139,
+        424,
+        241
+      ]
+    },
+    {
+      "game_id": "s5i5-18d95033",
+      "n_levels": 8,
+      "levels_solved": 1,
+      "deepest_level": 2,
+      "human_actions_total": 638,
+      "our_actions_total": 273,
+      "actions_on_unsolved_level": 247,
+      "term1_completion": 0.027777777777777776,
+      "term2_efficiency": 0.01643655489809336,
+      "binding": "efficiency",
+      "model_E": 0.01643655489809336,
+      "reported_E": 0.027777777777777776,
+      "S_l_min": 0.591715976331361,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 26,
+        "2": 247
+      },
+      "human_per_level": [
+        20,
+        89,
+        106,
+        54,
+        162,
+        38,
+        86,
+        83
+      ]
+    },
+    {
+      "game_id": "sb26-7fbdac44",
+      "n_levels": 8,
+      "levels_solved": 6,
+      "deepest_level": 7,
+      "human_actions_total": 213,
+      "our_actions_total": 206,
+      "actions_on_unsolved_level": 26,
+      "term1_completion": 0.5833333333333334,
+      "term2_efficiency": 0.6017497674279912,
+      "binding": "completion",
+      "model_E": 0.5833333333333334,
+      "reported_E": 0.5833333333333334,
+      "S_l_min": 0.1111111111111111,
+      "S_l_capped_count": 1,
+      "per_level_actions": {
+        "1": 17,
+        "2": 84,
+        "3": 19,
+        "4": 18,
+        "5": 20,
+        "6": 22,
+        "7": 26
+      },
+      "human_per_level": [
+        18,
+        28,
+        18,
+        19,
+        31,
+        23,
+        58,
+        18
+      ]
+    },
+    {
+      "game_id": "sc25-635fd71a",
+      "n_levels": 6,
+      "levels_solved": 1,
+      "deepest_level": 2,
+      "human_actions_total": 350,
+      "our_actions_total": 207,
+      "actions_on_unsolved_level": 86,
+      "term1_completion": 0.047619047619047616,
+      "term2_efficiency": 0.004215168753110151,
+      "binding": "efficiency",
+      "model_E": 0.004215168753110151,
+      "reported_E": 0.007969303423848878,
+      "S_l_min": 0.08851854381531317,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 121,
+        "2": 86
+      },
+      "human_per_level": [
+        36,
+        6,
+        32,
+        83,
+        143,
+        50
+      ]
+    },
+    {
+      "game_id": "sk48-d8078629",
+      "n_levels": 8,
+      "levels_solved": 0,
+      "deepest_level": 1,
+      "human_actions_total": 1070,
+      "our_actions_total": 193,
+      "actions_on_unsolved_level": 193,
+      "term1_completion": 0.0,
+      "term2_efficiency": 0.0,
+      "binding": "completion",
+      "model_E": 0.0,
+      "reported_E": 0.0,
+      "S_l_min": null,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 193
+      },
+      "human_per_level": [
+        61,
+        177,
+        101,
+        103,
+        230,
+        181,
+        125,
+        92
+      ]
+    },
+    {
+      "game_id": "sp80-589a99af",
+      "n_levels": 6,
+      "levels_solved": 1,
+      "deepest_level": 2,
+      "human_actions_total": 518,
+      "our_actions_total": 315,
+      "actions_on_unsolved_level": 82,
+      "term1_completion": 0.047619047619047616,
+      "term2_efficiency": 0.0013341297763556415,
+      "binding": "efficiency",
+      "model_E": 0.0013341297763556415,
+      "reported_E": 0.001690321161020594,
+      "S_l_min": 0.028016725303468472,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 233,
+        "2": 82
+      },
+      "human_per_level": [
+        39,
+        58,
+        25,
+        148,
+        96,
+        152
+      ]
+    },
+    {
+      "game_id": "su15-1944f8ab",
+      "n_levels": 9,
+      "levels_solved": 3,
+      "deepest_level": 4,
+      "human_actions_total": 361,
+      "our_actions_total": 146,
+      "actions_on_unsolved_level": 26,
+      "term1_completion": 0.13333333333333333,
+      "term2_efficiency": 0.07980431524844403,
+      "binding": "efficiency",
+      "model_E": 0.07980431524844403,
+      "reported_E": 0.13333333333333333,
+      "S_l_min": 0.4444444444444444,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 33,
+        "2": 55,
+        "3": 32,
+        "4": 26
+      },
+      "human_per_level": [
+        22,
+        42,
+        26,
+        115,
+        36,
+        31,
+        8,
+        40,
+        41
+      ]
+    },
+    {
+      "game_id": "tn36-ef4dde99",
+      "n_levels": 7,
+      "levels_solved": 1,
+      "deepest_level": 2,
+      "human_actions_total": 317,
+      "our_actions_total": 146,
+      "actions_on_unsolved_level": 108,
+      "term1_completion": 0.03571428571428571,
+      "term2_efficiency": 0.02532647407993668,
+      "binding": "efficiency",
+      "model_E": 0.02532647407993668,
+      "reported_E": 0.03571428571428571,
+      "S_l_min": 0.709141274238227,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 38,
+        "2": 108
+      },
+      "human_per_level": [
+        32,
+        72,
+        26,
+        40,
+        30,
+        55,
+        62
+      ]
+    },
+    {
+      "game_id": "tr87-cd924810",
+      "n_levels": 6,
+      "levels_solved": 3,
+      "deepest_level": 4,
+      "human_actions_total": 414,
+      "our_actions_total": 190,
+      "actions_on_unsolved_level": 36,
+      "term1_completion": 0.2857142857142857,
+      "term2_efficiency": 0.30931164269548034,
+      "binding": "completion",
+      "model_E": 0.2857142857142857,
+      "reported_E": 0.2857142857142857,
+      "S_l_min": 0.7493873914012028,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 52,
+        "2": 67,
+        "3": 35,
+        "4": 36
+      },
+      "human_per_level": [
+        54,
+        58,
+        40,
+        45,
+        71,
+        146
+      ]
+    },
+    {
+      "game_id": "tu93-0768757b",
+      "n_levels": 9,
+      "levels_solved": 3,
+      "deepest_level": 4,
+      "human_actions_total": 462,
+      "our_actions_total": 226,
+      "actions_on_unsolved_level": 102,
+      "term1_completion": 0.13333333333333333,
+      "term2_efficiency": 0.04227946147233539,
+      "binding": "efficiency",
+      "model_E": 0.04227946147233539,
+      "reported_E": 0.06767543907416483,
+      "S_l_min": 0.23507805325987147,
+      "S_l_capped_count": 0,
+      "per_level_actions": {
+        "1": 23,
+        "2": 33,
+        "3": 68,
+        "4": 102
+      },
+      "human_per_level": [
+        19,
+        16,
+        34,
+        42,
+        123,
+        80,
+        14,
+        23,
+        111
+      ]
+    },
+    {
+      "game_id": "vc33-5430563c",
+      "n_levels": 7,
+      "levels_solved": 3,
+      "deepest_level": 4,
+      "human_actions_total": 447,
+      "our_actions_total": 169,
+      "actions_on_unsolved_level": 68,
+      "term1_completion": 0.21428571428571427,
+      "term2_efficiency": 0.1590089876843109,
+      "binding": "efficiency",
+      "model_E": 0.1590089876843109,
+      "reported_E": 0.16371135226577402,
+      "S_l_min": 0.1466727025803531,
+      "S_l_capped_count": 1,
+      "per_level_actions": {
+        "1": 16,
+        "2": 47,
+        "3": 38,
+        "4": 68
+      },
+      "human_per_level": [
+        7,
+        18,
+        44,
+        61,
+        131,
+        34,
+        152
+      ]
+    },
+    {
+      "game_id": "wa30-ee6fef47",
+      "n_levels": 9,
+      "levels_solved": 2,
+      "deepest_level": 3,
+      "human_actions_total": 1843,
+      "our_actions_total": 241,
+      "actions_on_unsolved_level": 19,
+      "term1_completion": 0.06666666666666667,
+      "term2_efficiency": 0.05116666666666666,
+      "binding": "efficiency",
+      "model_E": 0.05116666666666666,
+      "reported_E": 0.05958333333333333,
+      "S_l_min": 0.48999999999999994,
+      "S_l_capped_count": 1,
+      "per_level_actions": {
+        "1": 52,
+        "2": 170,
+        "3": 19
+      },
+      "human_per_level": [
+        71,
+        119,
+        183,
+        98,
+        368,
+        68,
+        79,
+        442,
+        415
+      ]
+    }
+  ]
+}
