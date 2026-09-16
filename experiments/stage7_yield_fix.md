@@ -173,6 +173,27 @@ calls / 922 turns / 586 executed — implies **`q ≈ 0.23`**, well under break-
 That run swapped the solver at the same time, which is exactly why this
 single-variable test is worth a free push either way.
 
+### 2.1 The model is validated against an independent run [VERIFIED]
+
+Before this run resolved, the same model was checked against the anim graft —
+the only other run in this project at `yield_seconds = 180`, and the one whose
+solver swap made it uninterpretable on its own:
+
+| | model prediction | anim, measured |
+|---|---:|---:|
+| LLM calls per turn | 1.48 | **1.47** |
+| analyzer turns (at its 1,358 calls) | 917 | **922** |
+| executed turns at the realised `q` | 575 | **586** |
+
+Its realised `q` is **0.24** — within rounding of the 0.23 inferred from the
+research doc's summary table, and far under the 0.50 break-even. Mean e2e
+latency barely moved (145.7 s → 144.2 s), confirming the model's fixed-call-
+budget assumption: the knob regroups calls, it does not buy any.
+
+So the model reproduces an independent run to within 2% on all three
+quantities. That makes it a real predictor rather than an arithmetic identity,
+and it predicts this single-variable run lands **negative** on productive turns.
+
 ---
 
 ## 3. Method — and why the score is not the gate
