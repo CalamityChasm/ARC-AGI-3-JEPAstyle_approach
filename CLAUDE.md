@@ -169,10 +169,43 @@ accounting. **Three free GPU runs were burned on two guessed fixes before anyone
 dumped the raw SSE stream and simply read the field name.** Restates this file's
 own standing lesson: instrument before theorising.
 
-**Kaggle submissions:** none spent on 2026-09-08 — the slot is deliberately held
-while the throughput lever (NVFP4 + MTP speculative decoding) is measured, so
-budget fix + concurrency + throughput can ship as one submission rather than
-three marginal ones.
+### 6. Result — 2026-09-10: the Duck track's three measured changes scored **2.57**
+
+**Ref `56134627`, `COMPLETE`, public score `2.57`** — up from `1.77`, **+45%**,
+and this project's best real score by a wide margin. Team rank **457 / 2,936**
+(was 531 / 2,870).
+
+Shipped together, each measured independently beforehand, no model swap:
+
+| change | measured effect | PR |
+|---|---|---|
+| serving profile `mtp1+flags` | +16.5% e2e throughput | #11 |
+| concurrency 28 -> 37 | +8.0% effective (wave-balance optimum) | #9 |
+| rerun budget from live game count | hygiene; ~274s overrun -> ~900s margin | #7 |
+
+**The observed gain (+45%) exceeds the predicted mechanism (~+26% more tokens).**
+Two readings, not separable at n=1: the changes converted into score better than
+tokens alone imply, or they worked as predicted and this draw landed high. This
+project's own history (0.00-0.25 spread on *identical* code) says a single score
+cannot settle that. Treat `2.57` as a strong, directionally clear result -- not a
+validated effect size.
+
+**The top-10% bar moved while we worked.** It is now **rank 294, score 3.20**
+(was 2.99 at 2,870 teams; the board has since grown to 2,936 and scores rose).
+We sit in the **top 15.6%**, needing a further **+24.5%**.
+
+**What did NOT contribute:** the public NVFP4 + 3-token-MTP recipe does not
+reproduce here. Its `TAAF_VLLM_*` env vars are inert on our stack (read only by a
+3,109-line `serving_setup.py` it ships and we do not), its `MTP_TOKENS=3` is
+*harmful* on our one-layer MTP head (-6.6%), and its 135GB NVFP4 model is
+unnecessary -- our own FP8 checkpoint already carries an MTP head of the same
+depth. Only the *idea* transferred, retuned to our own measurements.
+
+**Kaggle submissions:** slot unused on 2026-09-08 (the retry loop was killed by a
+session interruption ~80 min before the quota reset, and silently never fired --
+do not treat a long-lived background task as a fire-and-forget guarantee).
+2026-09-09's slot was taken at 02:59 by a separate LLM-world-engine workstream
+(0.00). 2026-09-10's slot produced the 2.57 above.
 
 ## Repo / branch layout
 
