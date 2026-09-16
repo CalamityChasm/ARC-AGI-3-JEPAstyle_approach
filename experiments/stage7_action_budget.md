@@ -40,11 +40,13 @@ venv/Scripts/python.exe scripts/_build_duck_nvfp4_anim_restart.py --check
 Three numbers fixed before the run was pushed, so a bug cannot be mistaken for a
 negative result (§6 reads them back):
 
-- **Expect 5–9 firings, on ~7 games.** §4.3 derives 7 from the incumbent's own
-  stall distribution. `fired=0` with stalls present means the class patch never
-  reached the live instances; `fired > 15` means the turn counter is wrong.
-- **Expect the firings on `dc22`, `sk48`, `sb26`, `sp80`, `sc25`, `tn36`,
-  `su15`.** Five of those are the five games that scored 0.00.
+- **Expect 6–10 firings, on ~8 games.** §4.3 replays the incumbent and gets
+  exactly 8. `fired=0` with stalls present means the class patch never reached
+  the live instances; `fired > 15` means the turn counter is wrong.
+- **Expect them on `dc22`, `sk48`, `sb26`, `sp80`, `sc25`, `tn36`, `su15`** —
+  five of which are the five games that scored 0.00 — **plus `lf52`, which is
+  the predicted collateral**: its level 2 took 22 turns and *did* clear, so a
+  restart there fires ~6 turns before a success.
 - **The ceiling is +1.23 public-25 and the realistic ceiling is +0.71**
   (§4.4). A null result at that size is weak evidence, not strong — and §7 says
   which it was rather than collapsing the two.
@@ -328,25 +330,33 @@ fitting a knob to the measurement run.
 
 ### 4.3 Where it fires, replayed [VERIFIED, `simulate_restart_trigger.py`]
 
-Seven games, one firing each (a second needs 20 *more* turns; the longest stall
-is 30, so the cap is never reached on this run):
+**Eight** games, one firing each (a second needs 20 *more* turns; the longest
+stall is 30, so the per-level cap is never reached on this run). Total runway:
+47 turns / 287 actions.
 
-| game | score | stall level | stall turns | runway after firing |
-|---|---:|---:|---:|---:|
-| `dc22` | 0.00 | 1 | 30 | 10 |
-| `sk48` | 0.00 | 1 | 29 | 9 |
-| `sb26` | 2.78 | 2 | 28 | 8 |
-| `sp80` | 0.00 | 1 | 26 | 6 |
-| `sc25` | 0.00 | 1 | 23 | 3 |
-| `tn36` | 0.00 | 1 | 23 | 3 |
-| `su15` | 2.03 | 2 | 20 | 0 |
+| game | score | level | turns on it | fires at | runway after |
+|---|---:|---:|---:|---:|---:|
+| `dc22` | 0.00 | 1 | 30 | 20/30 | 10 turns, 32 actions |
+| `sk48` | 0.00 | 1 | 29 | 20/29 | 9 turns, 42 actions |
+| `sb26` | 2.78 | 2 | 28 | 24/32 | 8 turns, 39 actions |
+| `sp80` | 0.00 | 1 | 26 | 20/26 | 6 turns, 108 actions |
+| `sc25` | 0.00 | 1 | 23 | 20/23 | 3 turns, 9 actions |
+| `tn36` | 0.00 | 1 | 23 | 20/23 | 3 turns, 6 actions |
+| `su15` | 2.03 | 2 | 20 | 27/27 | 0 turns, 0 actions |
+| **`lf52`** | **4.21** | **2** | **22** | **24/32** | **8 turns, 51 actions** |
+
+**`lf52` is the collateral, and it is worth naming before the run rather than
+explaining afterwards.** Its level 2 is the one cleared level in 42 that ran past
+20 turns — it cleared at turn ~30, so the restart fires about six turns before a
+success and throws away the belief state that was about to produce it. That is
+the measured price of T=20, and the mechanism has to beat it.
 
 ### 4.4 The honest sizing, including the deflation
 
 Median runway after a firing is **6 turns**, against a median turns-to-clear of
-**5**. So the mechanism is viable — barely — on the four firings with ≥ median
-runway (`dc22` 10, `sk48` 9, `sb26` 8, `sp80` 6) and near-inert on the other
-three.
+**5**. So the mechanism is viable — barely — on the four stall firings with ≥
+median runway (`dc22` 10, `sk48` 9, `sb26` 8, `sp80` 6) and near-inert on the
+other three (`sc25` 3, `tn36` 3, `su15` 0).
 
 | if it converts | public-25 gain |
 |---|---:|
