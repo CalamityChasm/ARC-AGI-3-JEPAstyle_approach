@@ -265,11 +265,33 @@ single biggest limitation and §4.4 sizes it.
 
 ### 4.1 The turn unit
 
-`ToolAgent.analyze` is called **more than once per turn**: `solver.py:285-302`
-retries the same `analysis_step` after a turn yields without acting
-(`retry_analysis_step`). On the anim run `sp80` made **41 `analyze` calls across
-26 distinct `analysis_step` values** [VERIFIED]. Counting calls would fire ~1.5×
+`ToolAgent.analyze` is called **more than once per turn**. Verified in the anim
+bundle itself, not by analogy with the June duck — `jakobbrggen/taaf-kaggle-source-anim-20260807-anim`,
+`src/ARC3-Inference/inference/framework/solver.py` (sha256
+`2bef5d6bc23c0312675f0c7203194c94e93d056ac06bf6419acd5142a4ea7c8e`) [VERIFIED]:
+
+```python
+# line 333-342
+result = self.analyzer.analyze(
+    self.state_path, self.action_count, ...,
+    analysis_step=analysis_step, ...)          # passed by KEYWORD
+...
+# line 359-362
+retry_analysis_step = None
+if getattr(result, "yielded_control", False):
+    retry_analysis_step = analysis_step        # the SAME step runs again
+    continue
+```
+
+A yielded turn — the 36% of calls that take no action, and the thing
+`yield_seconds = 180` makes common — reruns `analyze` at the same
+`analysis_step`. On the anim run `sp80` made **41 `analyze` calls across 26
+distinct `analysis_step` values** [VERIFIED]. Counting calls would fire ~1.5×
 too early, so turns are the **set** of distinct `analysis_step` values.
+
+The same lines settle the keyword question: `analysis_step=analysis_step` is a
+keyword argument, so `kwargs.get("analysis_step")` reaches it. The `no_step`
+counter in §5.5 exists in case that ever changes.
 
 Run-wide [VERIFIED, transcripts]: 940 `analyze` calls, 922 with a
 `step_executed` line, 586 executed. ~610 distinct turns over 25 games, i.e.
@@ -421,7 +443,19 @@ setting, or any `LOCAL_ANALYZER_*` global other than the seed — the seed being
 the one the mechanism legitimately moves, and only *after* a restart fires, so
 the baseline configuration is bit-identical to the incumbent's.
 
-### 5.4 Tests
+### 5.4 Provenance of the artifact
+
+The notebook this repo builds is **byte-identical to the kernel version that
+produced §6's numbers**: `scripts/_build_duck_nvfp4_anim_restart.py` reports
+cell sha256 `eeba749e24437d3d`, and `git diff` of the built notebook against the
+commit that pushed it is empty. One consequence is visible in the log: the
+synthetic probe drives the *real* wrapper, so it emits three
+`RESTART_STALL_FIRED` lines and one `RESTART_STALL_ERROR` **before** the
+`RESTART_STALL_INSTALLED` banner. `scripts/read_duck_public25_log.py` slices at
+the banner and reports how many lines it ignored; `RESTART_STALL_FINAL`'s
+counters were never affected, because the probe zeroes them.
+
+### 5.5 Tests
 
 `tests/test_restart_at_stall.py` — **30 tests, all passing.** They stand up a
 stub `inference.agent.tool_agent` whose `_ensure_session` and
@@ -438,7 +472,7 @@ cell mentions no config knob; that the notebook carries this exact cell; and
 that `scripts/read_duck_public25_log.py`'s regexes match the cell's **own
 printed output** rather than a hand-written sample.
 
-### 5.5 How we will know it fired, and what failure looks like
+### 5.6 How we will know it fired, and what failure looks like
 
 `RESTART_STALL_INSTALLED` once at setup, `RESTART_STALL_FIRED n=…` per firing,
 `RESTART_STALL_FINAL fired=… turns_discarded=… capped=… no_step=… errors=…` at
