@@ -343,6 +343,21 @@ paths (upstream drops the `game_over` flag / renames a field / starts wiping
 on `ToolAgent` is rebound; that the cell mentions no knob or env var; and that
 the notebook carries this exact cell rather than a drifted copy.
 
+### 3.4 How we will know it fired, and what failure would look like
+
+The run prints `WIPE_GUARD_INSTALLED` once at setup, one `WIPE_GUARD_KEPT n=N`
+per interception, and `WIPE_GUARD_FINAL kept=… wiped=… noop=… errors=…` at
+exit. `scripts/read_duck_public25_log.py` recovers all three.
+
+Three distinguishable failures, and what each would look like:
+
+| symptom | reading |
+|---|---|
+| no `WIPE_GUARD_INSTALLED` | the cell raised — one of the source assertions failed; the arm is invalid, not negative |
+| installed, but `kept=0` with game overs in the events | the patch did not reach the live instances. **[INFERRED]** the one way this could happen is the solver pickling a *bound* method of an already-constructed analyzer, which would bypass class lookup. Cell 11 unpickles `bm.solver`, so this is not idle worry — it is the thing the counter exists to detect |
+| `kept` ≈ 32 rather than ≈ 16 | the guard is firing on the mirrored `analysis` rows' worth of events, i.e. the condition is wrong |
+| `errors > 0` | a summary shape we did not anticipate; the run is still valid (it fell through to upstream) but the count is a defect to chase |
+
 ---
 
 ## 4. Free-run result
