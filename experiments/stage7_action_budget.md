@@ -174,20 +174,35 @@ rows only. [VERIFIED]
 | games with ≥1 | 10 / 25 | **8 / 25** |
 | levels with an inferrable budget (≥3 lives agreeing ±1) | 2 | **1** |
 
-The one inferrable budget on the incumbent is **`sp80` level 1 = 31**, from six
-lives of `30, 31, 31, 31, 31, 31`. **This independently reproduces
-Thuitanium's published `sp80 L1 = 30`** from our own run, which is real
-corroboration that the mechanism and their table are sound. [VERIFIED]
+The one inferrable budget on the incumbent is **`sp80` level 1**, and it
+reproduces Thuitanium's published number **exactly**. Splitting the game's 215
+actions at each `game_over` [VERIFIED]:
+
+| life | actions | first action | non-RESET actions |
+|---:|---:|---|---:|
+| 1 | 30 | LEFT | **30** |
+| 2–6 | 31 each | RESET | **30** each |
+| 7 | 30 | RESET | 29 (clock ran out) |
+
+**Six consecutive deaths at exactly 30 non-RESET actions.** The ±1 spread is the
+leading auto-RESET of each life, nothing else. Thuitanium publish `sp80 L1 = 30`;
+this is that number, re-derived from our own run with no knowledge of theirs in
+the pipeline. Their table is sound and the pathology is exactly as described.
+
+It also shows why knowing it does not convert. The human baseline for that level
+is **39 actions** [VERIFIED, `[finished]` `per-level=215/39`]. A 30-action life
+cannot contain a 39-action solution, so something in the game extends or resets
+the budget, and the budget number alone does not say what. Telling the model "you
+have 30 actions here" is true, useful, and still not a route to clearing it.
 
 It is also the whole of the headroom:
 
 - **1 level in 1 game of 25** supports budget inference at all.
 - **Four of the five games scoring 0.00 have ≤ 1 death** (`sk48` 0, `tn36` 0,
   `dc22` 1, `sc25` 1). A death blacklist is structurally inert on them.
-- On the one game it addresses, the inferred budget (31) is **below the human
-  baseline for that level (39)**, so the level cannot be cleared inside one
-  life and knowing the number does not by itself produce a clearance.
-  [VERIFIED from the `[finished]` line's `215/39`.]
+- On the one game it addresses, the budget (30) is **below the human baseline
+  for that level (39)**, so the level cannot be cleared inside one life and
+  knowing the number does not by itself produce a clearance (above).
 - Its payoff is mostly efficiency, and §1.5 caps the entire efficiency term at
   **+0.54**.
 - It costs prompt tokens **on every turn**, in a regime where turn latency sets
