@@ -51,6 +51,22 @@ negative result (§6 reads them back):
   (§4.4). A null result at that size is weak evidence, not strong — and §7 says
   which it was rather than collapsing the two.
 
+And the reading rule, fixed here so the result cannot be read to taste. Public-25
+has now anti-predicted the hidden set twice (the anim graft scored 9.97 locally
+against the baseline's 10.69, then beat it by +0.6 on the hidden set), so it is a
+**catastrophe detector, not a ranker**:
+
+| public-25 | levels (vs 42) | reading |
+|---|---|---|
+| < 7.0 (−30%) | any | **catastrophe — reject regardless of anything else** |
+| ≥ 7.0 | ≥ 45 | the mechanism converted; recommend |
+| ≥ 7.0 | 40–44 | null at this resolution; §7 says so and does not dress it up |
+| ≥ 7.0 | ≤ 39 | it cost levels; reject |
+
+Levels completed is the primary read, not score: RHAE is monotone non-decreasing
+in levels solved, the mechanism's whole claim is that it converts sunk actions
+into levels, and score on 25 games is the noisier of the two.
+
 ---
 
 ## 1. Task 1 — the wasted-action figure, re-derived
