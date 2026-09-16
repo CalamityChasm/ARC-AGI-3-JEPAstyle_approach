@@ -1,0 +1,79 @@
+games                      : 25
+analyzer turns (total)     : 1312
+ANALYZER STATUS records    : 1312
+analyzer read timeouts     : 25  (1.905% of turns)
+timeouts per game (counts) : {1: 25}
+actions (total)            : 3633
+levels completed (total)   : 48
+
+observed read-timeout values (s):
+  n=25 min=3.92 median=76.89 mean=75.71 max=155.70 sum=1892.8
+
+wall-clock instant each doomed request expired (s past midnight):
+  min=64436.21 max=64437.19 range=0.98s stdev=0.27s
+  -> a range of ~1s across all games means ONE shared deadline, not per-request variation.
+
+game             turns  acts lvls  GO fail@act timeout_s med_turn_s tail_acts
+lp85-305b61c3       51    78    5   0       79    155.70      160.5      1.56
+wa30-ee6fef47       52   188    2   1      189    136.09      154.0      3.29
+tr87-cd924810       52   137    3   0      138    124.54      152.0      2.19
+g50t-5849a774       52   168    1   0      169    120.06      153.0      2.59
+cd82-fb555c5d       54   114    1   0      115    118.81      149.0      1.74
+su15-1944f8ab       53    92    3   0       93    112.12      149.5      1.32
+bp35-0a0ad940       51    61    1   2       62    107.92      158.5      0.84
+tn36-ef4dde99       53    92    1   1       93    107.35      152.0      1.26
+sb26-7fbdac44       53   152    6   0      153    103.19      149.0      2.01
+lf52-271a04aa       53   109    1   0      110     93.87      157.0      1.31
+cn04-2fe56bfb       52    42    1   0       43     89.34      157.0      0.48
+tu93-0768757b       51   174    3  11      175     83.43      152.0      1.85
+s5i5-18d95033       53   219    1   1      220     76.89      147.0      2.15
+re86-8af5384d       53   315    3   0      316     74.46      155.5      2.99
+vc33-5430563c       53   115    3   0      116     69.21      148.0      1.01
+ar25-0c556536       53   411    2   1      412     59.72      151.0      3.12
+dc22-fdcac232       53   139    1   1      140     56.64      151.5      1.00
+sc25-635fd71a       53   153    1   3      154     42.01      155.0      0.82
+sk48-d8078629       51   141    0   0      142     38.67      161.0      0.69
+ka59-38d34dbb       52   143    2   0      144     32.71      160.0      0.59
+r11l-495a7899       53    83    1   9       84     27.43      150.5      0.29
+ls20-9607627b       53    91    1   0       92     25.68      153.0      0.30
+m0r0-492f87ba       54    88    1   0       89     23.05      150.0      0.26
+ft09-0d8bbf25       53    65    3   0       66      9.97      150.0      0.08
+sp80-589a99af       51   263    1   7      264      3.92      158.0      0.13
+
+upper-bound actions recoverable (sum of per-game rate x wasted s): 33.9  = 0.93% of all actions
+actions per level completed (pooled)  : 75.7
+expected extra levels from those acts : 0.45  (across 25 games)
+
+game                k/n  E_now%     C%  binds leftover minturn  P(fit) E[acts]    dE%
+ar25-0c556536       2/8    8.33   8.33  compl     59.7      61    0.0%    0.00   8.33
+bp35-0a0ad940       1/9    0.96   2.22  effic    107.9      46   10.0%    0.12   0.00
+cd82-fb555c5d       1/6    4.76   4.76  compl    118.8      33   24.5%    0.52   9.52
+cn04-2fe56bfb       1/6    4.76   4.76  compl     89.3      71    2.0%    0.02   9.52
+dc22-fdcac232       1/6    1.62   4.76  effic     56.6      50    1.9%    0.05   0.00
+ft09-0d8bbf25       3/6   23.81  28.57  effic     10.0      60    0.0%    0.00   0.00
+g50t-5849a774       1/7    3.57   3.57  compl    120.1      73   19.6%    0.63   7.14
+ka59-38d34dbb       2/7   10.71  10.71  compl     32.7      50    0.0%    0.00  10.71
+lf52-271a04aa      1/10    1.82   1.82  compl     93.9      53   11.5%    0.24   3.64
+lp85-305b61c3       5/8   41.67  41.67  compl    155.7      57   44.0%    0.67  16.67
+ls20-9607627b       1/7    2.37   3.57  effic     25.7      64    0.0%    0.00   0.00
+m0r0-492f87ba       1/6    4.76   4.76  compl     23.0      46    0.0%    0.00   9.52
+r11l-495a7899       1/6    4.76   4.76  compl     27.4      72    0.0%    0.00   9.52
+re86-8af5384d       3/8   16.67  16.67  compl     74.5      51    3.8%    0.23  11.11
+s5i5-18d95033       1/8    2.78   2.78  compl     76.9      56    5.8%    0.24   5.56
+sb26-7fbdac44       6/8   58.33  58.33  compl    103.2      33   13.5%    0.39  19.44
+sc25-635fd71a       1/6    0.80   4.76  effic     42.0      70    0.0%    0.00   0.00
+sk48-d8078629       0/8    0.00   0.00  compl     38.7      71    0.0%    0.00   2.78
+sp80-589a99af       1/6    0.17   4.76  effic      3.9      60    0.0%    0.00   0.00
+su15-1944f8ab       3/9   13.33  13.33  compl    112.1      59   13.5%    0.23   8.89
+tn36-ef4dde99       1/7    3.57   3.57  compl    107.4      57   11.5%    0.20   7.14
+tr87-cd924810       3/6   28.57  28.57  compl    124.5      61   21.6%    0.57  19.05
+tu93-0768757b       3/9    6.77  13.33  effic     83.4      67    6.0%    0.20   0.00
+vc33-5430563c       3/7   16.37  21.43  effic     69.2      53    3.8%    0.08   0.00
+wa30-ee6fef47       2/9    5.96   6.67  effic    136.1      25   31.4%    1.13   0.00
+
+turn duration pooled (s): n=1287 min=25 p10=98 median=153 p90=205 max=294
+mean leftover = 75.7s; only 4.7% of turns ever completed that fast
+expected recoverable actions : 5.5
+expected recoverable levels  : 0.11
+RHAE delta, realistic        : +0.0579 pts on the public-25 mean
+RHAE delta, absolute upper   : +0.2264 pts on the public-25 mean
