@@ -274,3 +274,15 @@ def test_cell_text_matches_the_source_in_the_notebook(tmp_path, monkeypatch):
     assert any(c.strip() == CELL.read_text(encoding="utf-8").strip() for c in cells), textwrap.shorten(
         "guard cell in the notebook does not match scripts/wipe_guard_cell.py", 200
     )
+
+
+def test_built_arm_is_current_and_inherits_every_anim_cell():
+    """The pushed notebook must be what the builder produces from today's anim arm."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "_wg_builder", Path(__file__).resolve().parents[1] / "scripts" / "_build_duck_nvfp4_anim_wipeguard.py"
+    )
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    mod.build(check_only=True)  # raises if any inherited cell drifted or the build is stale

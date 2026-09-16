@@ -300,7 +300,7 @@ per game, inside the solver.
 
 ### 3.3 Tests
 
-`tests/test_wipe_guard.py` — 23 tests, all passing. It stands up a stub
+`tests/test_wipe_guard.py` — 24 tests, all passing (repo suite: 157 → 181, none broken). It stands up a stub
 `inference.agent.tool_agent` whose wipe method is **byte-for-byte the anim
 bundle's**, execs the real cell source against it, and checks: the one case that
 changes; a control proving unguarded upstream wipes that same case; all five
