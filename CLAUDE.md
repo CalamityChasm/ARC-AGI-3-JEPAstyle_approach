@@ -317,6 +317,93 @@ solvability**. **Stop spending slots on this lineage.** The remaining directions
 are perception (their stated gap, where our measured 9-155 s analyzer timeouts
 also live) and model capability -- not more serving tuning.
 
+### 9. CURRENT STANDING — 2026-09-19 (supersedes the 2026-09-07 header above)
+
+**Score 3.79. Rank ~177 / 3,112. Top 5.7%. The top-10% mission target is met.**
+The header above ("top 10% = 2.99", "we sit at 2.95") is stale; the bar has
+risen to ~3.47 and we cleared it.
+
+#### What actually produced the gain — component swaps, not tuning
+
+| step | score | what changed |
+|---|---:|---|
+| own code (19 submissions) | <= 0.25 | JEPA / GraphExplorer agents |
+| forked Duck (FP8) | 2.57 | serving profile, concurrency, budget fix |
+| **NVFP4 stack** | 2.83 mean | whole stack swapped (model + runtime + bundle) |
+| **+ anim solver graft** | **3.53 mean** | solver bundle swapped, model untouched |
+
+**Both wins were whole-subsystem replacements. Every parameter change failed.**
+The model bundle is a sealed appliance (verifies 419 per-file SHA-256s), so the
+solver was the only remaining degree of freedom -- and swapping it was worth
++25% (Welch t=3.55, df~5, p<0.05; anim's range 3.37-3.79 does not overlap
+baseline's 2.42-3.11).
+
+#### Measured distributions (the thing to compare any new arm against)
+
+| config | n | scores | mean | sd |
+|---|---:|---|---:|---:|
+| NVFP4 baseline | 4 | 2.84, 2.95, 2.42, 3.11 | 2.830 | 0.295 |
+| **+ anim graft** | 3 | 3.43, 3.79, 3.37 | **3.530** | **0.227** |
+| + wipe guard | 1 | 2.53 | — | — |
+
+#### THE MEASUREMENT RULE THAT MATTERS MOST
+
+**A single free public-25 run has SE +/-2.46 and CANNOT rank candidates.**
+Measured from an accidental null arm: on 16 games a mechanism provably never
+touched, paired per-game scores still moved sd 12.30 (one game 4.76 -> 47.62).
+Resolving a +0.10 effect needs ~3,840 runs per arm.
+
+**A real submission is the LESS noisy instrument** (~10% relative vs ~25%), and
+submissions are separate compute that expires daily if unused. Consequences:
+- Free runs are valid ONLY for catastrophe detection and **exact telemetry**
+  (counts, not samples -- noise-free).
+- Ranking happens on the hidden set, n>=3 per arm before any claim.
+- **Submit every day.** An unused slot wastes ~9h of free compute. Two were
+  lost this way (2026-09-13, 2026-09-19) to scheduled submitters that died --
+  a detached OS process survives a session ending but NOT a machine sleep.
+  **Submit interactively; do not schedule.**
+
+This rule retroactively invalidated a "seven interventions, seven regressions"
+conclusion recorded earlier: re-measured against +/-2.46, only ctx16k (-81%,
+3.5 SE) was a real regression. Several confident write-ups in this file rest on
+n=1 free-run comparisons that cannot support them.
+
+#### Closed lines (do not re-attempt without new information)
+
+- **Serving/throughput**: fp8 KV architecturally impossible (`QSA requires a
+  BF16 main KV cache`); KV pool cannot grow (81.8 GiB weights on a 95 GiB
+  card, 8 GiB OOMs); prefix caching is a *correctness hazard* on this
+  Mamba/GDN model (identical actions, -47% score); multimodal upscale inert
+  (66 vision tokens at every setting).
+- **Context reduction**: history dedupe -34%, ctx16k -81%. Context is
+  load-bearing, not slack.
+- **Model swap**: sealed bundle. Of 409 Kaggle models, everything fitting
+  95 GiB is a weaker coder; the one better option is 184 GiB.
+- **Residency does not buy turns**: three runs confirm turns obey
+  `agg_tok_s x T / (tokens_per_action x N)`, but `tokens_per_action` varies
+  3.5x and cancels every throughput gain. Total actions are pinned near 2,615
+  by wall-clock; calls/game near 54 by latency.
+
+#### The open lead
+
+**46.1% of the run's entire wall clock goes to `analyze()` turns that execute
+no game action** (91,295 s of 198,233 s; replicated at 48.6% and 49.8%). Dead
+turns are also the expensive kind (median 258 s vs 173 s), and
+`solver.py:360-361` replays the same analysis after every yield -- so a game
+that stops committing burns the rest of its fixed 7,920 s clock.
+
+The deep games ran out of **clock, not ideas**: `re86` had spent **1 action**
+on level 5 when time expired, `tu93` **0** -- each worth +11 to +24 under RHAE's
+index weighting (`w_l = l`, so depth beats breadth 3.8x: +15.61 vs +4.13 per
+level).
+
+Two arms are built on the anim graft and testing this: a **commit floor** and
+**no-thinking**. The commit floor carries a *counted* falsifier registered
+before the result -- the untreated chassis's own P(act | >=2 dead turns before)
+is **32.0% (164/513)** across three runs, comparable at ~4.7pp binomial sd.
+That is the kind of test the +/-2.46 score cannot give, and is the standard any
+future mechanism should be held to.
+
 ## Repo / branch layout
 
 - `master` -- Stage 0 (harness) is complete and stable here. Don't rebase
