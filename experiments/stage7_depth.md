@@ -458,6 +458,16 @@ Safety:
   instruction and the solver's retry branch. An upstream reword raises at
   cell-execution time instead of silently arming nothing. It refuses to install
   twice.
+* **One known, bounded side effect, stated rather than discovered later.**
+  `analyze()` appends the turn's user message to `self._history_messages`, so a
+  directive that fires *stays in the conversation* for as long as the history
+  window holds it (7–20 messages on this run), even after the pressure resets.
+  The treatment is therefore "the directive appears, and then lingers", not "one
+  turn is decorated". It does not affect the armed-turn conversion rate in
+  §7.3, which is measured at the turn the directive is attached; it does mean
+  a fired game's later turns are not strictly control turns. Two upstream
+  call sites were checked: `_build_user_prompt` and `analyze` each have exactly
+  one caller in the bundle [VERIFIED].
 * **A 5-case synthetic probe runs before any real game**, covering the firing
   point, the reset on an executing turn, the escalation point, a new session,
   a `None` return, and an untouched turn being byte-identical to upstream. Probe
