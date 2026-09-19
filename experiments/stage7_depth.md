@@ -171,6 +171,28 @@ the pool — roughly 19,700 s and 83 turns per run, ~10% of the whole clock,
 landing on four to eight games — and that argues for a general mechanism rather
 than a targeted one.
 
+### 2.4 How big is that pool in the unit that matters — levels?
+
+Counting *all* turns (dead included) spent on each level, pooled over the three
+runs [VERIFIED]:
+
+| | n | median turns | mean |
+|---|---:|---:|---:|
+| levels that cleared | 121 | **8** | 10.3 |
+| levels that never cleared | 75 | **20** | 20.6 |
+
+So the ~83 terminal-streak turns per run are about **ten median-level attempts
+of turn budget**, spent on nothing.
+
+**And here is the deflation, stated up front rather than after the result.**
+That budget is not sitting next to a fresh level. It is sitting on a level that
+has *already* absorbed a median of 20 turns — 2.5× what a level that clears
+takes. A turn recovered there is worth materially less than an average turn, and
+the null-conversion table in §7.3 says the same thing from the other side: the
+chassis's own probability of acting falls from 70% to 16% as a streak
+lengthens. **Any recovery here converts at well below the base rate. The case
+for the mechanism is the size of the pool, not the quality of it.**
+
 ---
 
 ## 3. Deaths: real, measured, and the wrong target
