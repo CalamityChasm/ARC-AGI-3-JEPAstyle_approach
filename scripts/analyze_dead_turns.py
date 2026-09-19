@@ -138,6 +138,29 @@ def analyse_game(path: Path, wall: float | None = None) -> dict[str, Any]:
     }
 
 
+def null_conversion(run_dir: Path, max_k: int = 6) -> dict[int, tuple[int, int]]:
+    """P(this turn executes | k consecutive dead turns immediately before it).
+
+    This is the comparator for any mechanism that intervenes after k dead turns:
+    it is what the untreated chassis does at the same point in a streak, counted
+    rather than sampled. `k` is capped at `max_k` (the last bucket is "k or
+    more").
+    """
+    execs: dict[int, int] = {}
+    total: dict[int, int] = {}
+    for p in sorted((run_dir / "transcripts").glob("*_p0.txt")):
+        k = 0
+        for call in parse_transcript(p):
+            b = min(k, max_k)
+            total[b] = total.get(b, 0) + 1
+            if call["executed"]:
+                execs[b] = execs.get(b, 0) + 1
+                k = 0
+            else:
+                k += 1
+    return {b: (execs.get(b, 0), total[b]) for b in sorted(total)}
+
+
 def analyse(run_dir: Path) -> dict[str, Any]:
     bench = json.loads((run_dir / "benchmark.json").read_text(encoding="utf-8"))
     walls = {g["game_id"].split("-")[0]: g["final_wallclock_seconds"] for g in bench["game_runs"]}
@@ -174,6 +197,7 @@ def analyse(run_dir: Path) -> dict[str, Any]:
         "tail_dead_frac_of_clock": tot_tail / tot_wall,
         "dead_seconds": sum(r["dead_seconds"] for r in rows),
         "dead_frac_of_clock": sum(r["dead_seconds"] for r in rows) / tot_wall,
+        "null_conversion": {str(k): list(v) for k, v in null_conversion(run_dir).items()},
         "games": rows,
     }
 
@@ -193,6 +217,13 @@ def report(res: dict[str, Any]) -> None:
         f"{res['tail_dead_seconds']:.0f}s of {res['wall_seconds']:.0f}s "
         f"({res['tail_dead_frac_of_clock']:.1%} of the whole run's clock)"
     )
+    nc = sorted(res["null_conversion"].items(), key=lambda kv: int(kv[0]))
+    print("\nP(a turn executes | k consecutive dead turns before it) -- the comparator")
+    print("   " + "  ".join(f"k={k}: {e}/{t}={e/t:.0%}" for k, (e, t) in nc))
+    armed_e = sum(e for k, (e, _t) in nc if int(k) >= 2)
+    armed_t = sum(t for k, (_e, t) in nc if int(k) >= 2)
+    print(f"   k>=2 (where a commit floor fires): {armed_e}/{armed_t} = {armed_e/armed_t:.1%}")
+
     print(
         f"\n{'game':<6}{'score':>7}{'lvl':>6}{'calls':>7}{'exec':>6}{'dead':>6}"
         f"{'steps':>7}{'tail':>6}{'tail_s':>8}{'tail%':>7}{'longest':>8}"

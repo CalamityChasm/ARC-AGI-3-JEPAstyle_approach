@@ -437,6 +437,52 @@ probes the **real** payload builder before and after the flip and asserts that
 `chat_template_kwargs` is the only key that moved. **10 tests**
 (`tests/test_no_thinking.py`).
 
+### 7.3 The falsifier, stated before the run — and it is a *counted* one
+
+`stage7_noise_floor.md` establishes that a single public-25 pass carries
+SE ±2.46, so the score cannot rank these arms. The commit floor does not need
+it to, because the chassis provides its own comparator.
+
+`scripts/analyze_dead_turns.py` now reports **P(a turn executes | k consecutive
+dead turns immediately before it)** — what the *untreated* chassis does at
+exactly the point the mechanism intervenes. It is remarkably stable
+[VERIFIED, three independent runs]:
+
+| k dead turns before | anim | anim-wg | anim-rs | pooled |
+|---:|---:|---:|---:|---:|
+| 0 | 69% | 69% | 71% | 1234/1772 = **69.6%** |
+| 1 | 64% | 62% | 51% | 299/505 = 59.2% |
+| 2 | 52% | 39% | 42% | 87/196 = 44.4% |
+| 3 | 30% | 25% | 29% | 27/98 = 27.6% |
+| 4 | 44% | 33% | 26% | 22/66 = 33.3% |
+| 5 | 0% | 27% | 38% | 10/39 = 25.6% |
+| 6+ | 10% | 17% | 20% | 18/114 = 15.8% |
+| **k ≥ 2 (where the floor fires)** | **33.6%** | **30.4%** | **32.1%** | **164/513 = 32.0%** |
+
+**So: without the directive, a turn arriving with two or more dead turns behind
+it acts 32.0% of the time.** The free run prints
+`COMMIT_FLOOR_RESULT consec=… executed=0|1` for every armed turn, so
+`converted / result_lines` is directly comparable to that number, counted rather
+than sampled. At the ~100 armed turns the anim run's streak histogram predicts,
+a binomial at p = 0.32 has sd ≈ 4.7 pp.
+
+**Falsifier, fixed before the run:**
+
+> If the directive fires on the expected order of turns and the armed-turn
+> conversion rate is not materially above **32%**, the model is ignoring an
+> explicit instruction and this mechanism does not work on this chassis. The
+> line closes, regardless of what the public-25 score says in either direction.
+
+And symmetrically: **a conversion rate well above 32% is evidence the mechanism
+works even if the score moves the wrong way**, because the score at n=1 cannot
+resolve anything at this effect size and the conversion rate can.
+
+The no-thinking arm has no comparable internal comparator — its telemetry is the
+dead-turn fraction, turns per game, actions and reasoning characters, all
+counted, but its *capability* cost can only be read from outcomes, which is
+exactly what a free run cannot resolve. That asymmetry is itself a reason it
+ranks second.
+
 ---
 
 ## 8. Free-run results
