@@ -148,6 +148,29 @@ compare the level-2 before-frame's group centroids vs ring centers…") — and
 never called `action(...)`. The game's last action was at 3,262 s; the remaining
 **4,703 s (59% of its clock)** produced nothing.
 
+### 2.3 The aggregate is stable; *which* game it lands on is a lottery
+
+This matters for how any projection in this document should be read, so it is
+stated here rather than buried. Across the three runs [VERIFIED]:
+
+| | anim | anim-wg | anim-rs |
+|---|---:|---:|---:|
+| terminal-streak turns | 89 | 85 | 76 |
+| terminal-streak seconds | 21,598 | 20,125 | 17,363 |
+| games with a terminal streak ≥ 4 turns | 8 | 8 | 4 |
+| worst single game | `cn04` 18 turns / 4,750 s | `sp80` 13 / 3,452 s | `tr87` 24 / **6,890 s (87%)** |
+
+Per-game **rank correlation of terminal-streak seconds across runs is 0.05–0.22**
+— essentially none. Per-game **dead-turn *fraction* correlates 0.60–0.71**, so
+some games really are more prone to it, but which one draws the catastrophic
+streak in any given run is close to random.
+
+**Consequence: "fix `r11l` and `cn04`" is not a strategy, and any per-game
+projection built on this run's identities is over-fitted.** What is stable is
+the pool — roughly 19,700 s and 83 turns per run, ~10% of the whole clock,
+landing on four to eight games — and that argues for a general mechanism rather
+than a targeted one.
+
 ---
 
 ## 3. Deaths: real, measured, and the wrong target
@@ -278,10 +301,13 @@ Ranked by (expected effect × confidence) ÷ risk, and every one judged against
   worth +14 to +24.
 * **Expected effect under RHAE.** [INFERRED] The recoverable pool is the 101
   turns of the anim run that sit on a streak of 3+ (26,565 s, 13.4% of the
-  clock). At the run's own 4.5 actions per executing turn that is ~450 actions
-  landing on the current level of the games that are deepest. If it converted
-  in `r11l`, `cn04`, `ft09` and `bp35` alone the mean moves +2.11; a realistic
-  fraction of that is far smaller. **Ceiling, not forecast.**
+  clock; 117 and 131 turns on the two siblings). At the run's own 4.5 actions
+  per executing turn that is ~450 actions landing on the current level of
+  whichever games drew the streaks. Sizing it by *this* run's identities would
+  give +2.11 — but §2.3 shows those identities do not replicate across runs, so
+  the honest statement is: **the pool is ~10% of the clock in every run, and it
+  lands on the games that happen to stall, which include the deep ones.
+  Ceiling, not forecast, and deliberately not a per-game one.**
 * **Risk.** Acting earlier than the model wants can spend a hidden per-level
   action budget (§3, `sp80` L1 = 30) or walk into a death. Bounded: the four
   games holding the largest streaks (`cn04`, `r11l`, `tr87`, `ft09`) had
