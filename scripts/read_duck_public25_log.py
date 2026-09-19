@@ -42,6 +42,21 @@ RS_FINAL_RE = re.compile(
 )
 RS_INSTALLED_RE = re.compile(r"RESTART_STALL_INSTALLED [^\\\"\n]*")
 RS_ERROR_RE = re.compile(r"RESTART_STALL_ERROR [^\\\"\n]*")
+CF_INSTALLED_RE = re.compile(r"COMMIT_FLOOR_INSTALLED [^\\\"\n]*")
+CF_FIRED_RE = re.compile(
+    r"COMMIT_FLOOR_FIRED n=(?P<n>\d+) consec=(?P<consec>\d+) escalated=(?P<esc>\d+) "
+    r"session=(?P<session>\S+)"
+)
+CF_RESULT_RE = re.compile(
+    r"COMMIT_FLOOR_RESULT consec=(?P<consec>\d+) executed=(?P<executed>\d+) session=(?P<session>\S+)"
+)
+CF_FINAL_RE = re.compile(
+    r"COMMIT_FLOOR_FINAL turns=(?P<turns>\d+) dead=(?P<dead>\d+) fired=(?P<fired>\d+) "
+    r"escalated=(?P<escalated>\d+) converted=(?P<converted>\d+) unconverted=(?P<unconverted>\d+) "
+    r"errors=(?P<errors>\d+)"
+)
+CF_ERROR_RE = re.compile(r"COMMIT_FLOOR_ERROR [^\\\"\n]*")
+NT_INSTALLED_RE = re.compile(r"NO_THINKING_INSTALLED [^\\\"\n]*")
 
 
 def _log_path(target: Path) -> Path:
@@ -94,6 +109,19 @@ def read(target: Path) -> dict[str, Any]:
     rs_final = [m.groupdict() for m in RS_FINAL_RE.finditer(rs_text)]
     rs_sessions = sorted({f["session"] for f in rs_fired})
 
+    # The commit floor's startup probe drives the real wrappers, so it emits
+    # phantom FIRED/RESULT lines BEFORE the install banner (7 of each, by
+    # construction -- see scripts/commit_floor_cell.py: _cf_probe). Its counters
+    # are zeroed afterwards, so COMMIT_FLOOR_FINAL is always right; the LINES
+    # are not. Slice at the banner, exactly as for the restart arm.
+    cf_banner = CF_INSTALLED_RE.search(text)
+    cf_text = text[cf_banner.end():] if cf_banner else text
+    cf_probe_fired = len(CF_FIRED_RE.findall(text)) - len(CF_FIRED_RE.findall(cf_text))
+    cf_fired = [m.groupdict() for m in CF_FIRED_RE.finditer(cf_text)]
+    cf_results = [m.groupdict() for m in CF_RESULT_RE.finditer(cf_text)]
+    cf_final = [m.groupdict() for m in CF_FINAL_RE.finditer(cf_text)]
+    cf_converted = sum(1 for r in cf_results if r["executed"] == "1")
+
     return {
         "log": str(_log_path(target)),
         "summaries_emitted": len(means),
@@ -121,6 +149,18 @@ def read(target: Path) -> dict[str, Any]:
         "restart_stall_final": rs_final[-1] if rs_final else None,
         "restart_stall_errors": len(RS_ERROR_RE.findall(rs_text)),
         "restart_stall_probe_lines_ignored": rs_probe_fired,
+        "commit_floor_installed": bool(cf_banner),
+        "commit_floor_fired_lines": len(cf_fired),
+        "commit_floor_escalated_lines": sum(1 for f in cf_fired if f["esc"] == "1"),
+        "commit_floor_result_lines": len(cf_results),
+        "commit_floor_converted": cf_converted,
+        "commit_floor_conversion_rate": (cf_converted / len(cf_results)) if cf_results else None,
+        "commit_floor_sessions": len({f["session"] for f in cf_fired}),
+        "commit_floor_final": cf_final[-1] if cf_final else None,
+        "commit_floor_errors": len(CF_ERROR_RE.findall(cf_text)),
+        "commit_floor_probe_lines_ignored": cf_probe_fired,
+        "no_thinking_installed": bool(NT_INSTALLED_RE.search(text)),
+        "no_thinking_banner": (NT_INSTALLED_RE.search(text).group(0) if NT_INSTALLED_RE.search(text) else None),
         "per_game": {k: {kk: v[kk] for kk in ("state", "lvl", "lvls", "score", "actions")} for k, v in sorted(by_game.items())},
     }
 
@@ -143,6 +183,11 @@ def main() -> None:
             "actions_never_completed_levels", "wasted_action_fraction",
             "wipe_guard_installed", "wipe_guard_kept_lines", "wipe_guard_kept_max_n",
             "wipe_guard_final", "wipe_guard_errors",
+            "commit_floor_installed", "commit_floor_fired_lines", "commit_floor_escalated_lines",
+            "commit_floor_result_lines", "commit_floor_converted", "commit_floor_conversion_rate",
+            "commit_floor_sessions", "commit_floor_final", "commit_floor_errors",
+            "commit_floor_probe_lines_ignored",
+            "no_thinking_installed", "no_thinking_banner",
             "restart_stall_installed", "restart_stall_fired_lines",
             "restart_stall_sessions", "restart_stall_turns_discarded",
             "restart_stall_levels", "restart_stall_notes_kept_chars",
