@@ -103,7 +103,23 @@ def analyse_game(path: Path, wall: float | None = None) -> dict[str, Any]:
     longest = max(longest, cur)
 
     budgets = sum(1 for c in calls if c["message"] and "turn_time_budget" in c["message"])
+
+    # Wall clock attributed to each turn: from its own header to the next one
+    # (and, for the last turn, to the end of the game's clock).
+    end = wall if wall is not None else secs[-1]
+    durs = [b - a for a, b in zip(secs, secs[1:])] + [max(0.0, end - secs[-1])]
+    dead_s = sum(d for c, d in zip(calls, durs) if not c["executed"])
+    exec_s = sum(d for c, d in zip(calls, durs) if c["executed"])
+
     return {
+        "dead_seconds": dead_s,
+        "exec_seconds": exec_s,
+        "median_dead_turn_s": statistics.median(
+            [d for c, d in zip(calls, durs) if not c["executed"]] or [0.0]
+        ),
+        "median_exec_turn_s": statistics.median(
+            [d for c, d in zip(calls, durs) if c["executed"]] or [0.0]
+        ),
         "game": path.name.split("-")[0],
         "calls": n,
         "executed": executed,
@@ -156,6 +172,8 @@ def analyse(run_dir: Path) -> dict[str, Any]:
         "tail_dead_seconds": tot_tail,
         "wall_seconds": tot_wall,
         "tail_dead_frac_of_clock": tot_tail / tot_wall,
+        "dead_seconds": sum(r["dead_seconds"] for r in rows),
+        "dead_frac_of_clock": sum(r["dead_seconds"] for r in rows) / tot_wall,
         "games": rows,
     }
 
@@ -165,6 +183,10 @@ def report(res: dict[str, Any]) -> None:
     print(
         f"LLM calls {res['calls']}  executed {res['executed']}  dead {res['dead']} "
         f"({res['dead_frac']:.1%})"
+    )
+    print(
+        f"wall clock in turns that executed nothing: {res['dead_seconds']:.0f}s of "
+        f"{res['wall_seconds']:.0f}s ({res['dead_frac_of_clock']:.1%})"
     )
     print(
         f"terminal dead streaks: {res['tail_dead_calls']} calls, "
