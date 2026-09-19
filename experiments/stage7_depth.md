@@ -312,6 +312,55 @@ For scale, `stage7_action_budget.md` §1.5 puts the **entire** efficiency term a
 **+0.54** on this chassis. Depth is worth an order of magnitude more than
 efficiency, and this is the third independent derivation in Stage 7 saying so.
 
+### 5.1 Depth over breadth is right — but not for the reason it was handed to me
+
+The brief's standing hypothesis is that trading depth for breadth is a losing
+trade, evidenced by the wipe-guard arm scoring **2.53** (outside anim's entire
+3.37–3.79 range) while its telemetry traded **2 total levels (42 → 40) for 2
+more games scoring at all (20 → 22)**. It asked for that to be tested against
+the data rather than assumed. Tested, it splits in two.
+
+**The conclusion holds, and it is arithmetic, not evidence.** Under `w_l = l`
+the mean value of one more level, computed per game on this run [VERIFIED]:
+
+| the game currently has | n | mean value of +1 level |
+|---|---:|---:|
+| 0 levels (what a breadth mechanism buys) | 5 | **+4.13** |
+| 1 level | 10 | +7.13 |
+| 2 levels | 4 | +9.70 |
+| 3 or more levels (what a depth mechanism buys) | 6 | **+15.61** |
+
+**A level in an already-deep game is worth 3.8× a game's first level.** Nothing
+about a particular run is needed to know that; it falls out of the weighting.
+This document's mechanisms are ranked on it, and the breadth-shaped ideas in §6
+are rejected on it.
+
+**The evidence offered for it, however, does not survive inspection.** The wipe
+guard is structurally inert on any game with no in-level game over, and 16 of
+the 25 games had none in *either* run. On those 16 — where no guarded code path
+can have run — **8 games changed their level count anyway** [VERIFIED]:
+
+```
+tr87  1 -> 4 (+3)    re86  4 -> 2 (-2)    cd82 1 -> 2 (+1)    cn04 1 -> 0 (-1)
+lf52  2 -> 1 (-1)    r11l  2 -> 3 (+1)    s5i5 2 -> 1 (-1)    tn36 0 -> 1 (+1)
+net on the inert games: +1 level
+net on the 9 games the guard could touch: -3 levels (ar25 4->1, tu93 4->0 dominate)
+```
+
+Single-game swings of ±3 and ±4 levels occur on **both** sides, and the two
+largest negative swings on the "active" side (−3, −4) are the same magnitude as
+the largest positive swing on the provably-inert side (+3).
+
+**So the levels count is as irreproducible as the score**, which
+`stage7_noise_floor.md` measured at SE ±2.46 using this same inert subset. The
+statement "the guard traded 2 levels for 2 games scoring" is true as a count
+and unsupported as a causal claim. **[VERIFIED as to the swings; the retraction
+is of the causal reading, not of the counts.]**
+
+Practical consequence for this document: **levels-completed at n=1 is not a
+ranking instrument either.** That is precisely why §7.3 builds the falsifier on
+an armed-turn conversion rate instead.
+
 ---
 
 ## 6. Ranked candidates
