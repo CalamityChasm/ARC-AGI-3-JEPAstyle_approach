@@ -107,6 +107,14 @@ chassis [VERIFIED]:
 | anim-wg | 921 | 558 | 363 (39.4%) | 96,363 s / 198,128 s = 48.6% | 85 turns, 20,125 s (10.2%) |
 | anim-rs | 929 | 553 | 376 (40.5%) | 98,606 s / 198,161 s = 49.8% | 76 turns, 17,363 s (8.8%) |
 
+**Turns are not model calls, and Stage 7 has conflated them before.** One
+`analyze()` turn makes one *or more* model calls: it loops over tool calls until
+the model acts or the yield budget trips. On anim that is **940 turns against
+1,358 model responses** — 37.6 turns and 54.3 calls per game [VERIFIED,
+`[MODEL RESPONSE META]` blocks; 55.5 and 57.6 calls/game on the siblings]. The
+brief's "calls/game pinned near 54" is the *call* figure; the depth budget is
+the *turn* figure, and it is 37.6.
+
 Median dead turn **258 s**; median turn that acts **173 s** [VERIFIED, anim;
 277/163 and 273/164 on the siblings]. A dead turn costs *more* than a productive
 one, because it runs until the 180 s yield budget trips and then finishes the
