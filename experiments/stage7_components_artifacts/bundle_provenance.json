@@ -1,0 +1,423 @@
+[
+ {
+  "ref": "arcainionprime/arc-agi3-runtime"
+ },
+ {
+  "ref": "areusnow/taaf-bundle",
+  "git_status": "git status:\n  ARC3-Inference                   9158303     DIRTY  feature/animation-awareness  feat: proactively suggest animation retrieval when stuck (s\u2026\n  tufa-arc-agi-framework           9158303     DIRTY  feature/animation-awareness  feat: proactively suggest animation retrieval when stuck (s\u2026",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-08-07T17:59:49.124806",
+   "benchmark_label": "anim-20260807-anim",
+   "notebook": "taaf_kaggle_run.ipynb"
+  }
+ },
+ {
+  "ref": "ataraxian/arc3-duck-deepseek-bundle",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-06-12T09:57:04.082789",
+   "benchmark_label": "duck-harness-kaggle",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "ataraxian/arc3-duck-prompt-v36a",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-06-12T09:57:04.082789",
+   "benchmark_label": "duck-harness-kaggle",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "autumndyer/taaf-kaggle-source-share-base-v53",
+  "git_status": "git status:\n  ARC3-Inference                   aa69123     DIRTY  add-kaggle-share-flag     Add flag to use shareable notebook\n  tufa-arc-agi-framework           fe9f7c4     clean  submission-share-mode-bugfix  Fix dataset mapping, spell Isaiah's name properly\n  re-arc-3                         57e46d619d  pinned  master                    (non-editable)",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-06-12T09:57:04.082789",
+   "benchmark_label": "duck-harness-kaggle",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "autumndyer/taaf-kaggle-source-share-base-v54",
+  "git_status": "git status:\n  ARC3-Inference                   aa69123     DIRTY  add-kaggle-share-flag     Add flag to use shareable notebook\n  tufa-arc-agi-framework           fe9f7c4     clean  submission-share-mode-bugfix  Fix dataset mapping, spell Isaiah's name properly\n  re-arc-3                         57e46d619d  pinned  master                    (non-editable)",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-06-12T09:57:04.082789",
+   "benchmark_label": "duck-harness-kaggle",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "bingdongni/arc3-gold-baseline-src",
+  "git_status": "git status:\n  ARC3-Inference                   e442e01     DIRTY  add-kaggle-share-flag     Add flag to use shareable notebook\n  tufa-arc-agi-framework           030ac6f     DIRTY  submission-share-mode     Address PR #29 review: clarify R2.61 offline behavior, thre\u2026\n  re-arc-3                         0056955095  pinned  master                    (non-editable)",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-06-10T15:04:11.278147",
+   "benchmark_label": "duck-harness-kaggle",
+   "notebook": "taaf_kaggle_run.ipynb"
+  }
+ },
+ {
+  "ref": "brentwoodard/relator-duck-v11-hybrid-source",
+  "git_status": "git status:\n  tufa-arc-agi-framework           bf79ff9     clean  main                      Merge pull request #28 from Tufalabs/p-value-table\n  ARC3-Inference                   e567133     clean  main                      Merge pull request #76 from Tufalabs/jeroen/halve-context-u\u2026\n  re-arc-3                         70e9b3c3c8  pinned  master                    (non-editable)\n  relator-v11-overlay              CD2DEF90    patched local                    reset sync, per-action facts, exact-cycle guard, keyboard router\n",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-08-08T00:16:00-04:00",
+   "benchmark_label": "relator-duck-v11-hybrid",
+   "notebook": "taaf_kaggle_run.ipynb"
+  }
+ },
+ {
+  "ref": "codywhatleymd/arc3-vllm-0271-sm120-wheelhouse"
+ },
+ {
+  "ref": "driessmit1/arc3-vllm-h100-wheelhouse-v3"
+ },
+ {
+  "ref": "esfersami50/taaf-kaggle-source-bundle-esfer"
+ },
+ {
+  "ref": "felixwang1m/duck-original-v1-source"
+ },
+ {
+  "ref": "felixwang1m/duck-original-v2-source",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-07-15T20:47:23.961199",
+   "benchmark_label": "duck-harness",
+   "notebook": "taaf_kaggle_run.ipynb"
+  }
+ },
+ {
+  "ref": "felly10/arc-agi3-agent-src"
+ },
+ {
+  "ref": "fnbipx/duck-run9b-bundle"
+ },
+ {
+  "ref": "gktrkakman/taaf-kaggle-source-duck-sub-20260805",
+  "git_status": "git status:",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-08-05T10:39:15.732683",
+   "benchmark_label": "duck-sub-20260805",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "gktrkakman/taaf-src-subv1",
+  "git_status": "git status:\n  ARC3-Inference                   a8a6ddc     clean  submission/v1             submission/v1: per-game time 45 -> 90 min, timeout regressi\u2026\n  tufa-arc-agi-framework           a8a6ddc     clean  submission/v1             submission/v1: per-game time 45 -> 90 min, timeout regressi\u2026",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-08-07T03:16:29.616067",
+   "benchmark_label": "subv1",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "gktrkakman/taaf-src-subv1x",
+  "git_status": "git status:\n  ARC3-Inference                   a8a6ddc     DIRTY  submission/v1             submission/v1: per-game time 45 -> 90 min, timeout regressi\u2026\n  tufa-arc-agi-framework           a8a6ddc     DIRTY  submission/v1             submission/v1: per-game time 45 -> 90 min, timeout regressi\u2026",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-08-07T04:01:46.434394",
+   "benchmark_label": "subv1x",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "helmirinaldi/taaf-kaggle-source-bundle",
+  "git_status": "git status:\n  ARC3-Inference                   aa69123     DIRTY  add-kaggle-share-flag     Add flag to use shareable notebook\n  tufa-arc-agi-framework           fe9f7c4     clean  submission-share-mode-bugfix  Fix dataset mapping, spell Isaiah's name properly\n  re-arc-3                         57e46d619d  pinned  master                    (non-editable)",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-06-12T09:57:04.082789",
+   "benchmark_label": "duck-harness-kaggle",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "iseesmth/arc3-nca-sft-duck-source"
+ },
+ {
+  "ref": "iseesmth/duck-harness-nca-source-20260811",
+  "git_status": "git status:\n  tufa-arc-agi-framework           85d0141     clean  nca-ppt                   Use uv for offline Kaggle dependencies\n  ARC3-Inference                   85d0141     clean  nca-ppt                   Use uv for offline Kaggle dependencies",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-08-11T12:48:50.539196",
+   "benchmark_label": "duck-harness-kaggle",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "iseesmth/duck-harness-prolong-source-20260811",
+  "git_status": "git status:\n  tufa-arc-agi-framework           25d4085     clean  prolong                   feat: add PROLONG programmatic memory\n  ARC3-Inference                   25d4085     clean  prolong                   feat: add PROLONG programmatic memory",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-08-11T10:11:37.622408",
+   "benchmark_label": "duck-prolong",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "iseesmth/taaf-kaggle-source-prolong-eval",
+  "git_status": "git status:\n  tufa-arc-agi-framework           2f2c948     DIRTY  main                      Add animation-aware game observations\n  ARC3-Inference                   2f2c948     DIRTY  main                      Add animation-aware game observations",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-08-11T19:24:07.298306",
+   "benchmark_label": "PROLONG-eval",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "jakobbrggen/taaf-kaggle-source",
+  "git_status": "git status:\n  ARC3-Inference                   74ff3df     clean  experiment/avo-v2         exp: pin the kaggle-avo arm to the control run's model and \u2026\n  tufa-arc-agi-framework           74ff3df     clean  experiment/avo-v2         exp: pin the kaggle-avo arm to the control run's model and \u2026",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-09-01T18:58:08.013248",
+   "benchmark_label": "avo-kaggle",
+   "notebook": "taaf_kaggle_run.ipynb"
+  }
+ },
+ {
+  "ref": "jakobbrggen/taaf-kaggle-source-anim-20260807-anim",
+  "git_status": "git status:\n  ARC3-Inference                   9158303     DIRTY  feature/animation-awareness  feat: proactively suggest animation retrieval when stuck (s\u2026\n  tufa-arc-agi-framework           9158303     DIRTY  feature/animation-awareness  feat: proactively suggest animation retrieval when stuck (s\u2026",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-08-07T17:59:49.124806",
+   "benchmark_label": "anim-20260807-anim",
+   "notebook": "taaf_kaggle_run.ipynb"
+  }
+ },
+ {
+  "ref": "jeroencottaar/taaf-kaggle-source",
+  "git_status": "git status:\n  ARC3-Inference                   e442e01     DIRTY  add-kaggle-share-flag     Add flag to use shareable notebook\n  tufa-arc-agi-framework           030ac6f     DIRTY  submission-share-mode     Address PR #29 review: clarify R2.61 offline behavior, thre\u2026\n  re-arc-3                         0056955095  pinned  master                    (non-editable)",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-06-10T15:04:11.278147",
+   "benchmark_label": "duck-harness-kaggle",
+   "notebook": "taaf_kaggle_run.ipynb"
+  }
+ },
+ {
+  "ref": "jeroencottaar/taaf-kaggle-source-share",
+  "git_status": "git status:\n  ARC3-Inference                   aa69123     DIRTY  add-kaggle-share-flag     Add flag to use shareable notebook\n  tufa-arc-agi-framework           fe9f7c4     clean  submission-share-mode-bugfix  Fix dataset mapping, spell Isaiah's name properly\n  re-arc-3                         57e46d619d  pinned  master                    (non-editable)",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-06-12T09:57:04.082789",
+   "benchmark_label": "duck-harness-kaggle",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "jihangli1121/arc-agi-3-replays-v1"
+ },
+ {
+  "ref": "johnlussier/arc-agi-3-replay-bank-payload"
+ },
+ {
+  "ref": "justforgags/arc3-sft-trajectories"
+ },
+ {
+  "ref": "karnakbaevarthur/arc-agi-3-all-tasks-explanation"
+ },
+ {
+  "ref": "keithtyser/duck-qwen38-nvfp4-mtp-vllm-smoke-v1",
+  "git_status": "git status:\n  ARC3-Inference                   aa69123     DIRTY  add-kaggle-share-flag     Add flag to use shareable notebook\n  tufa-arc-agi-framework           fe9f7c4     clean  submission-share-mode-bugfix  Fix dataset mapping, spell Isaiah's name properly\n  re-arc-3                         57e46d619d  pinned  master                    (non-editable)",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-06-12T09:57:04.082789",
+   "benchmark_label": "duck-harness-kaggle",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "keithtyser/taaf-duck-qwen38-serving-v1",
+  "git_status": "git status:\n  ARC3-Inference                   aa69123     DIRTY  add-kaggle-share-flag     Add flag to use shareable notebook\n  tufa-arc-agi-framework           fe9f7c4     clean  submission-share-mode-bugfix  Fix dataset mapping, spell Isaiah's name properly\n  re-arc-3                         57e46d619d  pinned  master                    (non-editable)",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-06-12T09:57:04.082789",
+   "benchmark_label": "duck-harness-kaggle",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "lenhienmoctra/frozen-ducky-graph-v2"
+ },
+ {
+  "ref": "magicsword001/arc-agi-3-game-rules"
+ },
+ {
+  "ref": "moniquerussell/arc3-harness-runtime-v3-public"
+ },
+ {
+  "ref": "nadavlederman/arc3-dist-public"
+ },
+ {
+  "ref": "nagabhanuja/prolong-agentic-harness-arc-agi-3"
+ },
+ {
+  "ref": "nagabhanuja/prolong-agentic-harness-arc3"
+ },
+ {
+  "ref": "nagabhanuja/taaf-kaggle-source",
+  "git_status": "git status:\n  ARC3-Inference                   ?           DIRTY  ?                         ?",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-08-16T14:16:49.700670",
+   "benchmark_label": "tool",
+   "notebook": "taaf_kaggle_run.ipynb"
+  }
+ },
+ {
+  "ref": "naylinnaunghood/htba-arc-agi3-source"
+ },
+ {
+  "ref": "phuongncn/arc3-tufa-v21-source-v001",
+  "git_status": "git status:\n  tufa-arc-agi-framework           bf79ff9     clean  main                      Merge pull request #28 from Tufalabs/p-value-table\n  ARC3-Inference                   e567133     clean  main                      Merge pull request #76 from Tufalabs/jeroen/halve-context-u\u2026\n  re-arc-3                         70e9b3c3c8  pinned  master                    (non-editable)",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-06-03T16:49:26.534156",
+   "benchmark_label": "duck-harness-kaggle",
+   "notebook": "taaf_kaggle_run.ipynb"
+  }
+ },
+ {
+  "ref": "poby7722/taaf-kaggle-source-qwen3-8-rtx-pro-6000",
+  "git_status": "git status:\n  ARC3-Inference                   9158303     DIRTY  feature/animation-awareness  feat: proactively suggest animation retrieval when stuck (s\u2026\n  tufa-arc-agi-framework           9158303     DIRTY  feature/animation-awareness  feat: proactively suggest animation retrieval when stuck (s\u2026",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-08-07T17:59:49.124806",
+   "benchmark_label": "anim-20260807-anim",
+   "notebook": "taaf_kaggle_run.ipynb"
+  }
+ },
+ {
+  "ref": "raist321/arc3-solver-lora-r64-pub"
+ },
+ {
+  "ref": "raist321/duck-qwen38-nvfp4-bundle-v1",
+  "git_status": "git status:\n  ARC3-Inference                   aa69123     DIRTY  add-kaggle-share-flag     Add flag to use shareable notebook\n  tufa-arc-agi-framework           fe9f7c4     clean  submission-share-mode-bugfix  Fix dataset mapping, spell Isaiah's name properly\n  re-arc-3                         57e46d619d  pinned  master                    (non-editable)",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-06-12T09:57:04.082789",
+   "benchmark_label": "duck-harness-kaggle",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "raist321/taaf-avo-v27-bundle",
+  "git_status": "git status:\n  ARC3-Inference                   74ff3df     clean  experiment/avo-v2         exp: pin the kaggle-avo arm to the control run's model and \u2026\n  tufa-arc-agi-framework           74ff3df     clean  experiment/avo-v2         exp: pin the kaggle-avo arm to the control run's model and \u2026",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-09-01T18:58:08.013248",
+   "benchmark_label": "avo-kaggle",
+   "notebook": "taaf_kaggle_run.ipynb"
+  }
+ },
+ {
+  "ref": "raist321/taaf-polyphony-v25-bundle",
+  "git_status": "git status:\n  ARC3-Inference                   4823629     clean  experiment/polyphony      fix: resolve the Polyphony analyzer endpoint on the Kaggle \u2026\n  tufa-arc-agi-framework           4823629     clean  experiment/polyphony      fix: resolve the Polyphony analyzer endpoint on the Kaggle \u2026",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-08-26T17:20:26.760829",
+   "benchmark_label": "poly-20260826-smoke",
+   "notebook": "taaf_kaggle_run.ipynb"
+  }
+ },
+ {
+  "ref": "ronitagarwal1/tiger-ii-arc3-source",
+  "git_status": "git status:\n  ARC3-Inference                   aa69123     DIRTY  add-kaggle-share-flag     Add flag to use shareable notebook\n  tufa-arc-agi-framework           fe9f7c4     clean  submission-share-mode-bugfix  Fix dataset mapping, spell Isaiah's name properly\n  re-arc-3                         57e46d619d  pinned  master                    (non-editable)",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-06-12T09:57:04.082789",
+   "benchmark_label": "duck-harness-kaggle",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "ronitagarwal1/tiger-ii-exact-arc3-source",
+  "git_status": "git status:\n  ARC3-Inference                   aa69123     DIRTY  add-kaggle-share-flag     Add flag to use shareable notebook\n  tufa-arc-agi-framework           fe9f7c4     clean  submission-share-mode-bugfix  Fix dataset mapping, spell Isaiah's name properly\n  re-arc-3                         57e46d619d  pinned  master                    (non-editable)",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-06-12T09:57:04.082789",
+   "benchmark_label": "duck-harness-kaggle",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "saltb0x/arc3-vllm-wheelhouse-v0271-cu129"
+ },
+ {
+  "ref": "samrishb/arc-agi-3-samrish-skills-bundle"
+ },
+ {
+  "ref": "saurabhkumar234/taaf-kaggle-source-share-enhanced2",
+  "git_status": "git status:\n  ARC3-Inference                   aa69123     DIRTY  add-kaggle-share-flag     Add flag to use shareable notebook\n  tufa-arc-agi-framework           fe9f7c4     clean  submission-share-mode-bugfix  Fix dataset mapping, spell Isaiah's name properly\n  re-arc-3                         57e46d619d  pinned  master                    (non-editable)",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-06-12T09:57:04.082789",
+   "benchmark_label": "duck-harness-kaggle",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "skyeloitz/arc-agi-3-improved-runtime-v2"
+ },
+ {
+  "ref": "sonphamorg/arc3-flashnext-gcp-runtime-exact-v1"
+ },
+ {
+  "ref": "tanapatriewruja/taaf-src-v10-persistence",
+  "git_status": "git status:\n  ARC3-Inference                   cf7d448     clean  v10-persistence           Leave a digest behind when history is dropped",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-09-12T08:29:00.671117",
+   "benchmark_label": "v10-persistence",
+   "notebook": "taaf_kaggle_run.ipynb"
+  }
+ },
+ {
+  "ref": "thtennant/taaf-kaggle-source-share-fork",
+  "git_status": "git status:\n  ARC3-Inference                   aa69123     DIRTY  add-kaggle-share-flag     Add flag to use shareable notebook\n  tufa-arc-agi-framework           fe9f7c4     clean  submission-share-mode-bugfix  Fix dataset mapping, spell Isaiah's name properly\n  re-arc-3                         57e46d619d  pinned  master                    (non-editable)",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-06-12T09:57:04.082789",
+   "benchmark_label": "duck-harness-kaggle",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ },
+ {
+  "ref": "toprakg/taaf-kaggle-source",
+  "git_status": "git status:\n  ARC3-Inference                   3090308     DIRTY  feat/deepinfra-and-goal-hints  Add goal-inference toggles for duck (dead-action, level-car\u2026\n  tufa-arc-agi-framework           3090308     DIRTY  feat/deepinfra-and-goal-hints  Add goal-inference toggles for duck (dead-action, level-car\u2026",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-08-06T21:03:13.681696",
+   "benchmark_label": "probe-scheduler-enforce",
+   "notebook": "taaf_kaggle_run.ipynb"
+  }
+ },
+ {
+  "ref": "travislambert/travis-lambert-memory-compression-v1"
+ },
+ {
+  "ref": "wellkilo/arc3lab-duck-v12-matched-assets"
+ },
+ {
+  "ref": "yanzhang3255/arc3-stock-retain-graph-overlay"
+ },
+ {
+  "ref": "yingxuanyang/arc3-agent-payload"
+ },
+ {
+  "ref": "ziweiresearch/arcagi3-taaf-v10-bundle",
+  "git_status": "git status:\n  rm_visualizer                    ?           DIRTY  ?                         ?",
+  "bundle": {
+   "schema_version": 1,
+   "created_at": "2026-08-25T16:22:27.713645",
+   "benchmark_label": "inference",
+   "notebook": "taaf_kaggle_run_share.ipynb"
+  }
+ }
+]
