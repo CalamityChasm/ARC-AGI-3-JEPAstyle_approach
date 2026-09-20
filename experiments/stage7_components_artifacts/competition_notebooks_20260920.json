@@ -1,0 +1,7520 @@
+[
+{
+"ref": "luisgarzagonzalez/arc-prize-2026-arc-agi-3-starter",
+"title": "ARC Prize 2026 \u2014 ARC-AGI-3 Starter",
+"lastRun": "2026-09-20",
+"votes": 2,
+"author": "Luis Garza Gonzalez"
+},
+{
+"ref": "nitish5236goel/arc-agi-3-probe-then-prompt-agent",
+"title": "ARC-AGI-3 probe-then-prompt agent",
+"lastRun": "2026-09-20",
+"votes": 0,
+"author": "NITISH5236GOEL"
+},
+{
+"ref": "kai57sh/arc-agi3-vlm-test",
+"title": "ARC AGI3 VLM Test",
+"lastRun": "2026-09-19",
+"votes": 2,
+"author": "kai-57-sh"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-vision2-long",
+"title": "arc agi3 nvfp4 vision2 long",
+"lastRun": "2026-09-19",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "web4app/bagging-tf-rmd",
+"title": "bagging-tf.rmd",
+"lastRun": "2026-09-19",
+"votes": 1,
+"author": "Web4app"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-vision-long",
+"title": "arc agi3 nvfp4 vision long",
+"lastRun": "2026-09-19",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "luisignaciomoreno/arc-prize-2026-arc-agi-3-prometheus",
+"title": "ARC Prize 2026 - ARC-AGI-3 Prometheus",
+"lastRun": "2026-09-19",
+"votes": 3,
+"author": "Luis Ignacio Moreno"
+},
+{
+"ref": "mayakaripel/arc3-sample-submission-random-agent",
+"title": "ARC3 Sample Submission - Random Agent",
+"lastRun": "2026-09-19",
+"votes": 0,
+"author": "mayakaripel"
+},
+{
+"ref": "mayakaripel/tufa-labs-duck-harness-june-30-milestone-winner",
+"title": "Tufa Labs duck harness [June 30 milestone winner]",
+"lastRun": "2026-09-19",
+"votes": 1,
+"author": "mayakaripel"
+},
+{
+"ref": "avikdas567/arc-agi-3-neural-world-models-for-spatial-pomdps",
+"title": "ARC-AGI-3: Neural World Models for Spatial POMDPs",
+"lastRun": "2026-09-19",
+"votes": 3,
+"author": "Avik Das"
+},
+{
+"ref": "adrienthomas/genesis-x-oab-bridge-v5",
+"title": "genesis-x-oab-bridge-v5",
+"lastRun": "2026-09-19",
+"votes": 1,
+"author": "Adrien Thomas"
+},
+{
+"ref": "duytrnnguynha/new-agent",
+"title": "new_agent",
+"lastRun": "2026-09-19",
+"votes": 1,
+"author": "Duy Tr\u00e2\u0300n Nguy\u00ean Ha\u0300"
+},
+{
+"ref": "vladimiryakunin/arc-prize-2026-lcld-qwen-v10",
+"title": "ARC Prize 2026 - LCLD Qwen V10",
+"lastRun": "2026-09-19",
+"votes": 1,
+"author": "Vladimir Yakunin"
+},
+{
+"ref": "woguoat/arc3-keith-repro-qwen38next",
+"title": "arc3-keith-repro-qwen38next",
+"lastRun": "2026-09-19",
+"votes": 9,
+"author": "woguoat"
+},
+{
+"ref": "iancblenke/carnot-arc-agi3-submission",
+"title": "carnot-arc-agi3-submission",
+"lastRun": "2026-09-19",
+"votes": 0,
+"author": "Ian Blenke"
+},
+{
+"ref": "muhibullahansir/duck-qwen3-8-anim-base",
+"title": "Duck Qwen3.8 Anim Base",
+"lastRun": "2026-09-19",
+"votes": 78,
+"author": "Muhibullah Ansir"
+},
+{
+"ref": "gruvlg/duck-baseline-v3",
+"title": "Duck baseline v3",
+"lastRun": "2026-09-19",
+"votes": 0,
+"author": "gruvlg"
+},
+{
+"ref": "hieunnguyen/notebookd8b161a836",
+"title": "notebookd8b161a836",
+"lastRun": "2026-09-19",
+"votes": 0,
+"author": "hieuNNguyen"
+},
+{
+"ref": "jefferyjeromeharris/arc-prize-2026-arc-agi-3-starter",
+"title": "ARC Prize 2026 \u2014 ARC-AGI-3 Starter",
+"lastRun": "2026-09-19",
+"votes": 2,
+"author": "Jeffery Jerome Harris"
+},
+{
+"ref": "phmhonggip/new-agent",
+"title": "new_agent",
+"lastRun": "2026-09-19",
+"votes": 1,
+"author": "Ph\u1ea1m Ho\u00e0ng Gi\u00e1p"
+},
+{
+"ref": "parkwave1/notebook-recode-rebuttal-timing-ablation",
+"title": "[notebook] RECODE REBUTTAL_TIMing ablation",
+"lastRun": "2026-09-19",
+"votes": 1,
+"author": "PARKWAVE_1"
+},
+{
+"ref": "taryncampbell/arc-prize-2026-arc-agi-3-starter",
+"title": "ARC Prize 2026 \u2014 ARC-AGI-3 Starter",
+"lastRun": "2026-09-19",
+"votes": 0,
+"author": "SudoShellz"
+},
+{
+"ref": "yuriimuktarov/arc3-duck-qwen38-r15-fair-rebirth-public25",
+"title": "ARC3 Duck Qwen38 R15 Fair Rebirth Public25",
+"lastRun": "2026-09-19",
+"votes": 0,
+"author": "Yurii_Muktarov"
+},
+{
+"ref": "xvmhieu/04-pipeline-v19-all-in-one",
+"title": "04_pipeline_v19_all_in_one",
+"lastRun": "2026-09-19",
+"votes": 1,
+"author": "zxc_vmh666"
+},
+{
+"ref": "jessiegrubaugh/kaggle-competitions-submit-c-arc-prize-2026-arc-a",
+"title": "kaggle competitions submit -c arc-prize-2026-arc-a",
+"lastRun": "2026-09-18",
+"votes": 1,
+"author": "Jessie Grubaugh"
+},
+{
+"ref": "beraterolelk/0-33-sota-arc-agi-3-synthetic-reasoning-dsl",
+"title": "0.33 SOTA ARC-AGI-3 Synthetic Reasoning DSL",
+"lastRun": "2026-09-18",
+"votes": 2,
+"author": "Berat Erol \u00c7EL\u0130K"
+},
+{
+"ref": "mayakaripel/test-arc",
+"title": "test ARC ",
+"lastRun": "2026-09-18",
+"votes": 0,
+"author": "mayakaripel"
+},
+{
+"ref": "nhatlong1103/b3-hmm",
+"title": "B3-HMM",
+"lastRun": "2026-09-18",
+"votes": 1,
+"author": "NhatLong1103"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-inherit-long",
+"title": "arc agi3 nvfp4 inherit long",
+"lastRun": "2026-09-18",
+"votes": 1,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "leehien12/t2-sinh-qwen3-5-2b",
+"title": "t2-sinh-Qwen3.5-2b",
+"lastRun": "2026-09-18",
+"votes": 1,
+"author": "Hien Le"
+},
+{
+"ref": "defiaudit/agi3-duck-qwen38-anim-v2",
+"title": "AGI3 Duck Qwen38 Anim v2",
+"lastRun": "2026-09-18",
+"votes": 1,
+"author": "DefiAudit"
+},
+{
+"ref": "kkcom28/notebook-recode-rebuttal-timing-ablation",
+"title": "[notebook] RECODE REBUTTAL_TIMing ablation",
+"lastRun": "2026-09-18",
+"votes": 0,
+"author": "Nguy\u1ec5n Ho\u00e0ng Qu\u00e2n"
+},
+{
+"ref": "haoimba/arc-agi-3-hychen",
+"title": "ARC-AGI-3-hychen",
+"lastRun": "2026-09-18",
+"votes": 0,
+"author": "hao imba"
+},
+{
+"ref": "mayakaripel/arc-agi-3-final-official-submission",
+"title": "arc_agi_3_final_official_submission",
+"lastRun": "2026-09-18",
+"votes": 0,
+"author": "mayakaripel"
+},
+{
+"ref": "kunaldesale2408/duck-harness-fast-eval",
+"title": "duck-harness-fast-eval",
+"lastRun": "2026-09-18",
+"votes": 27,
+"author": "Kunal Desale"
+},
+{
+"ref": "mayakaripel/02-agents-framework-ipynb",
+"title": "02_agents_framework.ipynb",
+"lastRun": "2026-09-18",
+"votes": 0,
+"author": "mayakaripel"
+},
+{
+"ref": "thinam3/notebook-colbert-beir-5-rebutal-update-metrics",
+"title": "[Notebook] ColBERT-BEIR 5(Rebutal: Update metrics)",
+"lastRun": "2026-09-18",
+"votes": 0,
+"author": "Th\u00e1i Nam(3)"
+},
+{
+"ref": "namthi/notebook-colbert-beir1-rebutal-update-metrics",
+"title": "[Notebook]ColBERT-BEIR1 (Rebutal: Update metrics)",
+"lastRun": "2026-09-18",
+"votes": 0,
+"author": "Nam Th\u00e1i"
+},
+{
+"ref": "wuliao0/duck-qwen3-8-anim-base",
+"title": "Duck Qwen3.8 Anim Base",
+"lastRun": "2026-09-18",
+"votes": 250,
+"author": "wuliao_0"
+},
+{
+"ref": "thicnam/notebook-colbert-beir-3-rebutal-update-metrics",
+"title": "[Notebook]ColBERT-BEIR 3 (Rebutal: Update metrics)",
+"lastRun": "2026-09-18",
+"votes": 0,
+"author": "Th\u00e1i \u0110\u1ee9c Nam"
+},
+{
+"ref": "raihanzahin/02-run-pipeline-offline",
+"title": "02_run_pipeline_offline",
+"lastRun": "2026-09-17",
+"votes": 0,
+"author": "raihanzahin"
+},
+{
+"ref": "nguyenlhuogngiang/notebook-rvq-colbert-beir-mastroyaski-rebutta",
+"title": " [notebook] RVQ ColBERT -BEIR(mastroyaski)_rebutta",
+"lastRun": "2026-09-17",
+"votes": 0,
+"author": "Nguyen L\u00ea Huogn Giang"
+},
+{
+"ref": "mdmahfujulkarim/arc-prize-2026-paper-track-sota-framework",
+"title": "ARC Prize 2026 Paper Track SOTA Framework",
+"lastRun": "2026-09-17",
+"votes": 1,
+"author": "Md.Mahfujul Karim Sheikh"
+},
+{
+"ref": "bassem0/arc-prize-2026-arc-agi-3-starter",
+"title": "ARC Prize 2026 \u2014 ARC-AGI-3 Starter",
+"lastRun": "2026-09-17",
+"votes": 0,
+"author": "bassem"
+},
+{
+"ref": "k8mp29vlxq4w/arc3-sample-submission-random-agent-abuur",
+"title": " ARC3 Sample Submission - Random Agent Abuur",
+"lastRun": "2026-09-17",
+"votes": 0,
+"author": "Abduraxmon Abduxalilov"
+},
+{
+"ref": "adilshamim8/arc-agi-3-101",
+"title": "ARC-AGI-3-101",
+"lastRun": "2026-09-17",
+"votes": 6,
+"author": "Adil Shamim"
+},
+{
+"ref": "laurencezhang10kg/checkpoint1",
+"title": "checkpoint1",
+"lastRun": "2026-09-17",
+"votes": 0,
+"author": "Laurence Zhang"
+},
+{
+"ref": "camvsfd/notebook-rvq-colbert-beir-v1",
+"title": "[notebook] RVQ ColBERT -BEIR(v1)",
+"lastRun": "2026-09-17",
+"votes": 3,
+"author": "c\u00f3a m\u00e1"
+},
+{
+"ref": "camvsfd/notebook-rvq-colbert-beir-mastroyaski",
+"title": " [notebook] RVQ ColBERT -BEIR(mastroyaski)",
+"lastRun": "2026-09-17",
+"votes": 1,
+"author": "c\u00f3a m\u00e1"
+},
+{
+"ref": "camvsfd/notebook-colbertv2",
+"title": "[notebook] ColBERTV2",
+"lastRun": "2026-09-17",
+"votes": 1,
+"author": "c\u00f3a m\u00e1"
+},
+{
+"ref": "camvsfd/notebook-rvq-colbert-beir-pq-opq-jmpq",
+"title": " [notebook] RVQ ColBERT -BEIR(PQ-OPQ-JMPQ)",
+"lastRun": "2026-09-17",
+"votes": 2,
+"author": "c\u00f3a m\u00e1"
+},
+{
+"ref": "quantumized/arc-agi-3-neuro-symbolic-agent",
+"title": "ARC-AGI-3 \u2014 Neuro-symbolic agent",
+"lastRun": "2026-09-16",
+"votes": 1,
+"author": "Quantumized"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-batch-long",
+"title": "arc agi3 nvfp4 batch long",
+"lastRun": "2026-09-16",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-carrynow-long",
+"title": "arc agi3 nvfp4 carrynow long",
+"lastRun": "2026-09-16",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "parkwave1/notebook-rvq-colbert-beir-aq-agc-rebuttal",
+"title": "[notebook] RVQ ColBERT -BEIR(AQ+agc)-REBUTTAL",
+"lastRun": "2026-09-16",
+"votes": 1,
+"author": "PARKWAVE_1"
+},
+{
+"ref": "zaedradwan/arc3-sample-submission-random-agent-63b44-4e31fc",
+"title": "ARC3 Sample Submission - Random Agent 63b44 4e31fc",
+"lastRun": "2026-09-16",
+"votes": 0,
+"author": " \u0632\u064a\u062f\u0631\u0636\u0648\u0627\u0646 \u0645\u062d\u0645\u062f \u0642\u0627\u064a\u062f"
+},
+{
+"ref": "yuriimuktarov/arc3-duck-qwen38-public25-r12-c8",
+"title": "ARC3 Duck Qwen38 Public25 R12 C8",
+"lastRun": "2026-09-16",
+"votes": 0,
+"author": "Yurii_Muktarov"
+},
+{
+"ref": "yuriimuktarov/arc3-duck-qwen38-r11-stg-seed42",
+"title": "ARC3 Duck Qwen38 R11 STG Seed42",
+"lastRun": "2026-09-16",
+"votes": 0,
+"author": "Yurii_Muktarov"
+},
+{
+"ref": "bassamabdalfath/arc3-sample-submission-random-agent-63b44a",
+"title": "ARC3 Sample Submission - Random Agent 63b44a",
+"lastRun": "2026-09-16",
+"votes": 1,
+"author": "bassam abdalfath"
+},
+{
+"ref": "matthewblakeward/imonbase12",
+"title": "ImOnBaSe12",
+"lastRun": "2026-09-16",
+"votes": 1,
+"author": "Matthew Blake Ward"
+},
+{
+"ref": "nick2187/arc3-duck-q38-tuned-mixed10-30m-sep16",
+"title": "ARC3 Duck Q38 Tuned Mixed10 30m Sep16",
+"lastRun": "2026-09-16",
+"votes": 0,
+"author": "Nick2187"
+},
+{
+"ref": "legtarrr/arc3-item79-actcond-decay",
+"title": "arc3-item79-actcond-decay",
+"lastRun": "2026-09-16",
+"votes": 0,
+"author": "Alexey Kuznetsov"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-carrynar-long",
+"title": "arc agi3 nvfp4 carrynar long",
+"lastRun": "2026-09-16",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "yuriimuktarov/arc3-duck-qwen38-public25-r9b-repeat",
+"title": "ARC3 Duck Qwen38 Public25 R9B Repeat",
+"lastRun": "2026-09-16",
+"votes": 0,
+"author": "Yurii_Muktarov"
+},
+{
+"ref": "yuriimuktarov/arc3-duck-qwen38-public25-r10-seed42",
+"title": "ARC3 Duck Qwen38 Public25 R10 Seed42",
+"lastRun": "2026-09-16",
+"votes": 0,
+"author": "Yurii_Muktarov"
+},
+{
+"ref": "legtarrr/arc3-item76-object-key",
+"title": "arc3-item76-object-key",
+"lastRun": "2026-09-16",
+"votes": 2,
+"author": "Alexey Kuznetsov"
+},
+{
+"ref": "legtarrr/arc3-item75-ucb",
+"title": "arc3-item75-ucb",
+"lastRun": "2026-09-16",
+"votes": 1,
+"author": "Alexey Kuznetsov"
+},
+{
+"ref": "legtarrr/arc3-item74-mixture",
+"title": "arc3-item74-mixture",
+"lastRun": "2026-09-16",
+"votes": 1,
+"author": "Alexey Kuznetsov"
+},
+{
+"ref": "manderson240/cohezion-arc-agi-3-autoharness-solver",
+"title": "cohezion-arc-agi-3-autoharness-solver",
+"lastRun": "2026-09-16",
+"votes": 2,
+"author": "Mike Anderson"
+},
+{
+"ref": "namthi/notebook-colbert-beir-rebutal-update-metrics",
+"title": "[Notebook] ColBERT-BEIR (Rebutal: Update metrics)",
+"lastRun": "2026-09-16",
+"votes": 2,
+"author": "Nam Th\u00e1i"
+},
+{
+"ref": "huynhldse/notebook9722633dd2",
+"title": "notebook9722633dd2",
+"lastRun": "2026-09-16",
+"votes": 0,
+"author": "huynhldse"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-carrypre-long",
+"title": "arc agi3 nvfp4 carrypre long",
+"lastRun": "2026-09-16",
+"votes": 1,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "namthi/notebook-colqwen-vidore-rebutal-update-metrics",
+"title": "[Notebook]Colqwen-Vidore (Rebutal: Update metrics)",
+"lastRun": "2026-09-16",
+"votes": 0,
+"author": "Nam Th\u00e1i"
+},
+{
+"ref": "legtarrr/arc3-item73-decay-value",
+"title": "arc3-item73-decay-value",
+"lastRun": "2026-09-16",
+"votes": 0,
+"author": "Alexey Kuznetsov"
+},
+{
+"ref": "kriztianrubin/mosaicxv",
+"title": "MosaicXV",
+"lastRun": "2026-09-16",
+"votes": 0,
+"author": "Kriztian Rubin"
+},
+{
+"ref": "parkwave1/notebook-rvq-colbert-beir-rebuttal",
+"title": "[notebook] RVQ ColBERT -BEIR(rebuttal)",
+"lastRun": "2026-09-16",
+"votes": 1,
+"author": "PARKWAVE_1"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-carryobj-long",
+"title": "arc agi3 nvfp4 carryobj long",
+"lastRun": "2026-09-16",
+"votes": 1,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "sahasawatt/thui-rs-ctl",
+"title": "thui-rs-ctl",
+"lastRun": "2026-09-16",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "sahasawatt/thui-rs-v0",
+"title": "thui-rs-v0",
+"lastRun": "2026-09-16",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "legtarrr/arc3-item65-nvfp4-tu93",
+"title": "arc3 item65 nvfp4 tu93",
+"lastRun": "2026-09-15",
+"votes": 0,
+"author": "Alexey Kuznetsov"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-mtpshare-long",
+"title": "arc agi3 nvfp4 mtpshare long",
+"lastRun": "2026-09-15",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-carry3-long",
+"title": "arc agi3 nvfp4 carry3 long",
+"lastRun": "2026-09-15",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "sahasawatt/thui-af-ctl",
+"title": "thui-af-ctl",
+"lastRun": "2026-09-15",
+"votes": 1,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "sahasawatt/thui-af-v0",
+"title": "thui-af-v0",
+"lastRun": "2026-09-15",
+"votes": 1,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "k8mp29vlxq4w/arc3-sample-submission-random-agent-abduraxmon",
+"title": "ARC3 Sample Submission - Random Agent Abduraxmon",
+"lastRun": "2026-09-15",
+"votes": 2,
+"author": "Abduraxmon Abduxalilov"
+},
+{
+"ref": "nhatlong1103/owd-ca-hmm",
+"title": "OWD-CA\u00b2-HMM",
+"lastRun": "2026-09-15",
+"votes": 0,
+"author": "NhatLong1103"
+},
+{
+"ref": "dantelok/lb-9-arc3-duck-v17-with-gpt-oss-120b",
+"title": "LB-9 arc3 duck v17 with GPT-OSS 120B",
+"lastRun": "2026-09-15",
+"votes": 0,
+"author": "Dante Lok"
+},
+{
+"ref": "saurabhkumar234/flash-next-v11-1",
+"title": "Flash-Next v11.1",
+"lastRun": "2026-09-15",
+"votes": 0,
+"author": "100rabh"
+},
+{
+"ref": "sahasawatt/thui-anim-full25-r2",
+"title": "thui-anim-full25-r2",
+"lastRun": "2026-09-15",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "sahasawatt/thui-m0-s20-full25-r1",
+"title": "thui-m0-s20-full25-r1",
+"lastRun": "2026-09-15",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-carry2-long",
+"title": "arc agi3 nvfp4 carry2 long",
+"lastRun": "2026-09-15",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "defiaudit/agi3-duck-qwen38-anim-v1",
+"title": "AGI3 Duck Qwen38 Anim v1",
+"lastRun": "2026-09-15",
+"votes": 0,
+"author": "DefiAudit"
+},
+{
+"ref": "blackcubo/rtx6000vqa-vintern",
+"title": "rtx6000vqa_vintern",
+"lastRun": "2026-09-15",
+"votes": 2,
+"author": "Nguy\u1ec5n Quang Minh"
+},
+{
+"ref": "sahasawatt/thui-db-v1",
+"title": "thui-db-v1",
+"lastRun": "2026-09-15",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "sahasawatt/thui-db-ctl-r2",
+"title": "thui-db-ctl-r2",
+"lastRun": "2026-09-15",
+"votes": 1,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "sahasawatt/thui-db-ctl",
+"title": "thui-db-ctl",
+"lastRun": "2026-09-15",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "sahasawatt/thui-db-v0",
+"title": "thui-db-v0",
+"lastRun": "2026-09-15",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-carry-nothink-long",
+"title": "arc agi3 nvfp4 carry nothink long",
+"lastRun": "2026-09-15",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "sonnvo/dla-pose-v4-epoch48-exact-extend-30e",
+"title": "DLA Pose V4 Epoch48 Exact Extend 30E",
+"lastRun": "2026-09-15",
+"votes": 0,
+"author": "SonnVo"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-carry-yield-long-2",
+"title": "arc agi3 nvfp4 carry yield long 2",
+"lastRun": "2026-09-15",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "mahuagui/arc3-baseline-v1",
+"title": "Arc3 Baseline V1",
+"lastRun": "2026-09-14",
+"votes": 1,
+"author": "mahuagui"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-probe-mounts",
+"title": "arc agi3 probe mounts",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-manual-long",
+"title": "arc agi3 nvfp4 manual long",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "sahasawatt/thui-wm-ctl-full25-r1",
+"title": "thui-wm-ctl-full25-r1",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "prajwalrawoorkar/e21-canonical-only",
+"title": "e21-canonical-only",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "Prajwal Rawoorkar"
+},
+{
+"ref": "sahasawatt/thui-l4-mtp0k7s28",
+"title": "thui-l4-mtp0k7s28",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "sahasawatt/thui-wm-v0-full25-r1",
+"title": "thui-wm-v0-full25-r1",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "kriztianrubin/mosaicxiv",
+"title": "MosaicXIV ",
+"lastRun": "2026-09-14",
+"votes": 1,
+"author": "Kriztian Rubin"
+},
+{
+"ref": "khurramafroz/arc-prize-2026-arc-agi-3",
+"title": "ARC Prize 2026 - ARC-AGI-3",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "Khurram Afroz"
+},
+{
+"ref": "sahasawatt/thui-l4-mtp0k7s16",
+"title": "thui-l4-mtp0k7s16",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "yuan1103/censoring-aware-ca-hmm",
+"title": "Censoring - aware CA\u00b2-HMM",
+"lastRun": "2026-09-14",
+"votes": 3,
+"author": "YuAn1103"
+},
+{
+"ref": "prvsiyan/arc-agi-3-stock-taaf-action7-shadow",
+"title": "ARC-AGI-3 Stock TAAF Action7 Shadow",
+"lastRun": "2026-09-14",
+"votes": 4,
+"author": "prvsiyan"
+},
+{
+"ref": "sonnvo/dla-pose-v4-scratch-adamw-50e",
+"title": "DLA Pose V4 Scratch AdamW 50E",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "SonnVo"
+},
+{
+"ref": "prajwalrawoorkar/e20-stall-canonical",
+"title": "e20-stall-canonical",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "Prajwal Rawoorkar"
+},
+{
+"ref": "liwanqi03/arc3-sample-fork",
+"title": "arc3 sample fork",
+"lastRun": "2026-09-14",
+"votes": 1,
+"author": "liwanqi03"
+},
+{
+"ref": "sahasawatt/thui-l4-s28",
+"title": "thui-l4-s28",
+"lastRun": "2026-09-14",
+"votes": 1,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "sahasawatt/thui-l4-s16",
+"title": "thui-l4-s16",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "sahasawatt/thui-l4-a",
+"title": "thui-l4-a",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "mduy2911/zero-shot-cross-encoder-reranking-holdout",
+"title": "zero_shot_cross_encoder_reranking_holdout",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "Minh Duy"
+},
+{
+"ref": "dantelok/thui-animfast-b71-full25-r1",
+"title": "thui-animfast-b71-full25-r1",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "Dante Lok"
+},
+{
+"ref": "sahasawatt/thui-wm-ctl",
+"title": "thui-wm-ctl",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "mduy2911/zero-shot-cross-encoder-reranking-dev",
+"title": "zero_shot_cross_encoder_reranking_dev",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "Minh Duy"
+},
+{
+"ref": "sahasawatt/thui-wm-v0",
+"title": "thui-wm-v0",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "mayakaripel/arc-agi-3-notebook1",
+"title": "arc-agi-3-notebook1",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "mayakaripel"
+},
+{
+"ref": "beraterolelk/arc-agi-5000-interactive-visualizer-dsl",
+"title": "ARC AGI 5000 Interactive Visualizer DSL",
+"lastRun": "2026-09-14",
+"votes": 1,
+"author": "Berat Erol \u00c7EL\u0130K"
+},
+{
+"ref": "beraterolelk/arc-prize-2026-hybrid-swarm-0-16",
+"title": "\ud83e\udde0 ARC Prize 2026: Hybrid Swarm [0.16]",
+"lastRun": "2026-09-14",
+"votes": 1,
+"author": "Berat Erol \u00c7EL\u0130K"
+},
+{
+"ref": "mayakaripel/03a-arc-environment-validation-ipynb",
+"title": "03A_arc_environment_validation.ipynb",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "mayakaripel"
+},
+{
+"ref": "sonnvo/dla-sparse-v4-fixed-adamw-30e",
+"title": "DLA Sparse V4 Fixed AdamW 30E",
+"lastRun": "2026-09-14",
+"votes": 0,
+"author": "SonnVo"
+},
+{
+"ref": "heriqis777/mq-extra12-r6k",
+"title": "mq-extra12-r6k",
+"lastRun": "2026-09-13",
+"votes": 0,
+"author": "Maria Gordeeva"
+},
+{
+"ref": "uninhibitedscholar/arc3-wuliao-replica-v1",
+"title": "ARC3 Wuliao Replica V1",
+"lastRun": "2026-09-13",
+"votes": 0,
+"author": "uninhibited-scholar"
+},
+{
+"ref": "xvmhieu/04-pipeline-v18-all-in-one-dualrerank",
+"title": "04_pipeline_v18_all_in_one_dualrerank",
+"lastRun": "2026-09-13",
+"votes": 0,
+"author": "zxc_vmh666"
+},
+{
+"ref": "cdnghnam/notebook-method-m-i",
+"title": "[notebook] Method m\u1edbi ",
+"lastRun": "2026-09-13",
+"votes": 1,
+"author": "\u0110\u1ee9c D\u0169ng H\u00e0 Nam"
+},
+{
+"ref": "fraihaaymane/notebook19042390d4",
+"title": "notebook19042390d4",
+"lastRun": "2026-09-13",
+"votes": 0,
+"author": "fraiha aymane"
+},
+{
+"ref": "xvmhieu/01-baseline-retriever-v17",
+"title": "01_baseline_retriever_v17",
+"lastRun": "2026-09-13",
+"votes": 0,
+"author": "zxc_vmh666"
+},
+{
+"ref": "baopv051/xla-training",
+"title": "XLA - Training",
+"lastRun": "2026-09-13",
+"votes": 0,
+"author": "storm"
+},
+{
+"ref": "tongjoye/arc-agi-3-world-model-v0-rules-from-pixels",
+"title": "ARC-AGI-3 World Model v0 Rules From Pixels",
+"lastRun": "2026-09-13",
+"votes": 0,
+"author": "Tong Joye"
+},
+{
+"ref": "tongjoye/arc-agi-3-offline-starter-run-all-25-games",
+"title": "ARC-AGI-3 Offline Starter: Run All 25 Games",
+"lastRun": "2026-09-13",
+"votes": 0,
+"author": "Tong Joye"
+},
+{
+"ref": "amanatar/arc-agi-3-hybrid-repl-agent",
+"title": "ARC-AGI-3 Hybrid REPL Agent",
+"lastRun": "2026-09-12",
+"votes": 11,
+"author": "Aman Atar"
+},
+{
+"ref": "phmngcduy/xai-distangle-v36",
+"title": "xai-distangle-v36",
+"lastRun": "2026-09-12",
+"votes": 0,
+"author": "Ph\u1ea1m Ng\u1ecdc Duy"
+},
+{
+"ref": "khesng/t1-dense",
+"title": "t1-dense",
+"lastRun": "2026-09-12",
+"votes": 0,
+"author": "Kh\u1ecfe S\u1ed1ng"
+},
+{
+"ref": "iamtrunghieu/kinglegalir",
+"title": "KingLegalir",
+"lastRun": "2026-09-12",
+"votes": 0,
+"author": "Hi\u1ebfu Tr\u1ea7n Trung"
+},
+{
+"ref": "honghiendeptrai/t2-khoan-sinh",
+"title": "t2-khoan-sinh",
+"lastRun": "2026-09-12",
+"votes": 0,
+"author": "Hi\u00ean H\u1ed3ng"
+},
+{
+"ref": "k8mp29vlxq4w/arc3-sample-submission-random-agent-abu",
+"title": "ARC3 Sample Submission - Random Agent Abu",
+"lastRun": "2026-09-12",
+"votes": 5,
+"author": "Abduraxmon Abduxalilov"
+},
+{
+"ref": "yocybercode/thui-l1-v0-full25-r1",
+"title": "thui-l1-v0-full25-r1",
+"lastRun": "2026-09-12",
+"votes": 1,
+"author": "yocyber-code"
+},
+{
+"ref": "yocybercode/thui-l1-ctl-full25-r1",
+"title": "thui-l1-ctl-full25-r1",
+"lastRun": "2026-09-12",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "yanggod/arc-agi-3-duck-flash-next-wavefit-b",
+"title": "ARC-AGI-3 Duck Flash Next wavefit b",
+"lastRun": "2026-09-12",
+"votes": 3,
+"author": "Boopathi Raja"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-carry-long",
+"title": "arc agi3 nvfp4 carry long",
+"lastRun": "2026-09-12",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-long",
+"title": "arc agi3 nvfp4 long",
+"lastRun": "2026-09-12",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-carry",
+"title": "arc agi3 nvfp4 carry",
+"lastRun": "2026-09-12",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "nihilisticneuralnet/arc-agi-3-retained-reasoning",
+"title": "ARC-AGI-3: retained_reasoning",
+"lastRun": "2026-09-11",
+"votes": 0,
+"author": "parthenos"
+},
+{
+"ref": "honghiendeptrai/t2-he-thong",
+"title": "t2-he-thong",
+"lastRun": "2026-09-11",
+"votes": 0,
+"author": "Hi\u00ean H\u1ed3ng"
+},
+{
+"ref": "iamtrunghieu/build-vietnamese-legal-crossencoder",
+"title": "build_Vietnamese_Legal_CrossEncoder",
+"lastRun": "2026-09-11",
+"votes": 0,
+"author": "Hi\u1ebfu Tr\u1ea7n Trung"
+},
+{
+"ref": "nhatlong1103/ca-hmm-phase-1-10-v2-2-smoke-succeed",
+"title": "CA\u00b2-HMM - Phase 1-10 V2-2-smoke-succeed",
+"lastRun": "2026-09-11",
+"votes": 3,
+"author": "NhatLong1103"
+},
+{
+"ref": "anhadmahajan06/arc-agi-3-fluid-intelligence-agent",
+"title": "ARC-AGI-3 Fluid Intelligence Agent",
+"lastRun": "2026-09-11",
+"votes": 15,
+"author": "Anhad Mahajan"
+},
+{
+"ref": "uninhibitedscholar/arc-agi3-concurrency16-submit",
+"title": "ARC AGI3 Concurrency16 Submit",
+"lastRun": "2026-09-11",
+"votes": 2,
+"author": "uninhibited-scholar"
+},
+{
+"ref": "trnhquangminh140/arc-agi-3-decision-making-process-of-managers",
+"title": "ARC-AGI-3_decision-making process of managers ",
+"lastRun": "2026-09-11",
+"votes": 0,
+"author": "Tr\u1ecbnh Quang Minh"
+},
+{
+"ref": "fanglimo/arc3-flash-next-full",
+"title": "Arc3-Flash-Next-Full",
+"lastRun": "2026-09-11",
+"votes": 1,
+"author": "Limo"
+},
+{
+"ref": "yocybercode/thui-animfast-b71-full25-r1",
+"title": "thui-animfast-b71-full25-r1",
+"lastRun": "2026-09-11",
+"votes": 10,
+"author": "yocyber-code"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4-grafts",
+"title": "arc agi3 nvfp4 grafts",
+"lastRun": "2026-09-11",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "b22dckh081trnkhnhnht/fgggggggggg",
+"title": "fgggggggggg",
+"lastRun": "2026-09-10",
+"votes": 2,
+"author": "B22DCKH081 - Tr\u1ea7n Kh\u00e1nh Nh\u1eadt"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-nvfp4",
+"title": "arc agi3 nvfp4",
+"lastRun": "2026-09-10",
+"votes": 1,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "sahasawatt/thui-l1-ctl",
+"title": "thui-l1-ctl",
+"lastRun": "2026-09-10",
+"votes": 1,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "sahasawatt/thui-l1-v0",
+"title": "thui-l1-v0",
+"lastRun": "2026-09-10",
+"votes": 1,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "iamtrunghieu/cachelegalir",
+"title": "cacheLegalIR",
+"lastRun": "2026-09-10",
+"votes": 0,
+"author": "Hi\u1ebfu Tr\u1ea7n Trung"
+},
+{
+"ref": "yocybercode/thui-fast-b78-mtp0-full25-r1",
+"title": "thui-fast-b78-mtp0-full25-r1",
+"lastRun": "2026-09-10",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "saurabhkumar234/flash-next-arc3-submission11-1",
+"title": " FLash Next _ARC3 submission11.1",
+"lastRun": "2026-09-10",
+"votes": 25,
+"author": "100rabh"
+},
+{
+"ref": "yocybercode/thui-fast-b78-mtp0-smoke",
+"title": "thui-fast-b78-mtp0-smoke",
+"lastRun": "2026-09-10",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "evgendvorkin/arc-3-2026",
+"title": "ARC_3_2026",
+"lastRun": "2026-09-09",
+"votes": 10,
+"author": "\u0414\u0432\u043e\u0440\u043a\u0438\u043d \u0415\u0432\u0433\u0435\u043d\u0438\u0439 \u0412\u043b\u0430\u0434\u0438\u043c\u0438\u0440\u043e\u0432\u0438\u0447"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-duck-anim",
+"title": "arc agi3 duck anim",
+"lastRun": "2026-09-09",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "busyaprime/arc-agi-3-four-things-the-engine-does-not-tell-you",
+"title": "ARC-AGI-3 four things the engine does not tell you",
+"lastRun": "2026-09-09",
+"votes": 0,
+"author": "Busya PRIME"
+},
+{
+"ref": "ghazarosghazaros/duck-qwen3-8-anim-base",
+"title": "Duck Qwen3.8 Anim Base",
+"lastRun": "2026-09-09",
+"votes": 80,
+"author": "Ghazaros Ghazaros"
+},
+{
+"ref": "tantan0327/arc3-flashnext-asis",
+"title": "ARC3 flashnext asis",
+"lastRun": "2026-09-09",
+"votes": 18,
+"author": "red-down"
+},
+{
+"ref": "nhatlong1103/ca-hmm-phase-1-10-v2",
+"title": "CA\u00b2-HMM - Phase 1-10 V2",
+"lastRun": "2026-09-09",
+"votes": 1,
+"author": "NhatLong1103"
+},
+{
+"ref": "ahmedframelsaleh/adia-trial",
+"title": "ADIA_Trial",
+"lastRun": "2026-09-09",
+"votes": 1,
+"author": "Mostafa Saleh"
+},
+{
+"ref": "sahasawatt/thui-cap-ctl",
+"title": "thui-cap-ctl",
+"lastRun": "2026-09-08",
+"votes": 1,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "denizeryilmaz/arc3-flash-next-public25-rerun-exp",
+"title": "arc3-flash-next-public25-rerun-exp",
+"lastRun": "2026-09-08",
+"votes": 0,
+"author": "Deniz"
+},
+{
+"ref": "sahasawatt/thui-cap-v0",
+"title": "thui-cap-v0",
+"lastRun": "2026-09-08",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "sahasawatt/thui-a7-v1",
+"title": "thui-a7-v1",
+"lastRun": "2026-09-08",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "thtennant/arc3-duck-v22",
+"title": "arc3 duck v22",
+"lastRun": "2026-09-08",
+"votes": 15,
+"author": "Teddy Tennant"
+},
+{
+"ref": "abcdef123456gf/rtx6000vqa",
+"title": "rtx6000vqa",
+"lastRun": "2026-09-08",
+"votes": 1,
+"author": "abcdef123456gf"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-duck-v12",
+"title": "arc agi3 duck v12",
+"lastRun": "2026-09-08",
+"votes": 2,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "sahasawatt/thui-a7-v0",
+"title": "thui-a7-v0",
+"lastRun": "2026-09-08",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "minhngle/arc-agi-3-a-measured-baseline",
+"title": "ARC-AGI-3: a measured baseline",
+"lastRun": "2026-09-08",
+"votes": 1,
+"author": "Minh \u0110\u0103ng L\u00ea"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-duck",
+"title": "arc agi3 duck",
+"lastRun": "2026-09-07",
+"votes": 8,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "sahasawatt/thui-animfast-v1",
+"title": "thui-animfast-v1",
+"lastRun": "2026-09-07",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "lucifer19/duck-qwen3-8-search-memory-c18",
+"title": "Duck Qwen3.8 Search Memory C18",
+"lastRun": "2026-09-07",
+"votes": 6,
+"author": "Krizs\u00f3 Gergely"
+},
+{
+"ref": "xvmhieu/03-reranker-matrix-exploration-v17",
+"title": "03_reranker_matrix_exploration_v17",
+"lastRun": "2026-09-07",
+"votes": 0,
+"author": "zxc_vmh666"
+},
+{
+"ref": "ayodejiibrahimlateef/arc3-v124-observed-probe-memory-rtx6000",
+"title": "ARC3 v124 Observed Probe Memory RTX6000",
+"lastRun": "2026-09-07",
+"votes": 0,
+"author": "Ayodeji"
+},
+{
+"ref": "thtennant/arc3-duck-v35",
+"title": "arc3 duck v35",
+"lastRun": "2026-09-07",
+"votes": 0,
+"author": "Teddy Tennant"
+},
+{
+"ref": "sahasawatt/thui-animfast-v0",
+"title": "thui-animfast-v0",
+"lastRun": "2026-09-07",
+"votes": 1,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "themightiestman/arc3-cpu-replay-v2",
+"title": "ARC3 CPU Replay V2",
+"lastRun": "2026-09-07",
+"votes": 2,
+"author": "TheMightiestMan"
+},
+{
+"ref": "yocybercode/thui-compact-v1-failure-r2",
+"title": "thui-compact-v1-failure-r2",
+"lastRun": "2026-09-07",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "sahasawatt/thui-act-v2",
+"title": "thui-act-v2",
+"lastRun": "2026-09-07",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "sahasawatt/thui-fast-v0",
+"title": "thui-fast-v0",
+"lastRun": "2026-09-07",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "yocybercode/thui-compact-v1-failure-r1",
+"title": "thui-compact-v1-failure-r1",
+"lastRun": "2026-09-07",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "yocybercode/thui-compact-v0-failure-smoke",
+"title": "thui-compact-v0-failure-smoke",
+"lastRun": "2026-09-07",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "sahasawatt/thui-act-v1",
+"title": "thui-act-v1",
+"lastRun": "2026-09-07",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "uynnht/allinone-wiseft-blending-v16",
+"title": "allinone_wiseFT_blending_v16",
+"lastRun": "2026-09-07",
+"votes": 0,
+"author": "dj \u0111\u1ea1i v\u01b0\u01a1ng t\u1edbi ch\u01a1i"
+},
+{
+"ref": "sahasawatt/thui-gemma-v1",
+"title": "thui-gemma-v1",
+"lastRun": "2026-09-07",
+"votes": 3,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "sahasawatt/thui-gemma-v0",
+"title": "thui-gemma-v0",
+"lastRun": "2026-09-06",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "samrishb/duck-qwen3-8-anim-base",
+"title": "Duck Qwen3.8 Anim Base",
+"lastRun": "2026-09-06",
+"votes": 0,
+"author": "Samrish B"
+},
+{
+"ref": "yocybercode/thui-compact-v1",
+"title": "thui-compact-v1",
+"lastRun": "2026-09-06",
+"votes": 1,
+"author": "yocyber-code"
+},
+{
+"ref": "bssgirl/notebook47f9c46f30",
+"title": "notebook47f9c46f30",
+"lastRun": "2026-09-06",
+"votes": 0,
+"author": "\u0635\u0641\u0627\u0621 \u0639\u0628\u062f \u0627\u0644\u0631\u0642\u064a\u0628"
+},
+{
+"ref": "aicompagnonx/monsterdog-real-world-agent-benchmark-this-benc",
+"title": "# MONSTERDOG Real-World Agent Benchmark  This benc",
+"lastRun": "2026-09-06",
+"votes": 1,
+"author": "MONSTERDOG\u2734\ufe0eAI"
+},
+{
+"ref": "kaiwalyaatulraut/arc-agi-3-solution",
+"title": "ARC-AGI-3 Solution",
+"lastRun": "2026-09-06",
+"votes": 20,
+"author": "KAIWALYA RAUT"
+},
+{
+"ref": "dhiaalhemdani/dhia-arc3",
+"title": "DHIA-ARC3",
+"lastRun": "2026-09-06",
+"votes": 0,
+"author": "Deiaa Ahmed Abdo Lootf"
+},
+{
+"ref": "legtarrr/arc3-fork-countbasedexplorer",
+"title": "arc3-fork-countbasedexplorer",
+"lastRun": "2026-09-06",
+"votes": 0,
+"author": "Alexey Kuznetsov"
+},
+{
+"ref": "yanggod/arc-agi-3-duck-flash-next-nothink",
+"title": "ARC-AGI-3 Duck Flash Next nothink",
+"lastRun": "2026-09-06",
+"votes": 1,
+"author": "Boopathi Raja"
+},
+{
+"ref": "thtennant/arc3-mount-probe6",
+"title": "arc3 mount probe6",
+"lastRun": "2026-09-06",
+"votes": 2,
+"author": "Teddy Tennant"
+},
+{
+"ref": "legtarrr/arc3-submit-countbasedexplorer",
+"title": "arc3-submit-countbasedexplorer",
+"lastRun": "2026-09-06",
+"votes": 0,
+"author": "Alexey Kuznetsov"
+},
+{
+"ref": "themightiestman/arc3-vllm-v6-agent",
+"title": "ARC3 VLLM V6 Agent",
+"lastRun": "2026-09-06",
+"votes": 2,
+"author": "TheMightiestMan"
+},
+{
+"ref": "thtennant/arc3-mount-probe3",
+"title": "arc3 mount probe3",
+"lastRun": "2026-09-06",
+"votes": 2,
+"author": "Teddy Tennant"
+},
+{
+"ref": "lucifer19/duck-qwen3-8-efficient-agent-c17",
+"title": "Duck Qwen3.8 Efficient Agent C17",
+"lastRun": "2026-09-06",
+"votes": 0,
+"author": "Krizs\u00f3 Gergely"
+},
+{
+"ref": "nhatlong1103/ca-hmm-phase-7-10",
+"title": "CA\u00b2-HMM - Phase 7-10",
+"lastRun": "2026-09-06",
+"votes": 2,
+"author": "NhatLong1103"
+},
+{
+"ref": "hoangvohokhanh/transition-deep",
+"title": "transition_deep",
+"lastRun": "2026-09-06",
+"votes": 0,
+"author": "Hoang Vo Ho Khanh"
+},
+{
+"ref": "quangnguynl/strong2-wf-weapon-continue-epoch18-10e",
+"title": "Strong2 WF Weapon Continue Epoch18 10E",
+"lastRun": "2026-09-06",
+"votes": 0,
+"author": "Quang Nguy\u00ean L\u00ea"
+},
+{
+"ref": "themightiestman/arc3-replay-v1",
+"title": "Arc3 Replay V1",
+"lastRun": "2026-09-06",
+"votes": 0,
+"author": "TheMightiestMan"
+},
+{
+"ref": "yanggod/arc-agi-3-duck-flash-next-situation-v2",
+"title": "ARC-AGI-3 Duck Flash Next situation v2",
+"lastRun": "2026-09-06",
+"votes": 0,
+"author": "Boopathi Raja"
+},
+{
+"ref": "nhatlong1103/ca-hmm-step-1-6",
+"title": "CA\u00b2-HMM - Step 1-6",
+"lastRun": "2026-09-06",
+"votes": 2,
+"author": "NhatLong1103"
+},
+{
+"ref": "yanggod/arc-agi-3-duck-flash-next-mtp-r2",
+"title": "ARC-AGI-3 Duck Flash Next MTP r2",
+"lastRun": "2026-09-06",
+"votes": 0,
+"author": "Boopathi Raja"
+},
+{
+"ref": "yanggod/arc-agi-3-duck-flash-next-situation",
+"title": "ARC-AGI-3 Duck Flash Next situation",
+"lastRun": "2026-09-05",
+"votes": 1,
+"author": "Boopathi Raja"
+},
+{
+"ref": "akhileshgodugu/just-seeing-what-can-i-change-to-make-it-better",
+"title": "just seeing what can i change? to make it better\ud83d\udc4c",
+"lastRun": "2026-09-05",
+"votes": 2,
+"author": "Akhilesh godugu"
+},
+{
+"ref": "yanggod/arc-agi-3-duck-flash-next-mtp",
+"title": "ARC-AGI-3 Duck Flash Next MTP",
+"lastRun": "2026-09-05",
+"votes": 23,
+"author": "Boopathi Raja"
+},
+{
+"ref": "vuquockhanh4603/notebook6b6d43038b",
+"title": "notebook6b6d43038b",
+"lastRun": "2026-09-05",
+"votes": 0,
+"author": "VuQuocKhanh"
+},
+{
+"ref": "quangnguynl/strong2-wf-replay-adamw-12e",
+"title": "Strong2 WF Replay AdamW 12E",
+"lastRun": "2026-09-05",
+"votes": 1,
+"author": "Quang Nguy\u00ean L\u00ea"
+},
+{
+"ref": "yocybercode/thui-avo-v0",
+"title": "thui-avo-v0",
+"lastRun": "2026-09-05",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "thtennant/arc3-duck-bench",
+"title": "arc3 duck bench",
+"lastRun": "2026-09-05",
+"votes": 0,
+"author": "Teddy Tennant"
+},
+{
+"ref": "yocybercode/thui-rank-v1",
+"title": "thui-rank-v1",
+"lastRun": "2026-09-05",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "cdnghnam/notebook-late-interation-research",
+"title": "[notebook]late interation research",
+"lastRun": "2026-09-05",
+"votes": 0,
+"author": "\u0110\u1ee9c D\u0169ng H\u00e0 Nam"
+},
+{
+"ref": "yocybercode/thui-compact-v0",
+"title": "thui-compact-v0",
+"lastRun": "2026-09-05",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "themightiestman/arc3-v5-forge-weights",
+"title": "ARC3 v5 FORGE Weights",
+"lastRun": "2026-09-05",
+"votes": 0,
+"author": "TheMightiestMan"
+},
+{
+"ref": "lucifer19/blackcat-astralite-c16",
+"title": "BlackCat AstraLite C16 \ud83d\udc08\u200d\u2b1b",
+"lastRun": "2026-09-05",
+"votes": 0,
+"author": "Krizs\u00f3 Gergely"
+},
+{
+"ref": "chiakazirim/duck-qwen3-8-tuned",
+"title": "Duck Qwen3.8 (Tuned)",
+"lastRun": "2026-09-04",
+"votes": 126,
+"author": "Akagha Chimgozirim"
+},
+{
+"ref": "yocybercode/thui-reflect-v1-1",
+"title": "thui-reflect-v1-1",
+"lastRun": "2026-09-04",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "themightiestman/arc3-sample-structure-forge-v4",
+"title": "ARC3 Sample Structure FORGE v4",
+"lastRun": "2026-09-04",
+"votes": 1,
+"author": "TheMightiestMan"
+},
+{
+"ref": "quangnguynl/strong2-wf-replay-160k-100k-finetune-16e",
+"title": "Strong2 WF Replay 160K 100K Finetune 16E",
+"lastRun": "2026-09-04",
+"votes": 0,
+"author": "Quang Nguy\u00ean L\u00ea"
+},
+{
+"ref": "ayodejiibrahimlateef/arc3-v120-flashnext-samrish-exact-rtx6000",
+"title": "ARC3 v120 FlashNext Samrish Exact RTX6000",
+"lastRun": "2026-09-04",
+"votes": 0,
+"author": "Ayodeji"
+},
+{
+"ref": "denizeryilmaz/arc3-qwen38-flash-next-v29a-exact-exp",
+"title": "arc3-qwen38-flash-next-v29a-exact-exp",
+"lastRun": "2026-09-04",
+"votes": 4,
+"author": "Deniz"
+},
+{
+"ref": "akhileshgodugu/duck-qwen3-8-flash-next-nvfp4-mtp-aacb81",
+"title": "Duck Qwen3.8 Flash Next NVFP4 MTP aacb81",
+"lastRun": "2026-09-04",
+"votes": 3,
+"author": "Akhilesh godugu"
+},
+{
+"ref": "yocybercode/thui-reflect-v1",
+"title": "thui-reflect-v1",
+"lastRun": "2026-09-04",
+"votes": 1,
+"author": "yocyber-code"
+},
+{
+"ref": "abcdef123456gf/baseline-asr",
+"title": "Baseline_ASR",
+"lastRun": "2026-09-04",
+"votes": 1,
+"author": "abcdef123456gf"
+},
+{
+"ref": "yocybercode/thui-reflect-v0-1",
+"title": "thui-reflect-v0-1",
+"lastRun": "2026-09-04",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "yocybercode/thui-rank-v0-1",
+"title": "thui-rank-v0-1",
+"lastRun": "2026-09-04",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "themightiestman/arc3-forge-v3-lite",
+"title": "ARC3 FORGE v3 lite",
+"lastRun": "2026-09-04",
+"votes": 0,
+"author": "TheMightiestMan"
+},
+{
+"ref": "yocybercode/thui-reflect-v0",
+"title": "thui-reflect-v0",
+"lastRun": "2026-09-04",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "yocybercode/thui-rank-v0",
+"title": "thui-rank-v0",
+"lastRun": "2026-09-04",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "quangnguynl/brainhem-rtx6000-entitlement-probe",
+"title": "Brainhem RTX6000 Entitlement Probe",
+"lastRun": "2026-09-04",
+"votes": 0,
+"author": "Quang Nguy\u00ean L\u00ea"
+},
+{
+"ref": "themightiestman/arc3-forge-v2-no-dataset",
+"title": "ARC3 FORGE v2 no-dataset",
+"lastRun": "2026-09-04",
+"votes": 0,
+"author": "TheMightiestMan"
+},
+{
+"ref": "sonnvo/strong2-best6-hardgate-finetune-24e",
+"title": "Strong2 Best6 Hardgate Finetune 24E",
+"lastRun": "2026-09-04",
+"votes": 0,
+"author": "SonnVo"
+},
+{
+"ref": "karimahalrashidi/notebook1c8a0b5eac",
+"title": "notebook1c8a0b5eac",
+"lastRun": "2026-09-03",
+"votes": 1,
+"author": "Karimah Alrashidi"
+},
+{
+"ref": "karimahalrashidi/notebook999364bb2e",
+"title": "notebook999364bb2e",
+"lastRun": "2026-09-03",
+"votes": 1,
+"author": "Karimah Alrashidi"
+},
+{
+"ref": "xvmhieu/03-reranker-matrix-exploration-v15",
+"title": "03_reranker_matrix_exploration_v15",
+"lastRun": "2026-09-03",
+"votes": 0,
+"author": "zxc_vmh666"
+},
+{
+"ref": "kakarotlucfierr/arc-agi-3-graph-explorer-v1",
+"title": "ARC-AGI-3 Graph Explorer v1",
+"lastRun": "2026-09-03",
+"votes": 1,
+"author": "Pratyush Bhardwaj"
+},
+{
+"ref": "darkun1c0rn/notebook2ac0c89623",
+"title": "notebook2ac0c89623",
+"lastRun": "2026-09-03",
+"votes": 0,
+"author": "darkun1c0rn"
+},
+{
+"ref": "themightiestman/arc3-official-sample-diag",
+"title": "ARC3 Official Sample Diag",
+"lastRun": "2026-09-03",
+"votes": 0,
+"author": "TheMightiestMan"
+},
+{
+"ref": "xvmhieu/02-baseline-580k-clean-structural-v15",
+"title": "02_baseline_580k_clean_structural_v15",
+"lastRun": "2026-09-03",
+"votes": 0,
+"author": "zxc_vmh666"
+},
+{
+"ref": "dantelok/duck-qwen3-8-flash-next-nvfp4-mtp",
+"title": "Duck Qwen3.8 Flash Next NVFP4 MTP",
+"lastRun": "2026-09-03",
+"votes": 16,
+"author": "Dante Lok"
+},
+{
+"ref": "vuquockhanh4603/transition",
+"title": "transition",
+"lastRun": "2026-09-03",
+"votes": 0,
+"author": "VuQuocKhanh"
+},
+{
+"ref": "thinchungch/notebook03f01d9a5d",
+"title": "notebook03f01d9a5d",
+"lastRun": "2026-09-03",
+"votes": 0,
+"author": "Chung Ch\u00ed Thi\u1ec7n"
+},
+{
+"ref": "jehxbwjs/notebook7a13bd8bbe",
+"title": "notebook7a13bd8bbe",
+"lastRun": "2026-09-03",
+"votes": 0,
+"author": "Ph\u1ea1m V\u0103n Gi\u00e1p"
+},
+{
+"ref": "williamgunnellcox/notebook15c685cef4",
+"title": "notebook15c685cef4",
+"lastRun": "2026-09-03",
+"votes": 1,
+"author": "William gunnell Cox"
+},
+{
+"ref": "niklitacheporev/arc3-stochastic-goose-m0",
+"title": "ARC3 Stochastic Goose M0",
+"lastRun": "2026-09-02",
+"votes": 2,
+"author": "NIklitaCheporev"
+},
+{
+"ref": "yanggod/arc-agi-3-duck-fork-t1-35",
+"title": "ARC-AGI-3 Duck fork T1.35",
+"lastRun": "2026-09-02",
+"votes": 0,
+"author": "Boopathi Raja"
+},
+{
+"ref": "yanggod/arc-agi-3-duck-fork-t1-2-playbook",
+"title": "ARC-AGI-3 Duck fork T1.2 playbook",
+"lastRun": "2026-09-02",
+"votes": 1,
+"author": "Boopathi Raja"
+},
+{
+"ref": "yanggod/arc-agi-3-duck-fork-t1-5",
+"title": "ARC-AGI-3 Duck fork T1.5",
+"lastRun": "2026-09-02",
+"votes": 0,
+"author": "Boopathi Raja"
+},
+{
+"ref": "flames56/lb-9-arc3-duck-v18-with-gpt-oss-120b",
+"title": "LB-9 arc3 duck v18 with GPT-OSS 120B",
+"lastRun": "2026-09-02",
+"votes": 0,
+"author": "Flames56"
+},
+{
+"ref": "vladimiryakunin/arc-prize-2026-lcld-qwen-v9",
+"title": "ARC Prize 2026 - LCLD Qwen V9",
+"lastRun": "2026-09-02",
+"votes": 1,
+"author": "Vladimir Yakunin"
+},
+{
+"ref": "tanh2405/baseline-asr",
+"title": "Baseline_ASR",
+"lastRun": "2026-09-02",
+"votes": 6,
+"author": "changaihieuvetinhyeu"
+},
+{
+"ref": "samrishb/just-seeing-what-can-i-change-to-make-it-better",
+"title": "just seeing what can i change? to make it better\ud83d\udc4c",
+"lastRun": "2026-09-02",
+"votes": 52,
+"author": "Samrish B"
+},
+{
+"ref": "yanggod/arc-agi-3-duck-fork-sc3",
+"title": "ARC-AGI-3 Duck fork SC3",
+"lastRun": "2026-09-02",
+"votes": 0,
+"author": "Boopathi Raja"
+},
+{
+"ref": "datlq122/trainsition2",
+"title": "trainsition2",
+"lastRun": "2026-09-02",
+"votes": 0,
+"author": "\u0110\u1ea1t L\u00ea"
+},
+{
+"ref": "themightiestman/arc3-forge-v1-open-source-baseline",
+"title": "ARC3 FORGE v1 (open-source baseline)",
+"lastRun": "2026-09-02",
+"votes": 0,
+"author": "TheMightiestMan"
+},
+{
+"ref": "zrigaghassen/multids-eval-v1",
+"title": "MULTIds eval v1",
+"lastRun": "2026-09-02",
+"votes": 2,
+"author": "zrigaghassen"
+},
+{
+"ref": "hritvikatawde/forxi",
+"title": "FORXI",
+"lastRun": "2026-09-02",
+"votes": 0,
+"author": "Hritvika Tawde"
+},
+{
+"ref": "yanggod/arc-agi-3-duck-fork-t1-2b",
+"title": "ARC-AGI-3 Duck fork T1.2b",
+"lastRun": "2026-09-02",
+"votes": 2,
+"author": "Boopathi Raja"
+},
+{
+"ref": "yanggod/arc-agi-3-duck-fork-playbook",
+"title": "ARC-AGI-3 Duck fork playbook",
+"lastRun": "2026-09-02",
+"votes": 0,
+"author": "Boopathi Raja"
+},
+{
+"ref": "rakbidb/sukirman-verified-exact-profile-flash-next-mtp3",
+"title": "sukirman - Verified Exact-Profile Flash-Next MTP3",
+"lastRun": "2026-09-02",
+"votes": 9,
+"author": "Rakha Abid Bangsawan"
+},
+{
+"ref": "xiaoyan12/lb-9-arc3-duck-v17-with-gpt-oss-120b",
+"title": "LB-9 arc3 duck v17 with GPT-OSS 120B",
+"lastRun": "2026-09-01",
+"votes": 0,
+"author": "XiaoYan12"
+},
+{
+"ref": "kashyapsinhgohil/duck-qwen3-8-flash-next-nvfp4-mtp",
+"title": "Duck Qwen3.8 Flash Next NVFP4 MTP",
+"lastRun": "2026-09-01",
+"votes": 15,
+"author": "Kashyapsinh gohil"
+},
+{
+"ref": "abbose/notebook6c79478733",
+"title": "notebook6c79478733",
+"lastRun": "2026-09-01",
+"votes": 1,
+"author": "AbbosE"
+},
+{
+"ref": "zoli800/duck-qwen3-8-flash-next-nvfp4-mtp",
+"title": "Duck Qwen3.8 Flash Next NVFP4 MTP",
+"lastRun": "2026-09-01",
+"votes": 2,
+"author": "ITMO IS THE BEST"
+},
+{
+"ref": "xiaoyan12/lb-9-arc3-duck-v16-with-gpt-oss-120b",
+"title": "LB-9 arc3 duck v16 with GPT-OSS 120B",
+"lastRun": "2026-09-01",
+"votes": 2,
+"author": "XiaoYan12"
+},
+{
+"ref": "datlq122/trainsition",
+"title": "trainsition",
+"lastRun": "2026-09-01",
+"votes": 0,
+"author": "\u0110\u1ea1t L\u00ea"
+},
+{
+"ref": "yocybercode/thui-v3-2",
+"title": "Thui v3.2",
+"lastRun": "2026-09-01",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "yocybercode/thui-v3-1",
+"title": "Thui v3.1",
+"lastRun": "2026-09-01",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "yocybercode/thui-v5-2",
+"title": "Thui v5.2",
+"lastRun": "2026-09-01",
+"votes": 1,
+"author": "yocyber-code"
+},
+{
+"ref": "yocybercode/thui-v5-1",
+"title": "Thui v5.1",
+"lastRun": "2026-09-01",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "yocybercode/thui-v4-2",
+"title": "Thui v4.2",
+"lastRun": "2026-09-01",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "yocybercode/thui-v4-1",
+"title": "Thui v4.1",
+"lastRun": "2026-09-01",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "vaishnavisri09/notebook731b057d6f",
+"title": "notebook731b057d6f",
+"lastRun": "2026-09-01",
+"votes": 0,
+"author": "Vaishnavi"
+},
+{
+"ref": "yanggod/arc-agi-3-duck-fork-t0-9",
+"title": "ARC-AGI-3 Duck fork T0.9",
+"lastRun": "2026-09-01",
+"votes": 0,
+"author": "Boopathi Raja"
+},
+{
+"ref": "keithtyser/duck-qwen3-8-flash-next-nvfp4-mtp",
+"title": "Duck Qwen3.8 Flash Next NVFP4 MTP",
+"lastRun": "2026-09-01",
+"votes": 169,
+"author": "ktyser"
+},
+{
+"ref": "mickeyjoes/arc3-duck-qwen3-8-no-impact-v1",
+"title": "ARC3 Duck Qwen3.8 No Impact v1",
+"lastRun": "2026-08-31",
+"votes": 0,
+"author": "MickeyJoe"
+},
+{
+"ref": "mickeyjoes/arc3-duck-qwen3-8-v6-reproduction",
+"title": "ARC3 Duck Qwen3.8 v6 Reproduction",
+"lastRun": "2026-08-31",
+"votes": 0,
+"author": "MickeyJoe"
+},
+{
+"ref": "samrishb/sam-solver",
+"title": "sam solver",
+"lastRun": "2026-08-31",
+"votes": 34,
+"author": "Samrish B"
+},
+{
+"ref": "datlq1202/trainsition2",
+"title": "trainsition2",
+"lastRun": "2026-08-31",
+"votes": 0,
+"author": "Dat Le Quoc"
+},
+{
+"ref": "mickeyjoes/arc3-duck-m1-baseline-v1",
+"title": "ARC3 Duck M1 Baseline v1",
+"lastRun": "2026-08-31",
+"votes": 2,
+"author": "MickeyJoe"
+},
+{
+"ref": "hussensehs/dat-par",
+"title": "DaT Par",
+"lastRun": "2026-08-31",
+"votes": 4,
+"author": "hussen_sehs"
+},
+{
+"ref": "josefkurkedwards/polyglot-agent-mcp-sandbox-code-generation",
+"title": "Polyglot-Agent: MCP Sandbox & Code Generation",
+"lastRun": "2026-08-31",
+"votes": 10,
+"author": "Josef Kurk Edwards"
+},
+{
+"ref": "northeasternber4747/lumina-nova-arc-solution",
+"title": "lumina-nova-arc-solution",
+"lastRun": "2026-08-31",
+"votes": 0,
+"author": "NortheasternBerserker4747"
+},
+{
+"ref": "kaggleuserr2/codeing-yontem",
+"title": "codeing_yontem",
+"lastRun": "2026-08-30",
+"votes": 0,
+"author": "Murat"
+},
+{
+"ref": "yocybercode/thui-v4-0",
+"title": "Thui v4.0",
+"lastRun": "2026-08-30",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "yuan1103/hmm-navi-phase-5-continue",
+"title": "HMM-Navi - Phase 5 continue",
+"lastRun": "2026-08-30",
+"votes": 2,
+"author": "YuAn1103"
+},
+{
+"ref": "hongquann/notebook3605379197",
+"title": "notebook3605379197",
+"lastRun": "2026-08-30",
+"votes": 1,
+"author": "hongquann"
+},
+{
+"ref": "ishivapatil/duck-harness-fast-eval",
+"title": "Duck Harness Fast Eval",
+"lastRun": "2026-08-30",
+"votes": 0,
+"author": "Shivangoudaa @medizys.com"
+},
+{
+"ref": "hoangvohokhanh/transition",
+"title": "transition",
+"lastRun": "2026-08-30",
+"votes": 0,
+"author": "Hoang Vo Ho Khanh"
+},
+{
+"ref": "olasadek/idk-anymore",
+"title": "idk anymore",
+"lastRun": "2026-08-29",
+"votes": 3,
+"author": "ola sadek"
+},
+{
+"ref": "yocybercode/thui-v6-0",
+"title": "Thui v6.0",
+"lastRun": "2026-08-29",
+"votes": 1,
+"author": "yocyber-code"
+},
+{
+"ref": "datlq1202/trainsition",
+"title": "trainsition",
+"lastRun": "2026-08-29",
+"votes": 0,
+"author": "Dat Le Quoc"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-duck-nav",
+"title": "arc agi3 duck nav",
+"lastRun": "2026-08-29",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "lucifer19/blackcat-avo-variation-c10",
+"title": "BlackCat AVO Variation C10",
+"lastRun": "2026-08-29",
+"votes": 2,
+"author": "Krizs\u00f3 Gergely"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-duck-ctx2",
+"title": "arc agi3 duck ctx2",
+"lastRun": "2026-08-29",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "romantamrazov/arc-real-agi-solution",
+"title": "\ud83d\udc8b ARC real AGI solution >_<",
+"lastRun": "2026-08-29",
+"votes": 111,
+"author": "Roman Tamrazov"
+},
+{
+"ref": "mdmahfujulkarim/arc-prize-2026-arc-agi-3-systematic-explorer",
+"title": "ARC Prize 2026 - ARC-AGI-3 Systematic Explorer",
+"lastRun": "2026-08-29",
+"votes": 2,
+"author": "Md.Mahfujul Karim Sheikh"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-duck-ctx",
+"title": "arc agi3 duck ctx",
+"lastRun": "2026-08-29",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "mhsung/ai-triz-arc3-interactive-agent",
+"title": "ai-triz-arc3-interactive-agent",
+"lastRun": "2026-08-29",
+"votes": 1,
+"author": "ClemsonTigerTW"
+},
+{
+"ref": "stmugiwara/arc-agi-3-solver-v2",
+"title": "ARC AGI 3 Solver v2",
+"lastRun": "2026-08-29",
+"votes": 0,
+"author": "St Mugiwara"
+},
+{
+"ref": "darkun1c0rn/arc-agi-3-goldsnnail-agent",
+"title": "ARC-AGI-3 GoldSnnail Agent",
+"lastRun": "2026-08-29",
+"votes": 0,
+"author": "darkun1c0rn"
+},
+{
+"ref": "kaziaishikuzzaman/arc-agi-3-adaptive-memory-agent",
+"title": "ARC-AGI-3 Adaptive Memory Agent",
+"lastRun": "2026-08-28",
+"votes": 5,
+"author": "Kazi Aishikuzzaman"
+},
+{
+"ref": "yocybercode/thui-v3-0",
+"title": "Thui v3.0",
+"lastRun": "2026-08-28",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "jernimopaiva/arc-prize",
+"title": "ARC Prize",
+"lastRun": "2026-08-28",
+"votes": 0,
+"author": "Jer\u00f3nimo Paiva"
+},
+{
+"ref": "nhatlong1103/hmm-navi-optimize-gpus-more-full",
+"title": "HMM-Navi - Optimize GPUs more FULL",
+"lastRun": "2026-08-28",
+"votes": 1,
+"author": "NhatLong1103"
+},
+{
+"ref": "felipegaldinofolk/prime-agent-arc3-submit",
+"title": "Prime Agent ARC3 Submit",
+"lastRun": "2026-08-28",
+"votes": 0,
+"author": "Felipe Galdino"
+},
+{
+"ref": "felipegaldinofolk/prime-agent-arc3-minimal-public-test",
+"title": "Prime Agent ARC3 Minimal Public Test",
+"lastRun": "2026-08-28",
+"votes": 1,
+"author": "Felipe Galdino"
+},
+{
+"ref": "thtennant/arc3-duck-v28",
+"title": "arc3 duck v28",
+"lastRun": "2026-08-28",
+"votes": 2,
+"author": "Teddy Tennant"
+},
+{
+"ref": "darkun1c0rn/goldworm-meta-agent-arc-agi-3",
+"title": "GoldWorm Meta-Agent ARC-AGI-3",
+"lastRun": "2026-08-28",
+"votes": 2,
+"author": "darkun1c0rn"
+},
+{
+"ref": "yocybercode/thui-v5-0",
+"title": "Thui v5.0",
+"lastRun": "2026-08-27",
+"votes": 1,
+"author": "yocyber-code"
+},
+{
+"ref": "yanggod/arc-agi-3-duck-fork-baseline-reproduction",
+"title": "ARC-AGI-3 Duck fork (baseline reproduction)",
+"lastRun": "2026-08-27",
+"votes": 4,
+"author": "Boopathi Raja"
+},
+{
+"ref": "yocybercode/thui-v1-1-r2",
+"title": "Thui v1.1 r2",
+"lastRun": "2026-08-27",
+"votes": 22,
+"author": "yocyber-code"
+},
+{
+"ref": "yocybercode/thui-v1-1",
+"title": "Thui v1.1",
+"lastRun": "2026-08-27",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "yocybercode/thui-v1-0",
+"title": "Thui v1.0",
+"lastRun": "2026-08-27",
+"votes": 0,
+"author": "yocyber-code"
+},
+{
+"ref": "vandangnghi/notebookad46d8fb77",
+"title": "notebookad46d8fb77",
+"lastRun": "2026-08-27",
+"votes": 0,
+"author": "Van Dang Nghi"
+},
+{
+"ref": "hungle111/aic-caption-qwen3-embedding-8b-autoshot-gro-5ab9df",
+"title": "aic-caption-qwen3-embedding-8b-autoshot-gro 5ab9df",
+"lastRun": "2026-08-27",
+"votes": 0,
+"author": "Hung Le"
+},
+{
+"ref": "thtennant/arc3-duck-v27",
+"title": "arc3 duck v27",
+"lastRun": "2026-08-27",
+"votes": 0,
+"author": "Teddy Tennant"
+},
+{
+"ref": "yanggod/arc-agi-3-learn-on-a-run-you-throw-away",
+"title": "ARC-AGI-3: Learn on a Run You Throw Away",
+"lastRun": "2026-08-27",
+"votes": 3,
+"author": "Boopathi Raja"
+},
+{
+"ref": "suprasm/arc-agi-3-duck-qwen38-v3",
+"title": "arc-agi-3-duck-qwen38-v3",
+"lastRun": "2026-08-27",
+"votes": 1,
+"author": "Ricky"
+},
+{
+"ref": "wethepeople918/ucavghost",
+"title": "UCAVGHOST",
+"lastRun": "2026-08-27",
+"votes": 0,
+"author": "Nine1Eight"
+},
+{
+"ref": "vikasawasthiji/notebook6598c8edad",
+"title": "notebook6598c8edad",
+"lastRun": "2026-08-27",
+"votes": 0,
+"author": "Vikas Awasthi"
+},
+{
+"ref": "nguyenducdung1107/notebook-ex-colqwen-layout",
+"title": "[notebook-ex] colqwen layout ",
+"lastRun": "2026-08-27",
+"votes": 2,
+"author": "NGUYEN DUC DUNG 1107"
+},
+{
+"ref": "sunnykumar6203/arc-agi-3-graph-exploration-agent",
+"title": "ARC-AGI-3 Graph Exploration Agent",
+"lastRun": "2026-08-26",
+"votes": 1,
+"author": "Sunny Kumar"
+},
+{
+"ref": "thtennant/arc3-duck-v26",
+"title": "arc3 duck v26",
+"lastRun": "2026-08-26",
+"votes": 2,
+"author": "Teddy Tennant"
+},
+{
+"ref": "sonnvo/six-class-best4-v2-rtx6000-7h-fixed",
+"title": "Six Class Best4 V2 RTX6000 7H Fixed",
+"lastRun": "2026-08-26",
+"votes": 0,
+"author": "SonnVo"
+},
+{
+"ref": "sonnvo/six-class-best4-direct-reviewed-v2-rtx6000-7h",
+"title": "Six Class Best4 Direct Reviewed V2 RTX6000 7H",
+"lastRun": "2026-08-26",
+"votes": 1,
+"author": "SonnVo"
+},
+{
+"ref": "shreyas4/lb-9-arc3-duck-v12-with-qwen-3-8-27b",
+"title": "LB-9 arc3 duck v12 with Qwen 3.8 27B",
+"lastRun": "2026-08-26",
+"votes": 1,
+"author": "Shreyas"
+},
+{
+"ref": "ziweiresearch/arcagi3-duck-v10s",
+"title": "arcagi3-duck-v10s",
+"lastRun": "2026-08-25",
+"votes": 0,
+"author": "Lawrence"
+},
+{
+"ref": "yuan1103/hmm-navi-optimize-gpus-batch",
+"title": "HMM-Navi - Optimize GPUs Batch",
+"lastRun": "2026-08-25",
+"votes": 1,
+"author": "YuAn1103"
+},
+{
+"ref": "thtennant/arc3-duck-v25",
+"title": "arc3 duck v25",
+"lastRun": "2026-08-25",
+"votes": 0,
+"author": "Teddy Tennant"
+},
+{
+"ref": "lucifer19/blackcat-raw-signal-c05-r4",
+"title": "BlackCat RAW SIGNAL C05-R4",
+"lastRun": "2026-08-25",
+"votes": 2,
+"author": "Krizs\u00f3 Gergely"
+},
+{
+"ref": "nguyenle2k4/gpu-accelerator-smoke",
+"title": "GPU Accelerator Smoke",
+"lastRun": "2026-08-25",
+"votes": 0,
+"author": "Nguy\u00ean L\u00ea"
+},
+{
+"ref": "doanhaicong/gpu-accelerator-smoke",
+"title": "GPU Accelerator Smoke",
+"lastRun": "2026-08-25",
+"votes": 3,
+"author": "Doan Hai"
+},
+{
+"ref": "mudasiralipathan/compitition-1",
+"title": "COMPITITION 1",
+"lastRun": "2026-08-25",
+"votes": 0,
+"author": "Mudasir Ali Pathan"
+},
+{
+"ref": "loinguyentran/hmm-navi-optimize-gpus",
+"title": "HMM-Navi - Optimize GPUs",
+"lastRun": "2026-08-25",
+"votes": 3,
+"author": "LoiNguyenTran"
+},
+{
+"ref": "darkmatternet/arc3-public-control-visible-v1",
+"title": "ARC3 Public Control Visible V1",
+"lastRun": "2026-08-25",
+"votes": 5,
+"author": "DarkMatterNet"
+},
+{
+"ref": "nhatlong1103/hmm-navi-optimize-gpus",
+"title": "HMM-Navi - Optimize GPUs",
+"lastRun": "2026-08-25",
+"votes": 7,
+"author": "NhatLong1103"
+},
+{
+"ref": "darkmatternet/arc3-duck-causal-guard-public-v1",
+"title": "ARC3 Duck Causal Guard Public V1",
+"lastRun": "2026-08-25",
+"votes": 3,
+"author": "DarkMatterNet"
+},
+{
+"ref": "darkmatternet/arc3-duck-causal-guard-v1",
+"title": "ARC3 Duck Causal Guard V1",
+"lastRun": "2026-08-25",
+"votes": 3,
+"author": "DarkMatterNet"
+},
+{
+"ref": "felipegaldinofolk/prime-harness-qwen-arc3-v2",
+"title": "Prime Harness Qwen ARC3 v2",
+"lastRun": "2026-08-25",
+"votes": 0,
+"author": "Felipe Galdino"
+},
+{
+"ref": "nhtlnguyn1106/visdrone-finetune",
+"title": "VisDrone_finetune",
+"lastRun": "2026-08-24",
+"votes": 0,
+"author": "Nh\u1eadt L\u00ea Nguy\u00ean"
+},
+{
+"ref": "xvmhieu/02-finetune-viranker-v10",
+"title": "02_finetune_viranker_v10",
+"lastRun": "2026-08-24",
+"votes": 1,
+"author": "zxc_vmh666"
+},
+{
+"ref": "nhatlong1103/hmm-navi-read-folder-tree",
+"title": "HMM-Navi - read folder tree",
+"lastRun": "2026-08-24",
+"votes": 1,
+"author": "NhatLong1103"
+},
+{
+"ref": "sahasawatt/taaf-duck-v24",
+"title": "taaf-duck-v24",
+"lastRun": "2026-08-24",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "thtennant/arc3-duck-v24",
+"title": "arc3 duck v24",
+"lastRun": "2026-08-24",
+"votes": 0,
+"author": "Teddy Tennant"
+},
+{
+"ref": "lucifer19/blackcat-dual-mind-router-c05",
+"title": "BlackCat Dual-Mind Router C05",
+"lastRun": "2026-08-24",
+"votes": 6,
+"author": "Krizs\u00f3 Gergely"
+},
+{
+"ref": "matthewblakeward/johnny5",
+"title": "johnny5",
+"lastRun": "2026-08-24",
+"votes": 2,
+"author": "Matthew Blake Ward"
+},
+{
+"ref": "jenslehmann/arc3-qwen3-8-gridlines-public25-repeat",
+"title": "ARC3 Qwen3.8 Gridlines Public25 Repeat",
+"lastRun": "2026-08-23",
+"votes": 0,
+"author": "Jens Lehmann"
+},
+{
+"ref": "valentinorayisabell/arc3-goose-moe-v0",
+"title": "arc3-goose-moe-v0",
+"lastRun": "2026-08-23",
+"votes": 0,
+"author": "valentino ray isabell"
+},
+{
+"ref": "thtennant/arc3-duck-v23",
+"title": "arc3 duck v23",
+"lastRun": "2026-08-23",
+"votes": 0,
+"author": "Teddy Tennant"
+},
+{
+"ref": "xvmhieu/01-finetune-bge-m3",
+"title": "01_finetune_bge_m3",
+"lastRun": "2026-08-22",
+"votes": 1,
+"author": "zxc_vmh666"
+},
+{
+"ref": "sangitabannore/arc-prize-2026-sangita-bannore-2",
+"title": "ARC Prize 2026: Sangita Bannore 2",
+"lastRun": "2026-08-22",
+"votes": 14,
+"author": "Sangita Bannore"
+},
+{
+"ref": "gktrkakman/taaf-duck-sub-20260805-share",
+"title": "taaf-duck-sub-20260805-share",
+"lastRun": "2026-08-22",
+"votes": 12,
+"author": "G\u00f6kt\u00fcrk"
+},
+{
+"ref": "helmirinaldi/perintahgooglemicrosoftspacex",
+"title": "PERINTAHGOOGLEMICROSOFTSPACEX",
+"lastRun": "2026-08-22",
+"votes": 5,
+"author": "Hellboy"
+},
+{
+"ref": "matthewblakeward/jetpacks-parachutes",
+"title": "Jetpacks&Parachutes ",
+"lastRun": "2026-08-22",
+"votes": 0,
+"author": "Matthew Blake Ward"
+},
+{
+"ref": "vuquockhanh4603/train-ltx",
+"title": "train_ltx",
+"lastRun": "2026-08-21",
+"votes": 2,
+"author": "VuQuocKhanh"
+},
+{
+"ref": "hoangvohokhanh/notebook4aeb3d8283",
+"title": "notebook4aeb3d8283",
+"lastRun": "2026-08-21",
+"votes": 0,
+"author": "Hoang Vo Ho Khanh"
+},
+{
+"ref": "astraeusdotdev/arc3-agent",
+"title": "arc3-agent",
+"lastRun": "2026-08-21",
+"votes": 0,
+"author": "Astraeus"
+},
+{
+"ref": "thtennant/arc3-duck-v21",
+"title": "arc3 duck v21",
+"lastRun": "2026-08-21",
+"votes": 1,
+"author": "Teddy Tennant"
+},
+{
+"ref": "lucifer19/blackcat-q38-anchorlock-c04",
+"title": "BlackCat Q38 AnchorLock C04",
+"lastRun": "2026-08-21",
+"votes": 1,
+"author": "Krizs\u00f3 Gergely"
+},
+{
+"ref": "ivakinaleksandr/nn-homework",
+"title": "nn-homework",
+"lastRun": "2026-08-20",
+"votes": 0,
+"author": "Ivakin Alexander"
+},
+{
+"ref": "camvsfd/notebook-method-m-i-crossencoder",
+"title": "[notebook] Method m\u1edbi_crossencoder ",
+"lastRun": "2026-08-20",
+"votes": 0,
+"author": "c\u00f3a m\u00e1"
+},
+{
+"ref": "sahasawatt/taaf-duck-v10",
+"title": "taaf-duck-v10",
+"lastRun": "2026-08-20",
+"votes": 0,
+"author": "\u0e2a\u0e2b\u0e2a\u0e27\u0e23\u0e23\u0e29 \u0e27\u0e34\u0e17\u0e22\u0e32\u0e1b\u0e23\u0e30\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+},
+{
+"ref": "vandangnghi/notebook8cfd8387df",
+"title": "notebook8cfd8387df",
+"lastRun": "2026-08-20",
+"votes": 0,
+"author": "Van Dang Nghi"
+},
+{
+"ref": "matthewblakeward/dwdadltraige",
+"title": "DWDADLTRAige",
+"lastRun": "2026-08-20",
+"votes": 1,
+"author": "Matthew Blake Ward"
+},
+{
+"ref": "kittrntunk/notebooke487d00c5a",
+"title": "notebooke487d00c5a",
+"lastRun": "2026-08-20",
+"votes": 0,
+"author": "Ki\u1ec7t Tr\u1ea7n Tu\u1ea5n"
+},
+{
+"ref": "x1an9l1/arc-prize-2026-arc-agi-3-starter",
+"title": "ARC Prize 2026 \u2014 ARC-AGI-3 Starter",
+"lastRun": "2026-08-20",
+"votes": 0,
+"author": "Xiang Li"
+},
+{
+"ref": "anglolodorf/qwen3-8-27b-fp8-arc-agi-3-80-80-fixes-few-shot",
+"title": "Qwen3.8-27B-FP8 ARC-AGI-3 (80/80 fixes + few-shot)",
+"lastRun": "2026-08-20",
+"votes": 1,
+"author": "ANGOUAH"
+},
+{
+"ref": "kittrntunk/notebookbc196b83af",
+"title": "notebookbc196b83af",
+"lastRun": "2026-08-20",
+"votes": 0,
+"author": "Ki\u1ec7t Tr\u1ea7n Tu\u1ea5n"
+},
+{
+"ref": "kienhan/reinad-v1-abcd-v4-5-0-parent-to-child-grounding",
+"title": "ReinAD V1-ABCD V4.5.0 \u2014 Parent-to-child grounding ",
+"lastRun": "2026-08-20",
+"votes": 0,
+"author": "Kien Han"
+},
+{
+"ref": "nbmp2005/notebookdb32ffe5dd",
+"title": "notebookdb32ffe5dd",
+"lastRun": "2026-08-20",
+"votes": 1,
+"author": "Ph\u01b0\u01a1ng Nguy\u1ec5n B\u00ecnh Minh"
+},
+{
+"ref": "rahuljiwane/arc-prize-2026-rahul-jiwane-8",
+"title": "ARC Prize 2026: Rahul Jiwane 8",
+"lastRun": "2026-08-20",
+"votes": 9,
+"author": "Rahul Jiwane"
+},
+{
+"ref": "rishigarg777/realpde-phase1-eda",
+"title": "realpde_phase1_eda",
+"lastRun": "2026-08-19",
+"votes": 0,
+"author": "RISHI GARG"
+},
+{
+"ref": "ghassenzriga/grpo-run-v2",
+"title": "GRPO_Run_v2",
+"lastRun": "2026-08-19",
+"votes": 0,
+"author": "Ghassen Zriga  "
+},
+{
+"ref": "thtennant/arc3-duck-v19",
+"title": "arc3 duck v19",
+"lastRun": "2026-08-19",
+"votes": 0,
+"author": "Teddy Tennant"
+},
+{
+"ref": "wellkilo/arc3lab-duck-v12-auto-evidence-v14-seed-20260819",
+"title": "arc3lab duck v12 auto evidence v14 seed 20260819",
+"lastRun": "2026-08-19",
+"votes": 3,
+"author": "sssskilo"
+},
+{
+"ref": "analyticaobscura/i-guess-it-s-just-luck-thanks-foysal",
+"title": "I guess it's just luck Thanks Foysal",
+"lastRun": "2026-08-19",
+"votes": 16,
+"author": "OzanM."
+},
+{
+"ref": "wellkilo/arc3lab-duck-v12-control-seed-20260819",
+"title": "arc3lab duck v12 control seed 20260819",
+"lastRun": "2026-08-19",
+"votes": 2,
+"author": "sssskilo"
+},
+{
+"ref": "olzhaskolzhabay/arc-prize-2026-from-pixels-to-objects",
+"title": "ARC Prize 2026: From Pixels to Objects",
+"lastRun": "2026-08-18",
+"votes": 3,
+"author": "Olzhas Kolzhabay"
+},
+{
+"ref": "shreyas4/sm-agi-duck-harness-fast-eval",
+"title": "\u3010SM - AGI\u3011duck-harness-fast-eval",
+"lastRun": "2026-08-18",
+"votes": 0,
+"author": "Shreyas"
+},
+{
+"ref": "rahuljiwane/arc-prize-rahul-jiwane-2",
+"title": "ARC Prize: Rahul Jiwane 2",
+"lastRun": "2026-08-18",
+"votes": 3,
+"author": "Rahul Jiwane"
+},
+{
+"ref": "techside/submission-parquet",
+"title": "submission.parquet",
+"lastRun": "2026-08-18",
+"votes": 7,
+"author": "Hayford Kofi Quaye"
+},
+{
+"ref": "rokaiyasomapti/arc3-duck-v12-1d7d88-27e1af",
+"title": "arc3 duck v12 1d7d88 27e1af",
+"lastRun": "2026-08-18",
+"votes": 1,
+"author": "RS"
+},
+{
+"ref": "foysalemonshanto/lb-9-arc3-duck-v12-with-qwen-3-8-27b",
+"title": "LB-9 arc3 duck v12 with Qwen 3.8 27B",
+"lastRun": "2026-08-18",
+"votes": 284,
+"author": "FOYSAL"
+},
+{
+"ref": "matthewblakeward/duckwadl",
+"title": "DUCKwADL",
+"lastRun": "2026-08-18",
+"votes": 1,
+"author": "Matthew Blake Ward"
+},
+{
+"ref": "matthewblakeward/notebook1d22107bd4",
+"title": "notebook1d22107bd4",
+"lastRun": "2026-08-18",
+"votes": 0,
+"author": "Matthew Blake Ward"
+},
+{
+"ref": "datlq122/train-ltx-wan",
+"title": "train_ltx_wan",
+"lastRun": "2026-08-17",
+"votes": 0,
+"author": "\u0110\u1ea1t L\u00ea"
+},
+{
+"ref": "nomaanz/arc-agi-3-improved-agent-v2",
+"title": "ARC-AGI-3 Improved Agent V2",
+"lastRun": "2026-08-17",
+"votes": 0,
+"author": "Mohammed Nomaan"
+},
+{
+"ref": "nomaanz/arc-agi-3-improved-bfs-agent",
+"title": "ARC-AGI-3 Improved BFS Agent",
+"lastRun": "2026-08-17",
+"votes": 1,
+"author": "Mohammed Nomaan"
+},
+{
+"ref": "poco34/biology-arc-agi-3",
+"title": "biology arc agi 3",
+"lastRun": "2026-08-17",
+"votes": 0,
+"author": "poco34"
+},
+{
+"ref": "nihilisticneuralnet/arc-agi-3-qwen3-8-27b-bf16",
+"title": "ARC-AGI-3: Qwen3.8 27b bf16",
+"lastRun": "2026-08-17",
+"votes": 4,
+"author": "parthenos"
+},
+{
+"ref": "dynamo14324/arc3-q38-taaf-baseline-dynamo14324",
+"title": "ARC3 Q38 TAAF Baseline - Dynamo14324",
+"lastRun": "2026-08-17",
+"votes": 0,
+"author": "Yogesh Jadhav"
+},
+{
+"ref": "keithtyser/duck-qwen3-8-27b-fp8",
+"title": "Duck Qwen3.8 27B FP8",
+"lastRun": "2026-08-17",
+"votes": 103,
+"author": "ktyser"
+},
+{
+"ref": "chewkokwahibrainai/taaf-model-20260815-q38-p1",
+"title": "taaf-model-20260815-q38-p1",
+"lastRun": "2026-08-16",
+"votes": 1,
+"author": "Chew Kok Wah"
+},
+{
+"ref": "areusnow/arc3-duck-v12-with-qwen-3-8-27b",
+"title": "arc3 duck v12 with Qwen 3.8 27B",
+"lastRun": "2026-08-16",
+"votes": 4,
+"author": "falloficaruss"
+},
+{
+"ref": "wodo888/notebook61a1d5e290",
+"title": "notebook61a1d5e290",
+"lastRun": "2026-08-16",
+"votes": 1,
+"author": "Litvin"
+},
+{
+"ref": "pengyipeng1/arc3-pagi-001-public-reference",
+"title": "ARC3 PAGI-001 Public Reference",
+"lastRun": "2026-08-16",
+"votes": 1,
+"author": "Pengyi Peng1"
+},
+{
+"ref": "datlq122/caption-qwen",
+"title": "caption_qwen",
+"lastRun": "2026-08-16",
+"votes": 0,
+"author": "\u0110\u1ea1t L\u00ea"
+},
+{
+"ref": "lucifer19/arc3-blackcat-evolution-c03",
+"title": "\ud83d\udc08\u200d\u2b1b\u26a1 ARC3 BlackCat Evolution \u2014 C03",
+"lastRun": "2026-08-16",
+"votes": 2,
+"author": "Krizs\u00f3 Gergely"
+},
+{
+"ref": "mohamed3abdelrazik/trace-37dcb1",
+"title": "Trace 37dcb1",
+"lastRun": "2026-08-16",
+"votes": 0,
+"author": "Mohamed abdelrazik"
+},
+{
+"ref": "obirdy/arc3-duck-qwen-3-8-visible-memory-candidate",
+"title": "ARC3 Duck - Qwen 3.8 visible-memory candidate",
+"lastRun": "2026-08-15",
+"votes": 11,
+"author": "Manan Gupta"
+},
+{
+"ref": "datlq1202/latent-ltx",
+"title": "Latent_ltx",
+"lastRun": "2026-08-15",
+"votes": 1,
+"author": "Dat Le Quoc"
+},
+{
+"ref": "ivanternovskiyd/ptcg-foundation-prepare-v1",
+"title": "PTCG foundation prepare v1",
+"lastRun": "2026-08-15",
+"votes": 1,
+"author": "Dzernovskiy"
+},
+{
+"ref": "tunquanginh/payt-baseline-vqa",
+"title": "PAYT_Baseline_VQA",
+"lastRun": "2026-08-15",
+"votes": 1,
+"author": "Tu\u1ea5n Quang \u0110inh"
+},
+{
+"ref": "jakobbrggen/taaf-model-20260815-q38-p1",
+"title": "taaf-model-20260815-q38-p1",
+"lastRun": "2026-08-15",
+"votes": 91,
+"author": "Jakob Br\u00fcggen"
+},
+{
+"ref": "sahsanali/arc-2026-invariant-search-program-synthesis-en",
+"title": "ARC 2026 - Invariant Search & Program Synthesis En",
+"lastRun": "2026-08-15",
+"votes": 1,
+"author": "S. Ahsan Ali"
+},
+{
+"ref": "foysalemonshanto/taaf-anim-arc-agi-3-solver-2ce89c",
+"title": "TAAF \u00b7 Anim \u2014 ARC-AGI-3 Solver 2ce89c",
+"lastRun": "2026-08-15",
+"votes": 1,
+"author": "FOYSAL"
+},
+{
+"ref": "poco34/cognitive-arc-agi-3",
+"title": "COGNITIVE arc agi 3",
+"lastRun": "2026-08-15",
+"votes": 1,
+"author": "poco34"
+},
+{
+"ref": "salehahmedframel/trace",
+"title": "Trace",
+"lastRun": "2026-08-15",
+"votes": 4,
+"author": "salehahmedframel"
+},
+{
+"ref": "sushanthtiruvaipati/arc3-taaf-vanilla-v1",
+"title": "ARC3 TAAF Vanilla V1",
+"lastRun": "2026-08-15",
+"votes": 0,
+"author": "Sushanth Tiruvaipati"
+},
+{
+"ref": "enzolherisson/arc-prize-2026-arc-agi-3-starter",
+"title": "ARC Prize 2026 \u2014 ARC-AGI-3 Starter",
+"lastRun": "2026-08-15",
+"votes": 0,
+"author": "Enzo Lherisson"
+},
+{
+"ref": "lucifer19/pannonia-arc3-agentic-anchor",
+"title": "Pannonia ARC3 Agentic Anchor",
+"lastRun": "2026-08-14",
+"votes": 2,
+"author": "Krizs\u00f3 Gergely"
+},
+{
+"ref": "mohamed3abdelrazik/trace",
+"title": "Trace",
+"lastRun": "2026-08-14",
+"votes": 2,
+"author": "Mohamed abdelrazik"
+},
+{
+"ref": "jazivxt/visionary-pun-engine-v2-anim-yield90",
+"title": "Visionary Pun Engine v2 | ANIM Yield90",
+"lastRun": "2026-08-14",
+"votes": 4,
+"author": "jazivxt"
+},
+{
+"ref": "jazivxt/visionary-pun-engine-v0-graph-explorer",
+"title": "Visionary Pun Engine v0 Graph Explorer",
+"lastRun": "2026-08-14",
+"votes": 1,
+"author": "jazivxt"
+},
+{
+"ref": "boomvector/arc-agi-3-experiment-1",
+"title": "arc-agi-3-experiment-1",
+"lastRun": "2026-08-14",
+"votes": 0,
+"author": "kobayasi"
+},
+{
+"ref": "quanglongl040305/fork-of-notebookb03137e1bb",
+"title": "Fork of notebookb03137e1bb",
+"lastRun": "2026-08-14",
+"votes": 1,
+"author": "Quang Long L\u00ea040305"
+},
+{
+"ref": "amanatar/agi-duck-harness-fast-eval",
+"title": "agi-duck-harness-fast-eval",
+"lastRun": "2026-08-13",
+"votes": 5,
+"author": "Aman Atar"
+},
+{
+"ref": "ghassenzriga/grpo-run-v1",
+"title": "GRPO_run_v1",
+"lastRun": "2026-08-13",
+"votes": 0,
+"author": "Ghassen Zriga  "
+},
+{
+"ref": "ahmedframelsaleh/trace",
+"title": "Trace",
+"lastRun": "2026-08-13",
+"votes": 1,
+"author": "Mostafa Saleh"
+},
+{
+"ref": "alanhsuai0116/notebookb918132cf6",
+"title": "notebookb918132cf6",
+"lastRun": "2026-08-13",
+"votes": 0,
+"author": "AlanHsu_AI0116"
+},
+{
+"ref": "quanglongl040305/anhdatgay",
+"title": "AnhDatGay",
+"lastRun": "2026-08-13",
+"votes": 0,
+"author": "Quang Long L\u00ea040305"
+},
+{
+"ref": "sushanthtiruvaipati/arc3-taaf-qwen3-v2-no-patches",
+"title": "ARC3 TAAF Qwen3 v2 no patches",
+"lastRun": "2026-08-13",
+"votes": 1,
+"author": "Sushanth Tiruvaipati"
+},
+{
+"ref": "kmazd1110/ocr-qwen3-5-rtx-pro-6000",
+"title": "ocr-qwen3.5-rtx-pro-6000",
+"lastRun": "2026-08-12",
+"votes": 1,
+"author": "Mehemud Azad"
+},
+{
+"ref": "iseesmth/arc3-nca-sft-duck-public",
+"title": "arc3-nca-sft-duck-public",
+"lastRun": "2026-08-12",
+"votes": 2,
+"author": "auxentr"
+},
+{
+"ref": "iamjasonfeng/tufa-duck-visible-updates",
+"title": "Tufa Duck (Visible Updates)",
+"lastRun": "2026-08-12",
+"votes": 2,
+"author": "Jason Feng"
+},
+{
+"ref": "iamjasonfeng/chimpanzee-1-1-eval-visible-updates",
+"title": "Chimpanzee-1.1 Eval (Visible Updates)",
+"lastRun": "2026-08-12",
+"votes": 0,
+"author": "Jason Feng"
+},
+{
+"ref": "cascadematrix/arc-agi-3-capacity-recovery-v1",
+"title": "ARC-AGI-3 Capacity Recovery v1",
+"lastRun": "2026-08-12",
+"votes": 1,
+"author": "Jason Jin"
+},
+{
+"ref": "aliasifkhan2105131/resnet50-train",
+"title": "resnet50_train",
+"lastRun": "2026-08-12",
+"votes": 7,
+"author": "ALI ASIF KHAN"
+},
+{
+"ref": "dynamo14324/arc3-stochasticgoose-v2-state-pruning",
+"title": "ARC3 StochasticGoose V2 State Pruning",
+"lastRun": "2026-08-12",
+"votes": 2,
+"author": "Yogesh Jadhav"
+},
+{
+"ref": "dynamo14324/stochasticgoose-arc-prize-2026-submission",
+"title": "StochasticGoose ARC Prize 2026 Submission",
+"lastRun": "2026-08-12",
+"votes": 0,
+"author": "Yogesh Jadhav"
+},
+{
+"ref": "tunquanginh/image-captioning",
+"title": "Image Captioning",
+"lastRun": "2026-08-12",
+"votes": 2,
+"author": "Tu\u1ea5n Quang \u0110inh"
+},
+{
+"ref": "ishivapatil/arc-prize-2026-arc-agi-3-starter",
+"title": "ARC Prize 2026 \u2014 ARC-AGI-3 Starter",
+"lastRun": "2026-08-12",
+"votes": 0,
+"author": "Shivangoudaa @medizys.com"
+},
+{
+"ref": "edgardolovell/notebookea683417a7",
+"title": "notebookea683417a7",
+"lastRun": "2026-08-11",
+"votes": 0,
+"author": "Edgardo Lovell"
+},
+{
+"ref": "ishivapatil/arc-agi-3-reki-optimized",
+"title": "ARC AGI 3 Reki Optimized",
+"lastRun": "2026-08-11",
+"votes": 1,
+"author": "Shivangoudaa @medizys.com"
+},
+{
+"ref": "melokuhlesikhondze/arc-agi-3-novelty-graph-explorer",
+"title": "Arc agi 3 novelty graph explorer",
+"lastRun": "2026-08-11",
+"votes": 0,
+"author": "Melokuhle Sikhondze"
+},
+{
+"ref": "michaildarm/gpu-heavy-processes",
+"title": "gpu-heavy-processes",
+"lastRun": "2026-08-11",
+"votes": 0,
+"author": "mdarm"
+},
+{
+"ref": "iseesmth/prolong-eval",
+"title": "PROLONG-eval",
+"lastRun": "2026-08-11",
+"votes": 0,
+"author": "auxentr"
+},
+{
+"ref": "cascadematrix/arc-agi-3-causal-animation-v1",
+"title": "ARC-AGI-3 Causal Animation v1",
+"lastRun": "2026-08-11",
+"votes": 0,
+"author": "Jason Jin"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-llm",
+"title": "arc agi3 llm",
+"lastRun": "2026-08-11",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "finalsunflower/arc3-anim-lb161-exact-validation",
+"title": "ARC3 Anim LB161 Exact Validation",
+"lastRun": "2026-08-11",
+"votes": 0,
+"author": "FinalSunFlower"
+},
+{
+"ref": "hussensehs/trace",
+"title": "Trace",
+"lastRun": "2026-08-11",
+"votes": 6,
+"author": "hussen_sehs"
+},
+{
+"ref": "lucifer19/arc-agi-3-hydra-scout",
+"title": "\ud83d\udc09\ud83d\udd0e ARC-AGI-3 Hydra Scout",
+"lastRun": "2026-08-11",
+"votes": 13,
+"author": "Krizs\u00f3 Gergely"
+},
+{
+"ref": "iseesmth/duck-harness-prolong-public-eval",
+"title": "Duck Harness PROLONG Public Eval",
+"lastRun": "2026-08-11",
+"votes": 4,
+"author": "auxentr"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-features",
+"title": "arc agi3 features",
+"lastRun": "2026-08-11",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-submit",
+"title": "arc agi3 submit",
+"lastRun": "2026-08-11",
+"votes": 0,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "juliancamilovilla/arc-agi3-explorer054",
+"title": "arc agi3 explorer054",
+"lastRun": "2026-08-11",
+"votes": 1,
+"author": "Julian Camilo Villa"
+},
+{
+"ref": "thtennant/arc3-duck-v18",
+"title": "arc3 duck v18",
+"lastRun": "2026-08-11",
+"votes": 0,
+"author": "Teddy Tennant"
+},
+{
+"ref": "busyaprime/the-agent-never-sees-its-own-score",
+"title": "The agent never sees its own score",
+"lastRun": "2026-08-10",
+"votes": 0,
+"author": "Busya PRIME"
+},
+{
+"ref": "l4r3nn/arc-agi3-competition-submission",
+"title": "arc-agi3-competition-submission",
+"lastRun": "2026-08-10",
+"votes": 0,
+"author": "Ragheb haddara"
+},
+{
+"ref": "kevinermille/arc3-sophia-no-action7-v1",
+"title": "ARC3 Sophia No ACTION7 V1",
+"lastRun": "2026-08-10",
+"votes": 0,
+"author": "Kevin E R MILLE"
+},
+{
+"ref": "antoinemah/arc-agi-3-scratch-diagnostic",
+"title": "ARC-AGI-3 Scratch Diagnostic",
+"lastRun": "2026-08-10",
+"votes": 0,
+"author": "Antoine Matemane Mahirwe"
+},
+{
+"ref": "cascadematrix/arc-agi-3-hybrid-gpu-v1",
+"title": "ARC-AGI-3 Hybrid GPU v1",
+"lastRun": "2026-08-10",
+"votes": 0,
+"author": "Jason Jin"
+},
+{
+"ref": "cascadematrix/arc-agi-3-novelty-baseline",
+"title": "ARC-AGI-3 Novelty Baseline",
+"lastRun": "2026-08-10",
+"votes": 0,
+"author": "Jason Jin"
+},
+{
+"ref": "ghassenzriga/tris-ds-test-eval-v1",
+"title": "tris_ds_test_eval_v1",
+"lastRun": "2026-08-10",
+"votes": 0,
+"author": "Ghassen Zriga  "
+},
+{
+"ref": "zhangzhuangli/arc3-exp001-qwen3-6-duck-safety",
+"title": "ARC3 exp001 Qwen3.6 Duck Safety",
+"lastRun": "2026-08-10",
+"votes": 1,
+"author": "zhangzhuang li"
+},
+{
+"ref": "hehe1706/payt-baseline-vqa",
+"title": "PAYT_Baseline_VQA",
+"lastRun": "2026-08-10",
+"votes": 0,
+"author": "Ho\u00e0ng Th\u1ebf Ng\u1ecdc"
+},
+{
+"ref": "ocean240812/arc3-v12-tufa-milestone-winner-fork",
+"title": "ARC3 v12 Tufa Milestone Winner Fork",
+"lastRun": "2026-08-10",
+"votes": 3,
+"author": "ocean240812"
+},
+{
+"ref": "lucifer19/arc-agi-3-duck-v13-causal-scientist",
+"title": "\ud83d\udc08\u200d\u2b1b\u26a1 ARC-AGI-3 \u2014 Duck V13 Causal Scientist",
+"lastRun": "2026-08-10",
+"votes": 1,
+"author": "Krizs\u00f3 Gergely"
+},
+{
+"ref": "denizeryilmaz/arc3-reki-hybrid-explorer-v2",
+"title": "arc3-reki-hybrid-explorer-v2",
+"lastRun": "2026-08-10",
+"votes": 0,
+"author": "Deniz"
+},
+{
+"ref": "zade799/pmm-unified-neocortex-assimilation-rtx-pro-6000",
+"title": "PMM Unified Neocortex Assimilation (RTX Pro 6000)",
+"lastRun": "2026-08-10",
+"votes": 0,
+"author": "Rounak Mukherjee"
+},
+{
+"ref": "lazyman/arc-prize-2026-arc-agi-3-er-solver-v2",
+"title": "arc-prize-2026-arc-agi-3-er-solver-v2",
+"lastRun": "2026-08-10",
+"votes": 0,
+"author": "Lazyman"
+},
+{
+"ref": "tomyim/sophia-arc-agi-3-cpu-baseline",
+"title": "Sophia ARC-AGI-3 CPU Baseline",
+"lastRun": "2026-08-10",
+"votes": 1,
+"author": "Tom Yim"
+},
+{
+"ref": "macxvasquez/nemo-arc-agi-3-pre-submission",
+"title": "NEMO ARC-AGI-3 Pre-Submission",
+"lastRun": "2026-08-10",
+"votes": 0,
+"author": "Macx Vasquez"
+},
+{
+"ref": "thtennant/arc3-duck-v12",
+"title": "arc3 duck v12",
+"lastRun": "2026-08-09",
+"votes": 40,
+"author": "Teddy Tennant"
+},
+{
+"ref": "earnestgomer/e-comic",
+"title": "E Comic",
+"lastRun": "2026-08-09",
+"votes": 0,
+"author": "Earnest Gomer Jr"
+},
+{
+"ref": "maximolorenzoylosada/your-agent-stops-after-81-actions",
+"title": "Your Agent Stops After 81 Actions",
+"lastRun": "2026-08-09",
+"votes": 2,
+"author": "maximo lorenzo y losada"
+},
+{
+"ref": "bang1850/arc-agi-3-ultimate-agent-phase-b",
+"title": "ARC-AGI-3 Ultimate Agent Phase B",
+"lastRun": "2026-08-09",
+"votes": 1,
+"author": "\u0e18\u0e19\u0e32\u0e01\u0e23 \u0e2b\u0e32\u0e0d\u0e27\u0e07\u0e04\u0e4c"
+},
+{
+"ref": "bang1850/arc-agi-3-v21-duck-harness",
+"title": "arc-agi-3-v21-duck-harness",
+"lastRun": "2026-08-09",
+"votes": 2,
+"author": "\u0e18\u0e19\u0e32\u0e01\u0e23 \u0e2b\u0e32\u0e0d\u0e27\u0e07\u0e04\u0e4c"
+},
+{
+"ref": "ahmedaminkhaled/notebookbd79d5635d",
+"title": "notebookbd79d5635d",
+"lastRun": "2026-08-09",
+"votes": 0,
+"author": "Ahmed amin Khaled"
+},
+{
+"ref": "tanakaai24/arc3-qwen3-6-duck-lb117-safety-v1",
+"title": "ARC3 Qwen3.6 Duck LB117 Safety V1",
+"lastRun": "2026-08-09",
+"votes": 27,
+"author": "Tanaka Ai24"
+},
+{
+"ref": "hussensehs/wxl2mms",
+"title": "wxl2mms",
+"lastRun": "2026-08-09",
+"votes": 1,
+"author": "hussen_sehs"
+},
+{
+"ref": "trungnguyen2710t/aifinancial",
+"title": "AiFinancial",
+"lastRun": "2026-08-09",
+"votes": 0,
+"author": "Nguy\u1ec5n V\u0103n Quang Trung"
+},
+{
+"ref": "sunnykumar6203/arc-agi-3-production-ensemble-agent",
+"title": "arc-agi-3-production-ensemble-agent",
+"lastRun": "2026-08-09",
+"votes": 1,
+"author": "Sunny Kumar"
+},
+{
+"ref": "voidrune/arc-agi-3-validated-portfolio-frontier-agent",
+"title": "ARC-AGI-3 Validated Portfolio Frontier Agent",
+"lastRun": "2026-08-08",
+"votes": 3,
+"author": "Void_Rune"
+},
+{
+"ref": "fanglimo/tufa-labs-arc3-version2",
+"title": "Tufa Labs ARC3 Version2",
+"lastRun": "2026-08-08",
+"votes": 0,
+"author": "Limo"
+},
+{
+"ref": "lucifer19/arc-agi-3-blackcat-worldmodel",
+"title": "\ud83d\udc08\u200d\u2b1b\u26a1 ARC-AGI-3 \u2014 BlackCat WorldModel",
+"lastRun": "2026-08-08",
+"votes": 5,
+"author": "Krizs\u00f3 Gergely"
+},
+{
+"ref": "sehshussen/wxl2mms",
+"title": "wxl2mms",
+"lastRun": "2026-08-08",
+"votes": 4,
+"author": "sehs_hussen"
+},
+{
+"ref": "voidrune/arc-agi-3-validated-portfolio-public-reproduction",
+"title": "ARC-AGI-3 Validated Portfolio Public Reproduction",
+"lastRun": "2026-08-08",
+"votes": 1,
+"author": "Void_Rune"
+},
+{
+"ref": "iamjasonfeng/tiger",
+"title": "Tiger",
+"lastRun": "2026-08-08",
+"votes": 0,
+"author": "Jason Feng"
+},
+{
+"ref": "jacksongsong/notebookf1ac1f24ea",
+"title": "notebookf1ac1f24ea",
+"lastRun": "2026-08-08",
+"votes": 0,
+"author": "jacksongsong"
+},
+{
+"ref": "tanakaai24/arc3-qwen3-6-duck-full-harness-v1",
+"title": "ARC3 Qwen3 6 Duck Full Harness V1",
+"lastRun": "2026-08-08",
+"votes": 2,
+"author": "Tanaka Ai24"
+},
+{
+"ref": "jakobbrggen/taaf-anim-arc-agi-3-solver",
+"title": "TAAF \u00b7 Anim \u2014 ARC-AGI-3 Solver",
+"lastRun": "2026-08-07",
+"votes": 120,
+"author": "Jakob Br\u00fcggen"
+},
+{
+"ref": "nekkon/the-80-action-cap-ceilings-you-at-8-7",
+"title": "The 80-action cap ceilings you at 8.7%",
+"lastRun": "2026-08-07",
+"votes": 4,
+"author": "Luka Duvanov"
+},
+{
+"ref": "tanakaai24/arc3-qwen3-6-duck-compact-trajectory-v1",
+"title": "ARC3 Qwen3 6 Duck Compact Trajectory V1",
+"lastRun": "2026-08-07",
+"votes": 0,
+"author": "Tanaka Ai24"
+},
+{
+"ref": "voidrune/arc-agi-3-priority-graph-agent-public-reproduction",
+"title": "ARC-AGI-3 Priority Graph Agent Public Reproduction",
+"lastRun": "2026-08-07",
+"votes": 0,
+"author": "Void_Rune"
+},
+{
+"ref": "ghassenzriga/tri-ds-test",
+"title": "tri_ds_test",
+"lastRun": "2026-08-07",
+"votes": 0,
+"author": "Ghassen Zriga  "
+},
+{
+"ref": "holsoul/arc3-snake-v7",
+"title": "ARC3 snake v7",
+"lastRun": "2026-08-07",
+"votes": 0,
+"author": "Holsoul"
+},
+{
+"ref": "ozanakman/taaf-subv1x-share",
+"title": "taaf-subv1x-share",
+"lastRun": "2026-08-07",
+"votes": 0,
+"author": "Ozan AKMAN"
+},
+{
+"ref": "melisakman/taaf-subv1x-share",
+"title": "taaf-subv1x-share",
+"lastRun": "2026-08-07",
+"votes": 0,
+"author": "Melisakman"
+},
+{
+"ref": "gktrkakman/taaf-subv1x-share",
+"title": "taaf-subv1x-share",
+"lastRun": "2026-08-07",
+"votes": 0,
+"author": "G\u00f6kt\u00fcrk"
+},
+{
+"ref": "denizmucur/arc-agi-3-baba",
+"title": "arc-agi-3-baba",
+"lastRun": "2026-08-06",
+"votes": 2,
+"author": "Deniz Mucur"
+},
+{
+"ref": "edgardolovell/arc-agi-3-v11-symbolic-neural-solver",
+"title": "ARC-AGI-3 V11 Symbolic & Neural Solver",
+"lastRun": "2026-08-06",
+"votes": 0,
+"author": "Edgardo Lovell"
+},
+{
+"ref": "denizmucur/arc-agi-3-group-1",
+"title": "ARC-AGI 3 Group 1",
+"lastRun": "2026-08-06",
+"votes": 5,
+"author": "Deniz Mucur"
+},
+{
+"ref": "salmamohamed98/wxl2mms",
+"title": "wxl2mms",
+"lastRun": "2026-08-05",
+"votes": 1,
+"author": "mostafa_mohamed98"
+},
+{
+"ref": "iamjasonfeng/sandwich",
+"title": "Sandwich",
+"lastRun": "2026-08-05",
+"votes": 16,
+"author": "Jason Feng"
+},
+{
+"ref": "amiraflyatunov/ipii-masters-aflyatunov-solution",
+"title": "ipii-masters-Aflyatunov-solution",
+"lastRun": "2026-08-05",
+"votes": 1,
+"author": "Amir Aflyatunov"
+},
+{
+"ref": "keremelik/arc3-paper-track-tfme-public",
+"title": "arc3-paper-track-tfme-public",
+"lastRun": "2026-08-05",
+"votes": 3,
+"author": "Kerem Celik"
+},
+{
+"ref": "keremelik/arc3-paper-track-tfme-public-demo",
+"title": "ARC3 Paper Track TFME Public Demo",
+"lastRun": "2026-08-05",
+"votes": 3,
+"author": "Kerem Celik"
+},
+{
+"ref": "tanakaai24/arc3-official-random-v1",
+"title": "ARC3 Official Random v1",
+"lastRun": "2026-08-05",
+"votes": 3,
+"author": "Tanaka Ai24"
+},
+{
+"ref": "tanakaai24/arc-agi-3-pathfinder-v2",
+"title": "ARC-AGI-3 Pathfinder v2",
+"lastRun": "2026-08-05",
+"votes": 1,
+"author": "Tanaka Ai24"
+},
+{
+"ref": "tanakaai24/arc-agi-3-pathfinder-v1",
+"title": "ARC-AGI-3 Pathfinder v1",
+"lastRun": "2026-08-05",
+"votes": 0,
+"author": "Tanaka Ai24"
+},
+{
+"ref": "aproditzecaspersky/arc-prize-2026-arc-agi-3-starter",
+"title": "ARC Prize 2026 \u2014 ARC-AGI-3 Starter",
+"lastRun": "2026-08-05",
+"votes": 0,
+"author": "Rangga Figo Hidayat"
+},
+{
+"ref": "aproditzecaspersky/notebook91be148a37",
+"title": "notebook91be148a37",
+"lastRun": "2026-08-05",
+"votes": 0,
+"author": "Rangga Figo Hidayat"
+},
+{
+"ref": "toprakg/taaf-duck-prolong-memory",
+"title": "taaf-duck-prolong-memory",
+"lastRun": "2026-08-04",
+"votes": 2,
+"author": "Toprak Gundogdu"
+},
+{
+"ref": "emrullahsyler/arc-agi-ben-m",
+"title": "ARC-AGI-BEN\u0130M",
+"lastRun": "2026-08-04",
+"votes": 0,
+"author": "Emrullah S\u00f6yler"
+},
+{
+"ref": "poco34/neuro-arc-3",
+"title": "neuro arc 3",
+"lastRun": "2026-08-04",
+"votes": 1,
+"author": "poco34"
+},
+{
+"ref": "miphu2005/kaggle-asr-wrapper",
+"title": "kaggle_asr_wrapper",
+"lastRun": "2026-08-04",
+"votes": 1,
+"author": "miphu2005"
+},
+{
+"ref": "pranshubahadur/xcaliber-aa3-nvidia-gemma-4-26b-nvfp4",
+"title": "xCaliber AA3: NVIDIA/Gemma 4 26B NVFP4",
+"lastRun": "2026-08-04",
+"votes": 8,
+"author": "Pranshu Bahadur"
+},
+{
+"ref": "bang1850/arc-agi-3-v20-multimodal",
+"title": "arc-agi-3-v20-multimodal",
+"lastRun": "2026-08-03",
+"votes": 0,
+"author": "\u0e18\u0e19\u0e32\u0e01\u0e23 \u0e2b\u0e32\u0e0d\u0e27\u0e07\u0e04\u0e4c"
+},
+{
+"ref": "saurabhkumar234/tough-guard-v2",
+"title": "Tough Guard V2 ",
+"lastRun": "2026-08-03",
+"votes": 9,
+"author": "100rabh"
+},
+{
+"ref": "wodo888/notebook92df4ec1ec",
+"title": "notebook92df4ec1ec",
+"lastRun": "2026-08-02",
+"votes": 1,
+"author": "Litvin"
+},
+{
+"ref": "iamjasonfeng/chimpanzee-1-1-eval",
+"title": "Chimpanzee-1.1 Eval",
+"lastRun": "2026-08-02",
+"votes": 0,
+"author": "Jason Feng"
+},
+{
+"ref": "thangkth/ssh-kangle",
+"title": "ssh-kangle",
+"lastRun": "2026-08-02",
+"votes": 3,
+"author": "Ph\u1ea1m Ng\u1ecdc Th\u1eafng"
+},
+{
+"ref": "wodo888/notebook3baf27be17",
+"title": "notebook3baf27be17",
+"lastRun": "2026-08-01",
+"votes": 0,
+"author": "Litvin"
+},
+{
+"ref": "nguyenducdung1107/notebook-rvq-colbert-beir-aq-agc",
+"title": "[notebook] RVQ ColBERT -BEIR(AQ+agc)",
+"lastRun": "2026-08-01",
+"votes": 1,
+"author": "NGUYEN DUC DUNG 1107"
+},
+{
+"ref": "kitvanh/aic-captioning",
+"title": "AIC_Captioning",
+"lastRun": "2026-08-01",
+"votes": 0,
+"author": "Vo Anh Kiet"
+},
+{
+"ref": "wodo888/notebook3994b0c144",
+"title": "notebook3994b0c144",
+"lastRun": "2026-08-01",
+"votes": 1,
+"author": "Litvin"
+},
+{
+"ref": "sushanthtiruvaipati/arc3-duck-lb117-fork",
+"title": "ARC3 Duck LB117 Fork",
+"lastRun": "2026-08-01",
+"votes": 0,
+"author": "Sushanth Tiruvaipati"
+},
+{
+"ref": "cdnghnam/notebook-rvq-colbert-beir-diagnosis",
+"title": " [notebook] RVQ ColBERT -BEIR(diagnosis)",
+"lastRun": "2026-07-31",
+"votes": 1,
+"author": "\u0110\u1ee9c D\u0169ng H\u00e0 Nam"
+},
+{
+"ref": "ghassenzriga/notebook5ba21530b5",
+"title": "notebook5ba21530b5",
+"lastRun": "2026-07-31",
+"votes": 0,
+"author": "Ghassen Zriga  "
+},
+{
+"ref": "justinch123/hypothesis-machines-arc-agi-3",
+"title": "Hypothesis Machines ARC AGI 3",
+"lastRun": "2026-07-31",
+"votes": 0,
+"author": "Justin CH123"
+},
+{
+"ref": "faizairfan786/exp-4",
+"title": "exp_4",
+"lastRun": "2026-07-31",
+"votes": 0,
+"author": "Faiza Irfan786"
+},
+{
+"ref": "nguyenlamphuquy/ai-race-experiment-notebook",
+"title": "AI_Race_Experiment_notebook",
+"lastRun": "2026-07-31",
+"votes": 5,
+"author": "Beyonder"
+},
+{
+"ref": "ghassenzriga/unslothllama3-1-8b-instruct-prover9-offline-v2",
+"title": "unslothllama3-1-8b-instruct-prover9-offline-v2",
+"lastRun": "2026-07-30",
+"votes": 0,
+"author": "Ghassen Zriga  "
+},
+{
+"ref": "orangger/arc-agi-3-xcaliber-gemma-4-baseline",
+"title": "ARC-AGI-3 xCaliber Gemma 4 Baseline",
+"lastRun": "2026-07-30",
+"votes": 2,
+"author": "orangger"
+},
+{
+"ref": "valentino2411/kvasir-seg-with-u-net",
+"title": "Kvasir-SEG with U-net",
+"lastRun": "2026-07-30",
+"votes": 0,
+"author": "Anh Nguy\u1ec5n V\u0103n Tu\u1ea5n"
+},
+{
+"ref": "udiwijaya/arc-agi3",
+"title": "ARC AGI3",
+"lastRun": "2026-07-30",
+"votes": 0,
+"author": "udi wijaya"
+},
+{
+"ref": "wodo888/notebookd179f8feff",
+"title": "notebookd179f8feff",
+"lastRun": "2026-07-30",
+"votes": 0,
+"author": "Litvin"
+},
+{
+"ref": "udiwijaya/arc-agi-3",
+"title": "Arc AGI 3",
+"lastRun": "2026-07-29",
+"votes": 3,
+"author": "udi wijaya"
+},
+{
+"ref": "camvsfd/notebook-rvq-colbert-beir-error",
+"title": " [notebook] RVQ ColBERT -BEIR(ERROR)",
+"lastRun": "2026-07-29",
+"votes": 0,
+"author": "c\u00f3a m\u00e1"
+},
+{
+"ref": "nvphuoc1172/pvsg-extraction",
+"title": "PVSG Extraction",
+"lastRun": "2026-07-29",
+"votes": 1,
+"author": "Ph\u01b0\u1edbc Nguy\u1ec5n V\u0103n"
+},
+{
+"ref": "wodo888/notebooke2c1be3ba1",
+"title": "notebooke2c1be3ba1",
+"lastRun": "2026-07-29",
+"votes": 0,
+"author": "Litvin"
+},
+{
+"ref": "wodo888/notebook6f8130b94b",
+"title": "notebook6f8130b94b",
+"lastRun": "2026-07-29",
+"votes": 0,
+"author": "Litvin"
+},
+{
+"ref": "shorooghahmadi/narc-agi-3-novelty-search-agent",
+"title": "narc-agi-3-novelty-search-agent",
+"lastRun": "2026-07-28",
+"votes": 0,
+"author": "Shoroogh Ahmadi"
+},
+{
+"ref": "wodo888/notebook8f1456c57b",
+"title": "notebook8f1456c57b",
+"lastRun": "2026-07-28",
+"votes": 0,
+"author": "Litvin"
+},
+{
+"ref": "liangwanyiudavid/cognitive-duck-harness",
+"title": "Cognitive Duck Harness",
+"lastRun": "2026-07-28",
+"votes": 1,
+"author": "Liang Wan Yiu David "
+},
+{
+"ref": "lqdat122/notebooka7e2367c39",
+"title": "notebooka7e2367c39",
+"lastRun": "2026-07-27",
+"votes": 0,
+"author": "lqdat122"
+},
+{
+"ref": "yw8837/lb-1-17-arc-agi-3-qwen3-6-duck-full-code",
+"title": "[LB 1.17] ARC-AGI-3 Qwen3.6 Duck | Full Code",
+"lastRun": "2026-07-27",
+"votes": 31,
+"author": "yw8837"
+},
+{
+"ref": "scutxuanyu/arc3-graph-explorer-v4",
+"title": "ARC3 Graph Explorer v4",
+"lastRun": "2026-07-27",
+"votes": 1,
+"author": "Unicorn"
+},
+{
+"ref": "gnuhod/fulldata-redial",
+"title": "fulldata-redial",
+"lastRun": "2026-07-26",
+"votes": 0,
+"author": "H\u01b0ng \u0110\u1ed7"
+},
+{
+"ref": "alexazander/arc-agi-3-sgoose-goal-bias",
+"title": "ARC-AGI-3 SGoose Goal Bias",
+"lastRun": "2026-07-26",
+"votes": 0,
+"author": "Alex Paul"
+},
+{
+"ref": "prvsiyan/arc-agi-3-duck-decision-ledger-action7",
+"title": "ARC-AGI-3 Duck Decision Ledger Action7",
+"lastRun": "2026-07-26",
+"votes": 1,
+"author": "prvsiyan"
+},
+{
+"ref": "wethepeople918/agi-duck-harness-fast-eval-b25-score-optimized",
+"title": "AGI Duck Harness Fast Eval - B25 Score Optimized",
+"lastRun": "2026-07-26",
+"votes": 1,
+"author": "Nine1Eight"
+},
+{
+"ref": "obirdy/arc3-duck-state-ledger-gpu-jul26-a2",
+"title": "arc3-duck-state-ledger-gpu-jul26-a2",
+"lastRun": "2026-07-26",
+"votes": 1,
+"author": "Manan Gupta"
+},
+{
+"ref": "ghassenzriga/unslothllama3-1-8b-instruct-prover9-offline",
+"title": "unslothllama3-1-8b-instruct-prover9-offline",
+"lastRun": "2026-07-25",
+"votes": 0,
+"author": "Ghassen Zriga  "
+},
+{
+"ref": "zly2377/arc-prize-2026-arc-agi-3-starter",
+"title": "ARC Prize 2026 \u2014 ARC-AGI-3 Starter",
+"lastRun": "2026-07-25",
+"votes": 0,
+"author": "zly2377"
+},
+{
+"ref": "kaiwalyaatulraut/notebook6fc82669d5",
+"title": "notebook6fc82669d5",
+"lastRun": "2026-07-25",
+"votes": 0,
+"author": "KAIWALYA RAUT"
+},
+{
+"ref": "obirdy/arc3-duck-verified-world-model-gpu-v1",
+"title": "ARC3 Duck - verified world-model GPU v1",
+"lastRun": "2026-07-25",
+"votes": 5,
+"author": "Manan Gupta"
+},
+{
+"ref": "wethepeople918/mynilla-crow-harness",
+"title": "MyNilla \u2014 Crow Harness",
+"lastRun": "2026-07-24",
+"votes": 2,
+"author": "Nine1Eight"
+},
+{
+"ref": "tdesc88/colony-arc-agi-3-m0-canary",
+"title": "Colony ARC-AGI-3 M0 Canary",
+"lastRun": "2026-07-24",
+"votes": 1,
+"author": "Valentin Kalinin"
+},
+{
+"ref": "valentino2411/duongfg",
+"title": "duongfg",
+"lastRun": "2026-07-24",
+"votes": 1,
+"author": "Anh Nguy\u1ec5n V\u0103n Tu\u1ea5n"
+},
+{
+"ref": "hngphongkiu/biovlm-new",
+"title": "BioVLM-New",
+"lastRun": "2026-07-24",
+"votes": 4,
+"author": "Kieu Hong Phong"
+},
+{
+"ref": "mohamedyousef95/waxal-run",
+"title": "WAXAL RUN",
+"lastRun": "2026-07-24",
+"votes": 2,
+"author": "Mohamed_Yousef95"
+},
+{
+"ref": "bang1850/arc-agi-3-deep-reasoning-agent-179-183-levels",
+"title": "ARC-AGI-3 Deep Reasoning Agent (179/183 levels)",
+"lastRun": "2026-07-24",
+"votes": 2,
+"author": "\u0e18\u0e19\u0e32\u0e01\u0e23 \u0e2b\u0e32\u0e0d\u0e27\u0e07\u0e04\u0e4c"
+},
+{
+"ref": "quangnguyen711/image-captioning",
+"title": "Image Captioning",
+"lastRun": "2026-07-24",
+"votes": 0,
+"author": "QuangNguyen711"
+},
+{
+"ref": "artnaweb/notebook09c5fdf91b",
+"title": "notebook09c5fdf91b",
+"lastRun": "2026-07-24",
+"votes": 0,
+"author": "Art na Web"
+},
+{
+"ref": "philiprobert/t5-small-full-ord-reactants-only",
+"title": "T5-small \u2014 Full ORD \u2014 Reactants-Only",
+"lastRun": "2026-07-23",
+"votes": 1,
+"author": "Philip Robert"
+},
+{
+"ref": "vengeful/arc-agi-3",
+"title": "ARC-AGI-3",
+"lastRun": "2026-07-23",
+"votes": 0,
+"author": "Vengeful"
+},
+{
+"ref": "caoyupeng/arc3-duck-v12-1d7d88",
+"title": "arc3 duck v12 1d7d88",
+"lastRun": "2026-07-23",
+"votes": 65,
+"author": "SpeedSci"
+},
+{
+"ref": "gnuhod/fulldata",
+"title": "fulldata",
+"lastRun": "2026-07-23",
+"votes": 0,
+"author": "H\u01b0ng \u0110\u1ed7"
+},
+{
+"ref": "haniagamal/waxal-run",
+"title": "WAXAL RUN",
+"lastRun": "2026-07-23",
+"votes": 1,
+"author": "Haniagamal"
+},
+{
+"ref": "nguyenducdung1107/notebook-rvq-colbert-beir-v1-ag",
+"title": " [notebook] RVQ ColBERT -BEIR(v1)-AG",
+"lastRun": "2026-07-23",
+"votes": 1,
+"author": "NGUYEN DUC DUNG 1107"
+},
+{
+"ref": "zoli800/taaf-duck-harness-kaggle-share-resubmission-573a60",
+"title": "taaf-duck-harness-kaggle-share(Resubmission 573a60",
+"lastRun": "2026-07-23",
+"votes": 8,
+"author": "ITMO IS THE BEST"
+},
+{
+"ref": "quangnguyen711/payt-baseline-vqa",
+"title": "PAYT_Baseline_VQA",
+"lastRun": "2026-07-22",
+"votes": 28,
+"author": "QuangNguyen711"
+},
+{
+"ref": "datlq1202/notebookdcd6af7555",
+"title": "notebookdcd6af7555",
+"lastRun": "2026-07-22",
+"votes": 0,
+"author": "Dat Le Quoc"
+},
+{
+"ref": "gladoscc/celestia-depthmap",
+"title": "celestia depthmap",
+"lastRun": "2026-07-22",
+"votes": 2,
+"author": "Danny Wu"
+},
+{
+"ref": "trungnguyen2710t/sdft-training",
+"title": "SDFT_training",
+"lastRun": "2026-07-22",
+"votes": 0,
+"author": "Nguy\u1ec5n V\u0103n Quang Trung"
+},
+{
+"ref": "namthanh189/fine-tuning-qwen-3-8b",
+"title": "Fine-Tuning Qwen 3 8b",
+"lastRun": "2026-07-22",
+"votes": 0,
+"author": "Nguy\u1ec5n Th\u00e0nh Nam"
+},
+{
+"ref": "boristown/agi-duck-harness-fast-eval",
+"title": "\u3010\u6697\u9ed1AGI\u3011duck-harness-fast-eval",
+"lastRun": "2026-07-22",
+"votes": 263,
+"author": "\u6697\u9ed1AGI"
+},
+{
+"ref": "salmamohamed98/waxal-run",
+"title": "WAXAL RUN",
+"lastRun": "2026-07-22",
+"votes": 1,
+"author": "mostafa_mohamed98"
+},
+{
+"ref": "databasecsv555/bfs-pipeline-arc-agi-3-agent-v16",
+"title": "BFS Pipeline ARC-AGI-3 Agent v16",
+"lastRun": "2026-07-21",
+"votes": 5,
+"author": "David Martin"
+},
+{
+"ref": "bang1850/arc-agi-3-duck-balanced-ternary-10d-int4sp-v6",
+"title": "Arc Agi 3 Duck Balanced Ternary 10d Int4sp V6",
+"lastRun": "2026-07-21",
+"votes": 5,
+"author": "\u0e18\u0e19\u0e32\u0e01\u0e23 \u0e2b\u0e32\u0e0d\u0e27\u0e07\u0e04\u0e4c"
+},
+{
+"ref": "quangnguyen711/payt-baseline-ic",
+"title": "PAYT_Baseline_IC",
+"lastRun": "2026-07-21",
+"votes": 38,
+"author": "QuangNguyen711"
+},
+{
+"ref": "gladoscc/celestia-duck-literal",
+"title": "celestia duck literal",
+"lastRun": "2026-07-21",
+"votes": 2,
+"author": "Danny Wu"
+},
+{
+"ref": "ayodejiibrahimlateef/arc3-v52-duck-runtime-verified-rtx6000",
+"title": "ARC3 v52 Duck Runtime Verified RTX6000",
+"lastRun": "2026-07-21",
+"votes": 0,
+"author": "Ayodeji"
+},
+{
+"ref": "obirdy/arc3-duck-verified-world-model-cpu-commit",
+"title": "ARC3 Duck - verified world-model CPU commit",
+"lastRun": "2026-07-20",
+"votes": 2,
+"author": "Manan Gupta"
+},
+{
+"ref": "ngabofreddy/arc-prize-2026-arc-agi-3-starter",
+"title": "ARC Prize 2026 \u2014 ARC-AGI-3 Starter",
+"lastRun": "2026-07-20",
+"votes": 2,
+"author": "NGABO FREDDY"
+},
+{
+"ref": "dawillowtree/notebook00fe487eaa",
+"title": "notebook00fe487eaa",
+"lastRun": "2026-07-20",
+"votes": 0,
+"author": "DA willowtree"
+},
+{
+"ref": "nguyenle2k4/yolo26-unified-pose-resume-any-checkpoint",
+"title": "YOLO26 Unified Pose Resume Any Checkpoint",
+"lastRun": "2026-07-20",
+"votes": 0,
+"author": "Nguy\u00ean L\u00ea"
+},
+{
+"ref": "yw8837/agi-1",
+"title": "AGI_1",
+"lastRun": "2026-07-20",
+"votes": 0,
+"author": "yw8837"
+},
+{
+"ref": "nguyenle2k4/yolo26-unified-pose-epoch137-test",
+"title": "YOLO26 Unified Pose Epoch137 Test",
+"lastRun": "2026-07-19",
+"votes": 0,
+"author": "Nguy\u00ean L\u00ea"
+},
+{
+"ref": "bang1850/arc3-hybrid-v23-dict-fix",
+"title": "ARC3 Hybrid V23 Dict Fix",
+"lastRun": "2026-07-19",
+"votes": 0,
+"author": "\u0e18\u0e19\u0e32\u0e01\u0e23 \u0e2b\u0e32\u0e0d\u0e27\u0e07\u0e04\u0e4c"
+},
+{
+"ref": "andreasholberg/arc-agi-3",
+"title": "ARC-AGI-3",
+"lastRun": "2026-07-19",
+"votes": 1,
+"author": "Andreas Holberg"
+},
+{
+"ref": "bang1850/arc3-hybrid-v22-pure-algo-fixed",
+"title": "ARC3 Hybrid V22 Pure Algo Fixed",
+"lastRun": "2026-07-19",
+"votes": 0,
+"author": "\u0e18\u0e19\u0e32\u0e01\u0e23 \u0e2b\u0e32\u0e0d\u0e27\u0e07\u0e04\u0e4c"
+},
+{
+"ref": "giahuytran1/notebookc655d6e79f",
+"title": "notebookc655d6e79f",
+"lastRun": "2026-07-19",
+"votes": 1,
+"author": "Gia Huy Tr\u1ea7n"
+},
+{
+"ref": "obirdy/arc3-duck-known-score-baseline",
+"title": "ARC3 Duck - known-score baseline",
+"lastRun": "2026-07-19",
+"votes": 4,
+"author": "Manan Gupta"
+},
+{
+"ref": "nguyenle2k4/yolo26-unified-pose-3-datasets-ui-ready",
+"title": "YOLO26 Unified Pose 3 Datasets UI Ready",
+"lastRun": "2026-07-18",
+"votes": 1,
+"author": "Nguy\u00ean L\u00ea"
+},
+{
+"ref": "bang1850/arc3-hybrid-v21-pure-algorithmic",
+"title": "ARC3 Hybrid V21 Pure Algorithmic",
+"lastRun": "2026-07-18",
+"votes": 0,
+"author": "\u0e18\u0e19\u0e32\u0e01\u0e23 \u0e2b\u0e32\u0e0d\u0e27\u0e07\u0e04\u0e4c"
+},
+{
+"ref": "kevin250304/arc3-duck-minimal-action7-reproducible",
+"title": "ARC3 Duck minimal ACTION7 reproducible",
+"lastRun": "2026-07-18",
+"votes": 3,
+"author": "Yin Li"
+},
+{
+"ref": "bang1850/arc3-hybrid-v20-verified-causal-fusion",
+"title": "ARC3 Hybrid V20 Verified Causal Fusion",
+"lastRun": "2026-07-18",
+"votes": 0,
+"author": "\u0e18\u0e19\u0e32\u0e01\u0e23 \u0e2b\u0e32\u0e0d\u0e27\u0e07\u0e04\u0e4c"
+},
+{
+"ref": "rishig777/stage-1",
+"title": "STAGE 1",
+"lastRun": "2026-07-18",
+"votes": 1,
+"author": "Rishi"
+},
+{
+"ref": "bang1850/arc3-hybrid-v19-ultra-low-vram-causal-fusion",
+"title": "ARC3 Hybrid V19 Ultra-Low-VRAM Causal Fusion",
+"lastRun": "2026-07-18",
+"votes": 0,
+"author": "\u0e18\u0e19\u0e32\u0e01\u0e23 \u0e2b\u0e32\u0e0d\u0e27\u0e07\u0e04\u0e4c"
+},
+{
+"ref": "dawillowtree/arc-prize-2026-arc-agi-3-trainexplorgameai",
+"title": "ARC Prize 2026 \u2014 ARC-AGI-3 TrainExplorGameAI",
+"lastRun": "2026-07-17",
+"votes": 0,
+"author": "DA willowtree"
+},
+{
+"ref": "rishig777/sr-corrnet-offline-gpu-fixed-inputs",
+"title": "SR-CorrNet - Offline GPU (fixed inputs)",
+"lastRun": "2026-07-17",
+"votes": 0,
+"author": "Rishi"
+},
+{
+"ref": "paultechm/arc-prize-2026-arc-agi-3-eda-minimal",
+"title": "arc-prize-2026-arc-agi-3-eda-minimal",
+"lastRun": "2026-07-17",
+"votes": 2,
+"author": "Paul Joseph"
+},
+{
+"ref": "paultechm/arc-prize-2026-arc-agi-3-eda-v4",
+"title": "arc-prize-2026-arc-agi-3-eda-v4",
+"lastRun": "2026-07-17",
+"votes": 1,
+"author": "Paul Joseph"
+},
+{
+"ref": "hieuslay/payt-baseline-ic",
+"title": "PAYT_Baseline_IC",
+"lastRun": "2026-07-17",
+"votes": 0,
+"author": "HieuTT"
+},
+{
+"ref": "pzcuong/airace2026-task3",
+"title": "[AIRace2026]Task3",
+"lastRun": "2026-07-17",
+"votes": 2,
+"author": "C\u01b0\u1eddng Ph\u1ea1m Qu\u1ed1c"
+},
+{
+"ref": "matthewblakeward/glyphmatics-sigilagi-highscore-solver",
+"title": "glyphmatics-sigilagi-highscore-solver",
+"lastRun": "2026-07-17",
+"votes": 0,
+"author": "Matthew Blake Ward"
+},
+{
+"ref": "faaizok/deflationary-mamba-extractor",
+"title": "Deflationary Mamba Extractor",
+"lastRun": "2026-07-16",
+"votes": 1,
+"author": "Faaiz OK"
+},
+{
+"ref": "databasecsv555/llama-3-2-11b-vision-arc-agi-3-agent",
+"title": "Llama 3.2 11B Vision ARC-AGI-3 Agent",
+"lastRun": "2026-07-16",
+"votes": 1,
+"author": "David Martin"
+},
+{
+"ref": "vladimiryakunin/arc-prize-2026-lcld-qwen",
+"title": "ARC Prize 2026 - LCLD Qwen",
+"lastRun": "2026-07-15",
+"votes": 0,
+"author": "Vladimir Yakunin"
+},
+{
+"ref": "lmaoobhai123/unet-sdf",
+"title": "unet+sdf",
+"lastRun": "2026-07-15",
+"votes": 1,
+"author": "Lmaoobhai_123"
+},
+{
+"ref": "bnhanhnguyn/run-t5-xlarge-o2",
+"title": "run_t5_xlarge_o2",
+"lastRun": "2026-07-15",
+"votes": 3,
+"author": "B\u00ecnh Anh Nguy\u1ec5n"
+},
+{
+"ref": "bnhanhnguyn/run-t5-large-o4",
+"title": "run_t5_large_o4",
+"lastRun": "2026-07-15",
+"votes": 0,
+"author": "B\u00ecnh Anh Nguy\u1ec5n"
+},
+{
+"ref": "samrishb/just-resubmission-rn-working-on-experiments",
+"title": "just resubmission, rn working on experiments!!!!",
+"lastRun": "2026-07-15",
+"votes": 60,
+"author": "Samrish B"
+},
+{
+"ref": "wethepeople918/arc3-public-shortcuts-solver-fallback",
+"title": "ARC3 Public Shortcuts + Solver Fallback",
+"lastRun": "2026-07-15",
+"votes": 3,
+"author": "Nine1Eight"
+},
+{
+"ref": "faizairfan786/notebook239ed9137f",
+"title": "notebook239ed9137f",
+"lastRun": "2026-07-14",
+"votes": 0,
+"author": "Faiza Irfan786"
+},
+{
+"ref": "wethepeople918/glyphmatics-sigilagi-glyph-llm3",
+"title": "Glyphmatics SigilAGI GLYPH-LLM3",
+"lastRun": "2026-07-14",
+"votes": 4,
+"author": "Nine1Eight"
+},
+{
+"ref": "matthewblakeward/nine18exactingagents",
+"title": "Nine18ExactingAgents",
+"lastRun": "2026-07-14",
+"votes": 4,
+"author": "Matthew Blake Ward"
+},
+{
+"ref": "shreyas4/arc3-duck-v12",
+"title": "arc3 duck v12",
+"lastRun": "2026-07-13",
+"votes": 0,
+"author": "Shreyas"
+},
+{
+"ref": "josefkurkedwards/lot-agent",
+"title": "LoT Agent",
+"lastRun": "2026-07-13",
+"votes": 1,
+"author": "Josef Kurk Edwards"
+},
+{
+"ref": "wethepeople918/arc3-crow",
+"title": "arc3 crow",
+"lastRun": "2026-07-13",
+"votes": 1,
+"author": "Nine1Eight"
+},
+{
+"ref": "vivekgana/arc-agi-3-neural-guided-solver",
+"title": "ARC-AGI-3 Neural-Guided Solver",
+"lastRun": "2026-07-13",
+"votes": 1,
+"author": "ganapathi ekambaram"
+},
+{
+"ref": "wethepeople918/arc-agi-3-exact-non-replay-team",
+"title": "ARC AGI 3 Exact Non Replay Team",
+"lastRun": "2026-07-12",
+"votes": 5,
+"author": "Nine1Eight"
+},
+{
+"ref": "bang1850/arc-agi-3-duck-reliability-v2-lean-token",
+"title": "ARC-AGI-3 Duck Reliability V2 - Lean Token",
+"lastRun": "2026-07-12",
+"votes": 0,
+"author": "\u0e18\u0e19\u0e32\u0e01\u0e23 \u0e2b\u0e32\u0e0d\u0e27\u0e07\u0e04\u0e4c"
+},
+{
+"ref": "kevin250304/arc3-duck-v9b-recovery-banking",
+"title": "ARC3 Duck v9b recovery banking",
+"lastRun": "2026-07-12",
+"votes": 5,
+"author": "Yin Li"
+},
+{
+"ref": "commencethescourge/arc-agi-3-baseline-submission",
+"title": "ARC AGI 3 Baseline Submission",
+"lastRun": "2026-07-11",
+"votes": 3,
+"author": "commencethescourge"
+},
+{
+"ref": "suzuai/ai-virtual-wardrobe-v2-catv2ton-offline",
+"title": "ai-virtual-wardrobe-v2-CatV2TON-offline",
+"lastRun": "2026-07-11",
+"votes": 0,
+"author": "SUZUAI"
+},
+{
+"ref": "kevin250304/arc3-duck-v7-reproducible-baseline",
+"title": "ARC3 Duck v7 reproducible baseline",
+"lastRun": "2026-07-11",
+"votes": 12,
+"author": "Yin Li"
+},
+{
+"ref": "chrispaulwalker/g1b-gemma-4-31b-murad-smoke-m025",
+"title": "G1b Gemma-4-31B Murad smoke M025",
+"lastRun": "2026-07-11",
+"votes": 7,
+"author": "Chris Paul Walker"
+},
+{
+"ref": "junjin2/tufa-duck-original-fastsubmit",
+"title": "tufa duck original fastsubmit",
+"lastRun": "2026-07-10",
+"votes": 6,
+"author": "bplovers"
+},
+{
+"ref": "haodou092/feedback-guided-arc-agent",
+"title": "Feedback-Guided ARC Agent",
+"lastRun": "2026-07-10",
+"votes": 5,
+"author": "haodou092"
+},
+{
+"ref": "maxingkong733/arc3-duck-dead-signature",
+"title": "arc3-duck-dead-signature",
+"lastRun": "2026-07-09",
+"votes": 3,
+"author": "maxingkong733"
+},
+{
+"ref": "yousefturk/fluidmind-arc-agi-3-agent",
+"title": "FluidMind ARC-AGI-3 Agent",
+"lastRun": "2026-07-09",
+"votes": 0,
+"author": "Yousef Turk"
+},
+{
+"ref": "anglolodorf/fork-of-taaf-duck-harness-grammar",
+"title": "fork-of-taaf-duck-harness-grammar",
+"lastRun": "2026-07-09",
+"votes": 0,
+"author": "ANGOUAH"
+},
+{
+"ref": "anglolodorf/taaf-duck-harness-grammar",
+"title": "taaf-duck-harness-grammar",
+"lastRun": "2026-07-09",
+"votes": 4,
+"author": "ANGOUAH"
+},
+{
+"ref": "foysalemonshanto/arc-prize-2026-arc-agi-3-experimental",
+"title": " ARC Prize 2026 - ARC-AGI-3 Experimental",
+"lastRun": "2026-07-09",
+"votes": 1,
+"author": "FOYSAL"
+},
+{
+"ref": "hongdaekim/first-1",
+"title": "first_1",
+"lastRun": "2026-07-09",
+"votes": 5,
+"author": "Hong Dae Kim"
+},
+{
+"ref": "maxingkong733/arc3-duck-v7-submit",
+"title": "arc3-duck-v7-submit",
+"lastRun": "2026-07-08",
+"votes": 3,
+"author": "maxingkong733"
+},
+{
+"ref": "boristown/taaf-duck-harness-kaggle",
+"title": "taaf-duck-harness-kaggle",
+"lastRun": "2026-07-08",
+"votes": 8,
+"author": "\u6697\u9ed1AGI"
+},
+{
+"ref": "nesfan/nlp-finetune",
+"title": "NLP finetune",
+"lastRun": "2026-07-08",
+"votes": 1,
+"author": "Tr\u01b0\u1eddng Th\u1ecbnh L\u00ea"
+},
+{
+"ref": "abdullahshafi2021/arc-prize-26-arc-agi-3-1st-try",
+"title": "arc prize 26 arc agi 3 1st try",
+"lastRun": "2026-07-08",
+"votes": 0,
+"author": "unknown"
+},
+{
+"ref": "ayodejiibrahimlateef/arc3-v35-exact-public-taaf-1-21-rtx6000",
+"title": "ARC3 v35 Exact Public TAAF 1.21 RTX6000",
+"lastRun": "2026-07-08",
+"votes": 0,
+"author": "Ayodeji"
+},
+{
+"ref": "kieuhongphong/ablation-dl-biolvm-v3",
+"title": "Ablation DL_BioLVM V3",
+"lastRun": "2026-07-08",
+"votes": 7,
+"author": "Kieu Hong Phong"
+},
+{
+"ref": "drozza/sonnia-concurrency-bench-v2",
+"title": "sonnia-concurrency-bench-v2",
+"lastRun": "2026-07-07",
+"votes": 0,
+"author": "drozza"
+},
+{
+"ref": "trex99/arc3-duck-v4",
+"title": "arc3-duck-v4",
+"lastRun": "2026-07-07",
+"votes": 1,
+"author": "TREX99"
+},
+{
+"ref": "wethepeople918/notebook2168391666",
+"title": "notebook2168391666",
+"lastRun": "2026-07-06",
+"votes": 1,
+"author": "Nine1Eight"
+},
+{
+"ref": "ko0kip/arc-agi-3-gemma-4-31b-reflection-agent",
+"title": "ARC-AGI-3: Gemma-4-31B Reflection Agent",
+"lastRun": "2026-07-06",
+"votes": 81,
+"author": "Quanyi Li"
+},
+{
+"ref": "trex99/arc3-duck-qwen3vl4",
+"title": "arc3-duck-qwen3vl4",
+"lastRun": "2026-07-06",
+"votes": 0,
+"author": "TREX99"
+},
+{
+"ref": "josefkurkedwards/notebookd2539338ab",
+"title": "notebookd2539338ab",
+"lastRun": "2026-07-06",
+"votes": 1,
+"author": "Josef Kurk Edwards"
+},
+{
+"ref": "chrispaulwalker/taaf-duck-share-probe",
+"title": "TAAF Duck share probe",
+"lastRun": "2026-07-06",
+"votes": 4,
+"author": "Chris Paul Walker"
+},
+{
+"ref": "trex99/arc3-duck-qwen3vl3",
+"title": "arc3-duck-qwen3vl3",
+"lastRun": "2026-07-06",
+"votes": 1,
+"author": "TREX99"
+},
+{
+"ref": "arkadymaximov/tufa-labs-arc-agi-kam1k",
+"title": "Tufa Labs arc agi kam1k",
+"lastRun": "2026-07-06",
+"votes": 1,
+"author": "Arkady Maximov"
+},
+{
+"ref": "biohack44/1-07-great-team-tufa-labs",
+"title": "[1.07]-great team-Tufa Labs",
+"lastRun": "2026-07-06",
+"votes": 4,
+"author": "Emre Cirak"
+},
+{
+"ref": "trex99/arc3-duck-qwen3vl2",
+"title": "arc3-duck-qwen3vl2",
+"lastRun": "2026-07-06",
+"votes": 3,
+"author": "TREX99"
+},
+{
+"ref": "ghazarosbarseghyan91/arc-agi-3-frugalexplorer-agent",
+"title": "ARC-AGI-3 FrugalExplorer Agent",
+"lastRun": "2026-07-05",
+"votes": 0,
+"author": "Ghazaros Barseghyan"
+},
+{
+"ref": "felipegaldinofolk/capivara-1",
+"title": "capivara-1",
+"lastRun": "2026-07-05",
+"votes": 7,
+"author": "Felipe Galdino"
+},
+{
+"ref": "felipegaldinofolk/arcagi3-020-intrinsic-duck",
+"title": "arcagi3-020-intrinsic-duck",
+"lastRun": "2026-07-05",
+"votes": 0,
+"author": "Felipe Galdino"
+},
+{
+"ref": "datlq1202/dc-ae-original",
+"title": "dc_ae_original",
+"lastRun": "2026-07-05",
+"votes": 0,
+"author": "Dat Le Quoc"
+},
+{
+"ref": "rokaiyasomapti/taaf-duck-harness-kaggle-share-resubmission",
+"title": "taaf-duck-harness-kaggle-share(Resubmission)",
+"lastRun": "2026-07-05",
+"votes": 151,
+"author": "RS"
+},
+{
+"ref": "foysalemonshanto/taaf-duck-harness-kaggle-share",
+"title": "taaf-duck-harness-kaggle-share",
+"lastRun": "2026-07-05",
+"votes": 0,
+"author": "FOYSAL"
+},
+{
+"ref": "llkh0a/tufa-labs-duck-harness-but-gemma4",
+"title": "Tufa Labs duck harness but gemma4 ",
+"lastRun": "2026-07-05",
+"votes": 1,
+"author": "Kh0a"
+},
+{
+"ref": "chewkokwahibrainai/tufa-labs-duck-harness-june-30-milestone-winner",
+"title": "Tufa Labs duck harness [June 30 milestone winner]",
+"lastRun": "2026-07-04",
+"votes": 5,
+"author": "Chew Kok Wah"
+},
+{
+"ref": "daltongabrielomondi/arc-agi-3-competition-agent",
+"title": "ARC-AGI-3 competition Agent",
+"lastRun": "2026-07-04",
+"votes": 3,
+"author": "Dalton Omondi"
+},
+{
+"ref": "trex99/arc3-duck-v2",
+"title": "arc3-duck-v2",
+"lastRun": "2026-07-04",
+"votes": 17,
+"author": "TREX99"
+},
+{
+"ref": "lucifer19/arc-agi-3-hydra-novelty-graph-agent",
+"title": "\ud83d\udc09 ARC-AGI-3 Hydra \u2014 Novelty-Graph Agent",
+"lastRun": "2026-07-04",
+"votes": 7,
+"author": "Krizs\u00f3 Gergely"
+},
+{
+"ref": "vishvambarudavant/merge-model",
+"title": "merge_model",
+"lastRun": "2026-07-04",
+"votes": 0,
+"author": "Vishvambar Udavant"
+},
+{
+"ref": "trex99/arc3-duck-winner-prevframe",
+"title": "arc3-duck-winner-prevframe",
+"lastRun": "2026-07-03",
+"votes": 7,
+"author": "TREX99"
+},
+{
+"ref": "saul369delgado/tufa-labs-duck-harness-june-30-milestone-winner",
+"title": "Tufa Labs duck harness [June 30 milestone winner]",
+"lastRun": "2026-07-03",
+"votes": 1,
+"author": "Sa\u00fal Delgado "
+},
+{
+"ref": "pscamillo/arc-prize-2026-arc-agi-3-starter",
+"title": "ARC Prize 2026 \u2014 ARC-AGI-3 Starter",
+"lastRun": "2026-07-03",
+"votes": 99,
+"author": "pscamillo"
+},
+{
+"ref": "rumblingb/arc3-stochastic-goose-baseline-20260703",
+"title": "ARC3 Stochastic Goose Baseline 20260703",
+"lastRun": "2026-07-03",
+"votes": 0,
+"author": "rumbling_b"
+},
+{
+"ref": "shloksah/arc-agi-3-frugalexplorer-agent",
+"title": "ARC-AGI-3 FrugalExplorer Agent",
+"lastRun": "2026-07-03",
+"votes": 4,
+"author": "Shlok Sah"
+},
+{
+"ref": "llkh0a/tufa-labs-duck-harness-but-qwen-35b",
+"title": "Tufa Labs duck harness but qwen 35b ",
+"lastRun": "2026-07-02",
+"votes": 2,
+"author": "Kh0a"
+},
+{
+"ref": "pi2caefeithoh0ciephe/arc3-qwen-agent",
+"title": "ARC3 Qwen Agent",
+"lastRun": "2026-07-02",
+"votes": 0,
+"author": "Martin Kolar"
+},
+{
+"ref": "trungnguyen2710t/rtx6000",
+"title": "RTX6000",
+"lastRun": "2026-07-02",
+"votes": 1,
+"author": "Nguy\u1ec5n V\u0103n Quang Trung"
+},
+{
+"ref": "shreya374/prize-2026",
+"title": " prize 2026",
+"lastRun": "2026-07-02",
+"votes": 1,
+"author": "Shreya_374"
+},
+{
+"ref": "aureioo/tomas-arc-agi-3-v6-6-cca-rule-hypothesis",
+"title": "TOMAS ARC AGI 3 v6 6 CCA Rule Hypothesis",
+"lastRun": "2026-07-02",
+"votes": 1,
+"author": "aureioo"
+},
+{
+"ref": "caoyupeng/1-21-from-great-team-tufa-labs",
+"title": "[1.21]from-great team-Tufa Labs",
+"lastRun": "2026-07-01",
+"votes": 48,
+"author": "SpeedSci"
+},
+{
+"ref": "jeroencottaar/tufa-labs-duck-harness-june-30-milestone-winner",
+"title": "Tufa Labs duck harness [June 30 milestone winner]",
+"lastRun": "2026-07-01",
+"votes": 321,
+"author": "Jeroen Cottaar"
+},
+{
+"ref": "cdnghnam/fork-of-notebook-rvq-colbert-beir-53b0c0",
+"title": "Fork of [notebook] RVQ ColBERT -BEIR 53b0c0",
+"lastRun": "2026-07-01",
+"votes": 1,
+"author": "\u0110\u1ee9c D\u0169ng H\u00e0 Nam"
+},
+{
+"ref": "foysalemonshanto/never-stop-learning",
+"title": "Never Stop Learning ",
+"lastRun": "2026-07-01",
+"votes": 0,
+"author": "FOYSAL"
+},
+{
+"ref": "mehemudazad/measnet-rtx-6000-pro",
+"title": "MeasNet-rtx-6000-pro",
+"lastRun": "2026-07-01",
+"votes": 0,
+"author": "Mehemud Azad"
+},
+{
+"ref": "hippolytepilchen/fork-of-notebooka824efee1d",
+"title": "Fork of notebooka824efee1d",
+"lastRun": "2026-07-01",
+"votes": 3,
+"author": "Hippolyte Pilchen"
+},
+{
+"ref": "juanlavierigoiri/evidloom-arc-agi-3-llm",
+"title": "Evidloom ARC-AGI-3 LLM",
+"lastRun": "2026-07-01",
+"votes": 1,
+"author": "Juan Lavieri Goiri"
+},
+{
+"ref": "farmountain/harness-test-arc-agi-3-sub01",
+"title": "Harness Test Arc Agi 3 Sub01",
+"lastRun": "2026-07-01",
+"votes": 0,
+"author": "Liew Keong Han"
+},
+{
+"ref": "aureioo/tomas-arc-agi-3-v6-6-cca-rule-hypothesis-engine",
+"title": "TOMAS ARC AGI 3 v6.6 CCA + Rule Hypothesis Engine",
+"lastRun": "2026-06-30",
+"votes": 0,
+"author": "aureioo"
+},
+{
+"ref": "scrattle/sighted-fox-driver-arc-agi-3-gemma-vllm",
+"title": "sighted-fox driver \u2014 ARC-AGI-3 (Gemma vLLM)",
+"lastRun": "2026-06-30",
+"votes": 0,
+"author": "Scrattle"
+},
+{
+"ref": "ruichardliu/milestone1-2nd-solution",
+"title": "Milestone1-2nd-solution ",
+"lastRun": "2026-06-30",
+"votes": 57,
+"author": "Reki"
+},
+{
+"ref": "aureioo/tomas-arc-agi-3-v6-6-1-conditional-pip",
+"title": "tomas-arc-agi-3-v6-6-1-conditional-pip",
+"lastRun": "2026-06-30",
+"votes": 0,
+"author": "aureioo"
+},
+{
+"ref": "mbmmurad/arc-agi-3-lb-0-86-3rd-place-candidate-milestone",
+"title": "ARC-AGI-3 LB 0.86(3rd place candidate- Milestone)",
+"lastRun": "2026-06-30",
+"votes": 101,
+"author": "Md Boktiar Mahbub Murad"
+},
+{
+"ref": "jeroencottaar/taaf-duck-harness-kaggle",
+"title": "taaf-duck-harness-kaggle",
+"lastRun": "2026-06-30",
+"votes": 251,
+"author": "Jeroen Cottaar"
+},
+{
+"ref": "inversion/arc3-sample-submission-stochastic-goose",
+"title": "ARC3 Sample Submission - Stochastic Goose",
+"lastRun": "2026-03-24",
+"votes": 680,
+"author": "inversion"
+},
+{
+"ref": "inversion/arc3-sample-submission-random-agent",
+"title": "ARC3 Sample Submission - Random Agent",
+"lastRun": "2026-03-24",
+"votes": 614,
+"author": "inversion"
+},
+{
+"ref": "ashvinsingh/ash-s-arc-agi-3-agent",
+"title": "Ash's ARC-AGI-3 Agent ",
+"lastRun": "2026-06-10",
+"votes": 238,
+"author": "ashvin singh"
+},
+{
+"ref": "projectforty2/forge-arc-agi-3-agent",
+"title": "FORGE ARC-AGI-3 Agent",
+"lastRun": "2026-03-31",
+"votes": 165,
+"author": "CHRONOS"
+},
+{
+"ref": "nihilisticneuralnet/0-46-arc-agi-3-persistent-memory-bfs-arc-solver",
+"title": "[0.46] ARC-AGI-3: Persistent Memory BFS ARC Solver",
+"lastRun": "2026-05-29",
+"votes": 152,
+"author": "parthenos"
+},
+{
+"ref": "jeroencottaar/simplified-submission-approach",
+"title": "Simplified submission approach",
+"lastRun": "2026-05-02",
+"votes": 122,
+"author": "Jeroen Cottaar"
+},
+{
+"ref": "inversion/arc3-sample-submission-just-explore",
+"title": "ARC3 Sample Submission - Just Explore",
+"lastRun": "2026-03-24",
+"votes": 115,
+"author": "inversion"
+},
+{
+"ref": "vyankteshdwivedi/arc-agi-3-hybrid-solver-bfs-cnn-heuristics",
+"title": "ARC-AGI-3 Hybrid Solver (BFS + CNN + Heuristics)",
+"lastRun": "2026-06-13",
+"votes": 100,
+"author": "Venky"
+},
+{
+"ref": "poby7722/versrion-47-is-bset-score-0-54",
+"title": "versrion 47 is bset score [0.54]",
+"lastRun": "2026-06-27",
+"votes": 89,
+"author": "LEEKANG"
+},
+{
+"ref": "poonszesen/arc-agi-3-interactive-testbed-200-games",
+"title": "ARC-AGI 3 Interactive Testbed: 200+ Games",
+"lastRun": "2026-03-26",
+"votes": 64,
+"author": "theredbluepill"
+},
+{
+"ref": "foysalemonshanto/ash-s-arc-agi-3-agent-d83ab9",
+"title": "Ash's ARC-AGI-3 Agent  d83ab9",
+"lastRun": "2026-05-04",
+"votes": 59,
+"author": "FOYSAL"
+},
+{
+"ref": "eslamelokpy/arc-agi-3-agent-17",
+"title": " ARC-AGI-3 Agent-17",
+"lastRun": "2026-05-02",
+"votes": 57,
+"author": "Eslam Elokpy"
+},
+{
+"ref": "poonszesen/redpill-latent-imaginations-in-dream-rollouts",
+"title": "Redpill: Latent Imaginations in Dream Rollouts",
+"lastRun": "2026-05-12",
+"votes": 53,
+"author": "theredbluepill"
+},
+{
+"ref": "pixiux/forge-arc-agi-3-agent",
+"title": "FORGE ARC-AGI-3 Agent",
+"lastRun": "2026-06-26",
+"votes": 50,
+"author": "PyJa"
+},
+{
+"ref": "shiinehata/arc3-agent-evaluation-and-recording-viewer",
+"title": "ARC3 Agent Evaluation and Recording Viewer",
+"lastRun": "2026-04-03",
+"votes": 47,
+"author": "Duc-Cuong Le"
+},
+{
+"ref": "amanatar/arc-agi-3-master-agen",
+"title": "arc-agi-3-master-agen",
+"lastRun": "2026-03-27",
+"votes": 46,
+"author": "Aman Atar"
+},
+{
+"ref": "gourabr0y555/arc-agi-3-graph-based-exploration-agent",
+"title": "ARC-AGI-3 | Graph-Based Exploration Agent",
+"lastRun": "2026-04-07",
+"votes": 46,
+"author": "dataWr3cker"
+},
+{
+"ref": "mpwolke/raider-of-the-arc-agi",
+"title": "Raider of the ARC AGI",
+"lastRun": "2026-03-25",
+"votes": 42,
+"author": "Mar\u00edlia Prata"
+},
+{
+"ref": "gregkamradt/arc-agi-3-gpt-oss-120b",
+"title": "ARC-AGI-3: GPT-OSS-120B",
+"lastRun": "2026-06-17",
+"votes": 40,
+"author": "Greg Kamradt"
+},
+{
+"ref": "karnakbaevarthur/arc-agi-3-level-by-level-logic-explanations",
+"title": "ARC-AGI-3: Level-by-Level Logic Explanations",
+"lastRun": "2026-05-16",
+"votes": 37,
+"author": "Karnakbayev Artur"
+},
+{
+"ref": "marynaborovska/hybrid-search-and-learn-agent-0-35-lb",
+"title": "Hybrid Search-and-Learn Agent | 0.35+ LB",
+"lastRun": "2026-04-20",
+"votes": 31,
+"author": "Maryna Borovska"
+},
+{
+"ref": "nihilisticneuralnet/arc-agi-3-monte-carlo-tree-search-solver",
+"title": "ARC-AGI-3: Monte Carlo Tree Search Solver",
+"lastRun": "2026-04-01",
+"votes": 31,
+"author": "parthenos"
+},
+{
+"ref": "rauffauzanrambe/arc-agi-3-agent-running-training-v17",
+"title": "ARC-AGI-3 Agent Running Training V17",
+"lastRun": "2026-05-16",
+"votes": 25,
+"author": "Ra'uf Fauzan Rambe"
+},
+{
+"ref": "itsyoursumit/0-35-forge-v16-trigger-aware-bfs-submi3",
+"title": "[0.35]FORGE v16 Trigger-aware BFS  submi3",
+"lastRun": "2026-04-06",
+"votes": 25,
+"author": "Sumit Pandey"
+},
+{
+"ref": "ravikaash/qor-arc-agi-3-agent",
+"title": "QOR ARC-AGI-3 Agent",
+"lastRun": "2026-03-26",
+"votes": 25,
+"author": "Ravikash Gupta"
+},
+{
+"ref": "yuriao/arc-agi-3-memoryagent",
+"title": "ARC-AGI-3 memoryAgent",
+"lastRun": "2026-04-14",
+"votes": 23,
+"author": "yuri-ao"
+},
+{
+"ref": "nihilisticneuralnet/arc-agi-3-graph-based-exploration-lightweight",
+"title": "ARC-AGI-3: Graph-Based Exploration (lightweight)",
+"lastRun": "2026-03-25",
+"votes": 23,
+"author": "parthenos"
+},
+{
+"ref": "thezetaproject/cognitive-rungs",
+"title": "cognitive-rungs",
+"lastRun": "2026-04-20",
+"votes": 22,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "mdferozahmedafm/arc-agi-3-solution-using-trigger-aware-bfs",
+"title": "ARC-AGI-3 Solution using Trigger-Aware BFS",
+"lastRun": "2026-04-03",
+"votes": 21,
+"author": "Md Feroz Ahmed"
+},
+{
+"ref": "gourabr0y555/arc-agi-3-v-2",
+"title": "ARC-AGI-3 v.2",
+"lastRun": "2026-04-06",
+"votes": 21,
+"author": "dataWr3cker"
+},
+{
+"ref": "ashvinsingh/arc-agi-3-interactive-testbed-200-games",
+"title": "ARC-AGI 3 Interactive Testbed: 200+ Games",
+"lastRun": "2026-06-11",
+"votes": 19,
+"author": "ashvin singh"
+},
+{
+"ref": "nihilisticneuralnet/0-17-arc-agi-3-residual-cnn-state-graph",
+"title": "[0.17] ARC-AGI-3: Residual CNN+ State Graph",
+"lastRun": "2026-03-28",
+"votes": 19,
+"author": "parthenos"
+},
+{
+"ref": "thezetaproject/bittertruth-ai-arc-agi-3-competition-submission",
+"title": "BitterTruth-AI ARC-AGI-3 Competition Submission",
+"lastRun": "2026-03-31",
+"votes": 19,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "sigmaborov/arc-agi-3-baseline-starter",
+"title": "ARC-AGI-3 Baseline Starter",
+"lastRun": "2026-03-30",
+"votes": 19,
+"author": "sigmaborov"
+},
+{
+"ref": "aminmahmoudalifayed/think-adapt-solve",
+"title": "\"Think. Adapt. Solve.\"",
+"lastRun": "2026-03-28",
+"votes": 16,
+"author": "Dr/ameen Fayed"
+},
+{
+"ref": "yaroslavkholmirzayev/no-error-heartbeat",
+"title": "No-Error Heartbeat",
+"lastRun": "2026-06-01",
+"votes": 14,
+"author": "Yaroslav kholmirzayev"
+},
+{
+"ref": "haradibots/arc3-start-guide",
+"title": "ARC3 start guide",
+"lastRun": "2026-03-26",
+"votes": 14,
+"author": "Haradi Bots"
+},
+{
+"ref": "matthewblakeward/shotinthedark",
+"title": "ShotInTheDark",
+"lastRun": "2026-06-23",
+"votes": 13,
+"author": "Matthew Blake Ward"
+},
+{
+"ref": "suneetsaini/arc-agi-3-dreamerv3-icm-agent",
+"title": "ARC-AGI-3-DreamerV3 + ICM Agent",
+"lastRun": "2026-06-04",
+"votes": 13,
+"author": "Suneet Kumar Saini"
+},
+{
+"ref": "itbert/arc-prize-2026-new-baselinebased",
+"title": "ARC Prize 2026 | New Baselinebased",
+"lastRun": "2026-03-26",
+"votes": 13,
+"author": "alba"
+},
+{
+"ref": "farmountain/arc-agi3-v31-zorojuro-hybrid-v9",
+"title": "ARC AGI3 v31 zorojuro Hybrid v9",
+"lastRun": "2026-05-17",
+"votes": 12,
+"author": "Liew Keong Han"
+},
+{
+"ref": "garlictoday/arc-agi-3-explorer-agent-graph-based",
+"title": "arc-agi-3-explorer-agent-graph-based",
+"lastRun": "2026-04-02",
+"votes": 12,
+"author": "GarlicToday"
+},
+{
+"ref": "amanatar/arc-prize-2026-arc-agi-3",
+"title": "ARC Prize 2026 - ARC-AGI-3",
+"lastRun": "2026-03-26",
+"votes": 12,
+"author": "Aman Atar"
+},
+{
+"ref": "guanghanning/arc-agi-3-warm-up-reasoning-gym-1-872-puzzles",
+"title": "ARC-AGI-3 Warm-up Reasoning Gym: 1,872 puzzles",
+"lastRun": "2026-03-26",
+"votes": 12,
+"author": "Guanghan Ning"
+},
+{
+"ref": "suneetsaini/arc2026-paper-track",
+"title": "ARC2026 - Paper Track",
+"lastRun": "2026-04-02",
+"votes": 12,
+"author": "Suneet Kumar Saini"
+},
+{
+"ref": "tkhanna96/sg-telemetry-gated-kernel",
+"title": "sg telemetry-gated kernel",
+"lastRun": "2026-06-07",
+"votes": 10,
+"author": "Tkhanna96"
+},
+{
+"ref": "jek1wantaufik/arc-prize-2026-arc-agi-3",
+"title": "ARC Prize 2026 | ARC-AGI-3",
+"lastRun": "2026-05-23",
+"votes": 10,
+"author": "Jeki Wan Taufik"
+},
+{
+"ref": "thezetaproject/theorycoder-rlvr-arc-agi-3",
+"title": "theorycoder-rlvr-arc-agi-3",
+"lastRun": "2026-04-30",
+"votes": 10,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "thezetaproject/classical-game-rule-induction-arc-agi-3",
+"title": "Classical Game Rule Induction - ARC-AGI-3",
+"lastRun": "2026-04-26",
+"votes": 9,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "avikdas567/arc-agi-3-hybrid-dsl-program-search-with-planning",
+"title": "ARC-AGI-3: Hybrid DSL Program Search with Planning",
+"lastRun": "2026-03-26",
+"votes": 9,
+"author": "Avik Das"
+},
+{
+"ref": "haradibots/fork-of-arc3-start-guide",
+"title": "Fork of ARC3 start guide",
+"lastRun": "2026-03-26",
+"votes": 9,
+"author": "Haradi Bots"
+},
+{
+"ref": "meihuy/transformer-bpe",
+"title": "Transformer_BPE",
+"lastRun": "2026-06-12",
+"votes": 8,
+"author": "MeiHuy"
+},
+{
+"ref": "suneetsaini/arc-agi-3-noteboobk",
+"title": "ARC-AGI-3 Noteboobk",
+"lastRun": "2026-03-26",
+"votes": 8,
+"author": "Suneet Kumar Saini"
+},
+{
+"ref": "haradibots/arc3-start-guide-2",
+"title": "ARC3 start guide-2",
+"lastRun": "2026-03-26",
+"votes": 8,
+"author": "Haradi Bots"
+},
+{
+"ref": "nihilisticneuralnet/arc-agi-3-graph-exploration-w-value-learning",
+"title": "ARC-AGI-3: Graph Exploration w/ Value Learning",
+"lastRun": "2026-03-25",
+"votes": 8,
+"author": "parthenos"
+},
+{
+"ref": "foysalemonshanto/vllm-wheels",
+"title": "vllm_wheels",
+"lastRun": "2026-06-30",
+"votes": 7,
+"author": "FOYSAL"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v2-6",
+"title": "Resonance Agent ARC AGI 3 v2.6",
+"lastRun": "2026-05-21",
+"votes": 7,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "danxray/toot-toot-locus",
+"title": "Toot-toot Locus",
+"lastRun": "2026-06-23",
+"votes": 7,
+"author": "Dan X Ray"
+},
+{
+"ref": "dedquoc/ap2026-arc-agi-3-basic-agent-v1",
+"title": "AP2026-ARC-AGI-3-basic agent-v1",
+"lastRun": "2026-04-19",
+"votes": 7,
+"author": "De DQ"
+},
+{
+"ref": "arpitsinghgautam/arc-agi-3-random-agent-v0",
+"title": "ARC-AGI-3 Random Agent v0",
+"lastRun": "2026-04-09",
+"votes": 7,
+"author": "Arpit Singh Gautam"
+},
+{
+"ref": "hmnshudhmn24/arc-prize-2026-arc-agi-3",
+"title": "ARC Prize 2026 - ARC-AGI-3",
+"lastRun": "2026-03-27",
+"votes": 7,
+"author": "Himanshu Dhiman"
+},
+{
+"ref": "janettdoe/arc-agi-3",
+"title": "ARC-AGI-3",
+"lastRun": "2026-03-28",
+"votes": 7,
+"author": "janett doe"
+},
+{
+"ref": "brenorb/arc3-graph-pruned-frontier",
+"title": "ARC3 Graph Pruned Frontier",
+"lastRun": "2026-03-26",
+"votes": 7,
+"author": "Breno Brito"
+},
+{
+"ref": "brenorb/arc3-baseline-stochastic-goose",
+"title": "ARC3 Baseline - Stochastic Goose",
+"lastRun": "2026-03-26",
+"votes": 7,
+"author": "Breno Brito"
+},
+{
+"ref": "tkhanna96/arc3-fork-parthenos-bfs-v1",
+"title": "arc3 fork parthenos bfs v1",
+"lastRun": "2026-06-04",
+"votes": 6,
+"author": "Tkhanna96"
+},
+{
+"ref": "jihangli1121/arc-agi-3-forge-v3",
+"title": "ARC AGI 3 Forge v3",
+"lastRun": "2026-05-13",
+"votes": 6,
+"author": "Zink"
+},
+{
+"ref": "mosesjoshuacoker/arc-agi-3",
+"title": "ARC AGI 3",
+"lastRun": "2026-05-07",
+"votes": 6,
+"author": "Yeshua M. Coker"
+},
+{
+"ref": "thezetaproject/fractal-moe-arc-agi-3",
+"title": "Fractal MoE - ARC-AGI-3",
+"lastRun": "2026-05-09",
+"votes": 6,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "thezetaproject/llm-visual-analyzer-arc-agi-3",
+"title": "LLM Visual Analyzer - ARC-AGI-3",
+"lastRun": "2026-05-05",
+"votes": 6,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "thezetaproject/stitch-library-learner-arc-agi-3",
+"title": "Stitch Library Learner - ARC-AGI-3",
+"lastRun": "2026-05-05",
+"votes": 6,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "dedquoc/fast-arc-agent-parallel-cnn",
+"title": "Fast ARC Agent: Parallel CNN ",
+"lastRun": "2026-05-20",
+"votes": 6,
+"author": "De DQ"
+},
+{
+"ref": "foysalemonshanto/arc-agi-3-gemma-4-31b-reflection-agent",
+"title": "ARC-AGI-3: Gemma-4-31B Reflection Agent",
+"lastRun": "2026-06-30",
+"votes": 5,
+"author": "FOYSAL"
+},
+{
+"ref": "kokinnwakashuu/arc-agi-3-solver-diary-agent-v15-day2",
+"title": "ARC AGI 3 Solver Diary Agent v15 Day2",
+"lastRun": "2026-06-22",
+"votes": 5,
+"author": "kokinnwakashuu"
+},
+{
+"ref": "wentixiaogege/arc26-3-agent-v15-copy",
+"title": "[ARC26-3] Agent v15 Copy",
+"lastRun": "2026-06-11",
+"votes": 5,
+"author": "wentixiaogege"
+},
+{
+"ref": "sorenravn/arc-agi-3-0-46-persistent-memory-bfs",
+"title": "ARC-AGI-3 0.46 Persistent Memory BFS",
+"lastRun": "2026-06-09",
+"votes": 5,
+"author": "S\u00f8ren Ravn Andersen"
+},
+{
+"ref": "wethepeople918/3igacra",
+"title": "3igacra",
+"lastRun": "2026-06-10",
+"votes": 5,
+"author": "Nine1Eight"
+},
+{
+"ref": "paultechm/arc-agi-interactive-prod",
+"title": "ARC-AGI-interactive-prod",
+"lastRun": "2026-06-18",
+"votes": 5,
+"author": "Paul Joseph"
+},
+{
+"ref": "cmechevalier/face-of-agi-arc-agi-3-rtx6000",
+"title": "FACE-OF-AGI ARC-AGI-3 RTX6000",
+"lastRun": "2026-06-30",
+"votes": 5,
+"author": "chev"
+},
+{
+"ref": "hrbzhq/arc-agi-3-agent",
+"title": "ARC-AGI-3 Agent",
+"lastRun": "2026-06-12",
+"votes": 5,
+"author": "q zh"
+},
+{
+"ref": "farmountain/arc-agi3-v28-bfs-offline",
+"title": "ARC AGI3 v28 BFS-offline",
+"lastRun": "2026-05-12",
+"votes": 5,
+"author": "Liew Keong Han"
+},
+{
+"ref": "thezetaproject/causal-jepa-trm-arc-agi-3",
+"title": "Causal-JEPA + TRM - ARC-AGI-3",
+"lastRun": "2026-05-09",
+"votes": 5,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "amanatar/worldmodel-graph-based-2d-grid-representation",
+"title": "WorldModel: Graph-Based 2D Grid Representation",
+"lastRun": "2026-04-12",
+"votes": 5,
+"author": "Aman Atar"
+},
+{
+"ref": "brenorb/arc3-forge-hybrid-control",
+"title": "ARC3 FORGE Hybrid Control",
+"lastRun": "2026-04-08",
+"votes": 5,
+"author": "Breno Brito"
+},
+{
+"ref": "abdullahasoliman/soliman-arc-agi-3-agent-boundaryexplorer-v6",
+"title": "Soliman ARC-AGI-3 Agent - BoundaryExplorer v6",
+"lastRun": "2026-03-27",
+"votes": 5,
+"author": "Abdullah Soliman"
+},
+{
+"ref": "abdullahasoliman/soliman-arc-agi-3-agent-smartexplorer-v5",
+"title": "Soliman ARC-AGI-3 Agent - SmartExplorer v5",
+"lastRun": "2026-03-27",
+"votes": 5,
+"author": "Abdullah Soliman"
+},
+{
+"ref": "brenorb/arc3-graph-based-exploration-lightweight",
+"title": "ARC3 Graph-Based Exploration Lightweight",
+"lastRun": "2026-03-26",
+"votes": 5,
+"author": "Breno Brito"
+},
+{
+"ref": "boristown/arc-agi-3-urad-0-6-candidate",
+"title": "ARC-AGI-3 URAD 0.6 Candidate",
+"lastRun": "2026-06-29",
+"votes": 4,
+"author": "\u6697\u9ed1AGI"
+},
+{
+"ref": "anglolodorf/forge-arc-agi-3-simplified-baseline",
+"title": "FORGE ARC-AGI-3 Simplified Baseline",
+"lastRun": "2026-06-27",
+"votes": 4,
+"author": "ANGOUAH"
+},
+{
+"ref": "olasadek/reason-better",
+"title": "reason better",
+"lastRun": "2026-06-15",
+"votes": 4,
+"author": "ola sadek"
+},
+{
+"ref": "hrbzhq/arc-agi-3-agent-final-submission",
+"title": "ARC-AGI-3 Agent Final Submission",
+"lastRun": "2026-06-27",
+"votes": 4,
+"author": "q zh"
+},
+{
+"ref": "tkhanna96/arc3-fork-parthenos-no-dataset-control-v0",
+"title": "arc3 fork parthenos no dataset control v0",
+"lastRun": "2026-06-04",
+"votes": 4,
+"author": "Tkhanna96"
+},
+{
+"ref": "matthewblakeward/arc-agi-3-sigil-v26-clean",
+"title": "ARC AGI 3 Sigil V26 Clean",
+"lastRun": "2026-06-01",
+"votes": 4,
+"author": "Matthew Blake Ward"
+},
+{
+"ref": "dongunning/sk48-frv-solution",
+"title": "Sk48 frv solution",
+"lastRun": "2026-06-06",
+"votes": 4,
+"author": "don gunning"
+},
+{
+"ref": "rivuletnriver/arc3-submission",
+"title": "arc3 submission ",
+"lastRun": "2026-05-26",
+"votes": 4,
+"author": "rivzzzzz"
+},
+{
+"ref": "bibisorobabydjon/arc-agi-3-quick-random-agent",
+"title": "ARC-AGI-3 Quick Random Agent",
+"lastRun": "2026-05-18",
+"votes": 4,
+"author": "no_esskeetit"
+},
+{
+"ref": "zhengxuyu/arc-agi-3-arc26-v1-give-up",
+"title": "ARC-AGI-3 arc26 v1 + give-up",
+"lastRun": "2026-05-17",
+"votes": 4,
+"author": "Zhengxu Yu"
+},
+{
+"ref": "aer3is/arc-agi-3-cd82-game-agent",
+"title": "ARC-AGI-3 CD82 Game Agent",
+"lastRun": "2026-05-18",
+"votes": 4,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "rauffauzanrambe/arc26-3-autonomous-bfs-planning-agent-v16",
+"title": "[ARC26-3] Autonomous BFS Planning Agent v16",
+"lastRun": "2026-05-16",
+"votes": 4,
+"author": "Ra'uf Fauzan Rambe"
+},
+{
+"ref": "claudethazar/bible",
+"title": "bible",
+"lastRun": "2026-05-04",
+"votes": 4,
+"author": "balthazar"
+},
+{
+"ref": "thezetaproject/llm-solver-composer-arc-agi-3",
+"title": "LLM Solver Composer - ARC-AGI-3",
+"lastRun": "2026-05-09",
+"votes": 4,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "huynguyenusa/arc-agi-3-baseline-starter",
+"title": "ARC-AGI-3 Baseline Starter",
+"lastRun": "2026-04-19",
+"votes": 4,
+"author": "Michael Thornton"
+},
+{
+"ref": "aidetective/froggys-random-agent-arc3",
+"title": "Froggys Random Agent ARC3",
+"lastRun": "2026-05-22",
+"votes": 4,
+"author": "Froggy McFrogson"
+},
+{
+"ref": "thezetaproject/ttt-mlp-arc-agi-3",
+"title": "TTT-MLP ARC-AGI-3",
+"lastRun": "2026-04-30",
+"votes": 4,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "mosesjoshuacoker/arc-agi-2026-001",
+"title": "ARC - AGI - 2026 - 001",
+"lastRun": "2026-04-14",
+"votes": 4,
+"author": "Yeshua M. Coker"
+},
+{
+"ref": "amanatar/forge-arc-agi-3-agent-v22",
+"title": "forge-arc-agi-3-agent-v22",
+"lastRun": "2026-04-05",
+"votes": 4,
+"author": "Aman Atar"
+},
+{
+"ref": "gourabr0y555/improved-bfs-curiosity-driven-cnn-fallback",
+"title": "Improved BFS + Curiosity-Driven CNN Fallback",
+"lastRun": "2026-04-02",
+"votes": 4,
+"author": "dataWr3cker"
+},
+{
+"ref": "abdullahasoliman/arc-agi-3-hybrid-agent-v2",
+"title": "ARC-AGI-3 Hybrid Agent v2",
+"lastRun": "2026-03-28",
+"votes": 4,
+"author": "Abdullah Soliman"
+},
+{
+"ref": "abdullahasoliman/abdullah-arc-agi-3-learning-agent-v11",
+"title": "Abdullah ARC-AGI-3 Learning Agent v11",
+"lastRun": "2026-03-27",
+"votes": 4,
+"author": "Abdullah Soliman"
+},
+{
+"ref": "itsyoursumit/arc3-submi1",
+"title": "ARC3 Submi1",
+"lastRun": "2026-04-03",
+"votes": 4,
+"author": "Sumit Pandey"
+},
+{
+"ref": "brenorb/arc3-stochasticgoose-pruned-frontier",
+"title": "ARC3 StochasticGoose Pruned Frontier",
+"lastRun": "2026-03-27",
+"votes": 4,
+"author": "Breno Brito"
+},
+{
+"ref": "kodatirevanth/arc-agi-3-explained",
+"title": "\ud83e\udde0 ARC-AGI-3 Explained",
+"lastRun": "2026-03-26",
+"votes": 4,
+"author": "Revanth Kodati"
+},
+{
+"ref": "ahmedsaleh1976/notebook2ea5d36d41",
+"title": "notebook2ea5d36d41",
+"lastRun": "2026-03-26",
+"votes": 4,
+"author": "Ahmed Saleh1976"
+},
+{
+"ref": "wethepeople918/arc-agi-3-v13-all25-losslearn",
+"title": "ARC AGI 3 V13 All25 LossLearn",
+"lastRun": "2026-06-28",
+"votes": 3,
+"author": "Nine1Eight"
+},
+{
+"ref": "boristown/arc-prize-2026-arc-agi-3-starter",
+"title": "ARC Prize 2026 \u2014 ARC-AGI-3 Starter",
+"lastRun": "2026-06-25",
+"votes": 3,
+"author": "\u6697\u9ed1AGI"
+},
+{
+"ref": "boristown/agi-arc-agi-3",
+"title": "\u3010\u6697\u9ed1AGI\u3011ARC-AGI-3",
+"lastRun": "2026-06-23",
+"votes": 3,
+"author": "\u6697\u9ed1AGI"
+},
+{
+"ref": "dongunning/chatgpt-solver",
+"title": "ChatGPT solver",
+"lastRun": "2026-06-28",
+"votes": 3,
+"author": "don gunning"
+},
+{
+"ref": "atommccree/agi-in-a-video-shop-atom-eons-nostalgia",
+"title": "AGI In A Video Shop - Atom Eons Nostalgia ",
+"lastRun": "2026-06-16",
+"votes": 3,
+"author": "Atom McCree"
+},
+{
+"ref": "asterdan712/arc-agi-3-why-exploration-alone-scores-zero",
+"title": "ARC-AGI-3: Why Exploration Alone Scores Zero",
+"lastRun": "2026-06-13",
+"votes": 3,
+"author": "ABHIJOY SARKAR"
+},
+{
+"ref": "wentixiaogege/arc-agi-3-persistent-memory-bfs-solver",
+"title": "ARC-AGI-3: Persistent Memory BFS Solver",
+"lastRun": "2026-06-11",
+"votes": 3,
+"author": "wentixiaogege"
+},
+{
+"ref": "matthewblakeward/blindoracle",
+"title": "BlindOracle",
+"lastRun": "2026-06-10",
+"votes": 3,
+"author": "Matthew Blake Ward"
+},
+{
+"ref": "ajayrao43/arc-agi-121",
+"title": "ARC AGI @121",
+"lastRun": "2026-06-04",
+"votes": 3,
+"author": "Ajay_Rao_43"
+},
+{
+"ref": "rauffauzanrambe/arc-agi-agent-ai",
+"title": "ARC AGI Agent AI ",
+"lastRun": "2026-05-28",
+"votes": 3,
+"author": "Ra'uf Fauzan Rambe"
+},
+{
+"ref": "nnofficial/arc-agi-3-nn",
+"title": "ARC_AGI_3_NN",
+"lastRun": "2026-05-27",
+"votes": 3,
+"author": "NN"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v35",
+"title": "Resonance Agent ARC AGI 3 v35",
+"lastRun": "2026-05-22",
+"votes": 3,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "bibisorobabydjon/arc-agi-3-fast-giveup-agent",
+"title": "ARC-AGI-3 Fast Giveup Agent",
+"lastRun": "2026-05-18",
+"votes": 3,
+"author": "no_esskeetit"
+},
+{
+"ref": "zhengxuyu/arc-agi-3-hack-agent-ash-fork-notebook",
+"title": "ARC-AGI-3 Hack Agent (ash fork notebook)",
+"lastRun": "2026-05-15",
+"votes": 3,
+"author": "Zhengxu Yu"
+},
+{
+"ref": "wethepeople918/earthwormgem",
+"title": "EarthWormGem",
+"lastRun": "2026-06-18",
+"votes": 3,
+"author": "Nine1Eight"
+},
+{
+"ref": "aer3is/arc-agi-3-state-tracker-v7",
+"title": "ARC-AGI-3 State Tracker V7",
+"lastRun": "2026-05-11",
+"votes": 3,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "rauffauzanrambe/arc-agi-agent-v16",
+"title": "ARC AGI Agent V16",
+"lastRun": "2026-05-27",
+"votes": 3,
+"author": "Ra'uf Fauzan Rambe"
+},
+{
+"ref": "thezetaproject/meta-reasoner-arc-agi-3",
+"title": "Meta Reasoner ARC-AGI-3",
+"lastRun": "2026-05-05",
+"votes": 3,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "thezetaproject/dqn-linalg-arc-agi-3",
+"title": "DQN LinAlg ARC-AGI-3",
+"lastRun": "2026-05-09",
+"votes": 3,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "thezetaproject/brain-moe-arc-agi-3",
+"title": "Brain MoE ARC-AGI-3",
+"lastRun": "2026-05-05",
+"votes": 3,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "thezetaproject/resonance-sampler-arc-agi-3",
+"title": "Resonance Sampler ARC-AGI-3",
+"lastRun": "2026-05-07",
+"votes": 3,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "thezetaproject/nsa-transduction-arc-agi-3",
+"title": "NSA Transduction - ARC-AGI-3",
+"lastRun": "2026-05-09",
+"votes": 3,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "thezetaproject/ggrope-world-model-arc-agi-3",
+"title": "GGRoPE World Model - ARC-AGI-3",
+"lastRun": "2026-05-09",
+"votes": 3,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "thezetaproject/jepa-program-synthesis-arc-agi-3",
+"title": "JEPA Program Synthesis - ARC-AGI-3",
+"lastRun": "2026-05-05",
+"votes": 3,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "thezetaproject/nsa-constraint-acquisition-arc-agi-3",
+"title": "NSA Constraint Acquisition - ARC-AGI-3",
+"lastRun": "2026-05-09",
+"votes": 3,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "thezetaproject/nca-world-model-arc-agi-3",
+"title": "NCA World Model - ARC-AGI-3",
+"lastRun": "2026-05-05",
+"votes": 3,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "huynguyenusa/arc-naja-v7",
+"title": "arc-naja-v7",
+"lastRun": "2026-04-19",
+"votes": 3,
+"author": "Michael Thornton"
+},
+{
+"ref": "stormchaser/liquid-nn",
+"title": "Liquid NN",
+"lastRun": "2026-04-15",
+"votes": 3,
+"author": "Berkay"
+},
+{
+"ref": "rauffauzanrambe/trigger-aware-bfs-for-game-simulation-score-0-35",
+"title": "Trigger-Aware BFS for Game Simulation | Score 0.35",
+"lastRun": "2026-05-28",
+"votes": 3,
+"author": "Ra'uf Fauzan Rambe"
+},
+{
+"ref": "yuriao/arc-agi-3-baselinecnnagent",
+"title": "ARC-AGI-3 baselineCNNAgent",
+"lastRun": "2026-04-08",
+"votes": 3,
+"author": "yuri-ao"
+},
+{
+"ref": "rauffauzanrambe/arc-reinforcement-learning-for-agi",
+"title": "ARC Reinforcement Learning for AGI",
+"lastRun": "2026-04-08",
+"votes": 3,
+"author": "Ra'uf Fauzan Rambe"
+},
+{
+"ref": "mosesjoshuacoker/arc-prize-2026",
+"title": "ARC - Prize 2026",
+"lastRun": "2026-04-05",
+"votes": 3,
+"author": "Yeshua M. Coker"
+},
+{
+"ref": "amanatar/arc-prize-2026-arc-agi-3-my-agent",
+"title": "ARC Prize 2026 - ARC-AGI-3 - my-agent ",
+"lastRun": "2026-04-03",
+"votes": 3,
+"author": "Aman Atar"
+},
+{
+"ref": "human01/arc3-random-baseline",
+"title": "ARC3 Random Baseline",
+"lastRun": "2026-04-01",
+"votes": 3,
+"author": "Human 01"
+},
+{
+"ref": "abdullahasoliman/soliman-arc-agi-3-agent-boundaryexplorer-v10",
+"title": "Soliman ARC-AGI-3 Agent - BoundaryExplorer v10",
+"lastRun": "2026-03-28",
+"votes": 3,
+"author": "Abdullah Soliman"
+},
+{
+"ref": "abdullahasoliman/soliman-arc-agi-3-agent-boundaryexplorer-v8",
+"title": "Soliman ARC-AGI-3 Agent - BoundaryExplorer v8",
+"lastRun": "2026-03-27",
+"votes": 3,
+"author": "Abdullah Soliman"
+},
+{
+"ref": "kodatirevanth/arc-agi-3-teaching-ai-to-be-curious",
+"title": "ARC-AGI-3: Teaching AI to Be Curious",
+"lastRun": "2026-03-26",
+"votes": 3,
+"author": "Revanth Kodati"
+},
+{
+"ref": "satkar003/arc3-sample-submission-baseline",
+"title": "ARC3 Sample Submission - Baseline",
+"lastRun": "2026-03-25",
+"votes": 3,
+"author": "Satkar sarvankar"
+},
+{
+"ref": "chiekhalloul/arc3-sample-submission-stochastic-goose",
+"title": "ARC3 Sample Submission - Stochastic Goose",
+"lastRun": "2026-06-28",
+"votes": 2,
+"author": "Chiekh ALLOUL"
+},
+{
+"ref": "ai71lad/arc3-sample-submission-stochastic-goose",
+"title": "ARC3 Sample Submission - Stochastic Goose",
+"lastRun": "2026-06-27",
+"votes": 2,
+"author": "ai71lad"
+},
+{
+"ref": "goodrelax/arc-prize-2026-arc-agi-3-starter",
+"title": "ARC Prize 2026 \u2014 ARC-AGI-3 Starter",
+"lastRun": "2026-06-30",
+"votes": 2,
+"author": "GoodRelax"
+},
+{
+"ref": "kokinnwakashuu/arc-agi-3-solver-diary-faed6b-day3",
+"title": "ARC AGI 3 Solver Diary faed6b Day3",
+"lastRun": "2026-06-22",
+"votes": 2,
+"author": "kokinnwakashuu"
+},
+{
+"ref": "jacksongsong/notebook80a44be787",
+"title": "notebook80a44be787",
+"lastRun": "2026-06-21",
+"votes": 2,
+"author": "jacksongsong"
+},
+{
+"ref": "nicholaspellegrin/arc-agi-3-playthrough-recorder",
+"title": "ARC-AGI-3 Playthrough Recorder",
+"lastRun": "2026-06-19",
+"votes": 2,
+"author": "Nick Pellegrin"
+},
+{
+"ref": "wethepeople918/arc-agi-3-adaptive-blindsight-policy-v5",
+"title": "ARC AGI 3 Adaptive BlindSight Policy V5",
+"lastRun": "2026-06-14",
+"votes": 2,
+"author": "Nine1Eight"
+},
+{
+"ref": "vuminhduc24/transformer-bpe",
+"title": "Transformer_BPE",
+"lastRun": "2026-06-12",
+"votes": 2,
+"author": "VU MINH DUC 24"
+},
+{
+"ref": "rithvikredrouthu/arc26-3-public-0-46-bfs-solver",
+"title": "[ARC26-3] Public 0.46 BFS Solver",
+"lastRun": "2026-06-07",
+"votes": 2,
+"author": "Rithvik Redrouthu"
+},
+{
+"ref": "tkhanna96/arc3-chronos-pristine-rtx-s4",
+"title": "arc3-chronos-pristine-rtx-s4",
+"lastRun": "2026-06-05",
+"votes": 2,
+"author": "Tkhanna96"
+},
+{
+"ref": "dangthithuhang/inference-test-rl",
+"title": "inference_test_rl",
+"lastRun": "2026-06-01",
+"votes": 2,
+"author": "Dugx_Mine"
+},
+{
+"ref": "kenleungleung/simple-vllm-stater",
+"title": "simple vllm stater",
+"lastRun": "2026-06-02",
+"votes": 2,
+"author": "Kenleung Leung"
+},
+{
+"ref": "scenerysunfireink/arc-agi-3-hybrid-solver-fork",
+"title": "ARC-AGI-3 Hybrid Solver (fork)",
+"lastRun": "2026-05-23",
+"votes": 2,
+"author": "Scenery SunFireInk"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v49",
+"title": "Resonance Agent ARC AGI 3 v49",
+"lastRun": "2026-05-22",
+"votes": 2,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v42",
+"title": "Resonance Agent ARC AGI 3 v42",
+"lastRun": "2026-05-22",
+"votes": 2,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v34",
+"title": "Resonance Agent ARC AGI 3 v34",
+"lastRun": "2026-05-22",
+"votes": 2,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v33",
+"title": "Resonance Agent ARC AGI 3 v33",
+"lastRun": "2026-05-22",
+"votes": 2,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "rivuletnriver/arc3-playground",
+"title": "arc3 playground",
+"lastRun": "2026-06-02",
+"votes": 2,
+"author": "rivzzzzz"
+},
+{
+"ref": "farmountain/aera-arc-agi3-extended-v2",
+"title": "aera-arc-agi3-extended-v2",
+"lastRun": "2026-05-19",
+"votes": 2,
+"author": "Liew Keong Han"
+},
+{
+"ref": "renaldi27/arc26-agi-3-submission-adaptive-reasoning-age",
+"title": "ARC26-AGI-3: Submission Adaptive Reasoning Age",
+"lastRun": "2026-05-17",
+"votes": 2,
+"author": "RenaldiMstr"
+},
+{
+"ref": "alexandrebaux/arc-agi-3-fake-world-model-ls20-tfjs-demo",
+"title": "Arc Agi 3 - Fake World Model (LS20) + TFJS DEMO",
+"lastRun": "2026-05-12",
+"votes": 2,
+"author": "Alexandre Baux"
+},
+{
+"ref": "purpleslurpees/arc3-sample-submission-velocity-program",
+"title": "ARC3 Sample Submission- Velocity Program ",
+"lastRun": "2026-05-08",
+"votes": 2,
+"author": "Purple Slurpees"
+},
+{
+"ref": "aer3is/arc-agi-3-state-tracker-agent",
+"title": "ARC-AGI-3 State Tracker Agent",
+"lastRun": "2026-05-09",
+"votes": 2,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "nicklade/arc-agi3-random-agent",
+"title": "ARC-AGI3 Random Agent",
+"lastRun": "2026-05-03",
+"votes": 2,
+"author": "Nick Lade"
+},
+{
+"ref": "biohack44/arc-forge-v24-second-pass-bfs-only",
+"title": "ARC-FORGE v24 \u2014 Second pass BFS only",
+"lastRun": "2026-05-19",
+"votes": 2,
+"author": "Emre Cirak"
+},
+{
+"ref": "larissawf/arc-policy-runtime-submission",
+"title": "ARC Policy Runtime Submission",
+"lastRun": "2026-04-22",
+"votes": 2,
+"author": "LarissaWF"
+},
+{
+"ref": "thezetaproject/slot-gnn-symbolic-arc-agi-3",
+"title": "Slot-GNN Symbolic - ARC-AGI-3",
+"lastRun": "2026-05-05",
+"votes": 2,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "mosesjoshuacoker/arc-pize-2026-arc",
+"title": "ARC_Pize_2026 - ARC",
+"lastRun": "2026-04-19",
+"votes": 2,
+"author": "Yeshua M. Coker"
+},
+{
+"ref": "mosesjoshuacoker/arc-agi-2026-002",
+"title": "ARC - AGI - 2026 - 002",
+"lastRun": "2026-04-16",
+"votes": 2,
+"author": "Yeshua M. Coker"
+},
+{
+"ref": "thezetaproject/ggrope-world-model-v1-arc-agi-3",
+"title": "GGRoPE-World-Model v1 -- ARC-AGI-3",
+"lastRun": "2026-04-14",
+"votes": 2,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "thezetaproject/ggrope-worldmodel-v1-arc-agi-3",
+"title": "GGRoPE-WorldModel v1 \u2014 ARC-AGI-3",
+"lastRun": "2026-04-13",
+"votes": 2,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "ldausl/arc-prize-2026-arc-agi-3",
+"title": "ARC Prize 2026 - ARC-AGI-3",
+"lastRun": "2026-04-24",
+"votes": 2,
+"author": "Muhammad Firdaus"
+},
+{
+"ref": "ldausl/notebook1a35adddcf",
+"title": "notebook1a35adddcf",
+"lastRun": "2026-04-09",
+"votes": 2,
+"author": "Muhammad Firdaus"
+},
+{
+"ref": "amanatar/arc-agi-3-graph-mcts-hybrid-solver",
+"title": "arc-agi-3-graph-mcts-hybrid-solver",
+"lastRun": "2026-04-07",
+"votes": 2,
+"author": "Aman Atar"
+},
+{
+"ref": "rauffauzanrambe/arc3-agi-reinforcement-agents",
+"title": "ARC3 AGI Reinforcement Agents",
+"lastRun": "2026-05-27",
+"votes": 2,
+"author": "Ra'uf Fauzan Rambe"
+},
+{
+"ref": "abdullahasoliman/hira-v1-1-arc-agi-3-agent-bfs-cnn",
+"title": "HIRA v1.1 -- ARC-AGI-3 Agent (BFS+CNN)",
+"lastRun": "2026-03-31",
+"votes": 2,
+"author": "Abdullah Soliman"
+},
+{
+"ref": "abdullahasoliman/hira-v1-arc-agi-3-agent-bfs-cnn",
+"title": "HIRA v1 \u2014 ARC-AGI-3 Agent (BFS+CNN)",
+"lastRun": "2026-03-31",
+"votes": 2,
+"author": "Abdullah Soliman"
+},
+{
+"ref": "abdullahasoliman/orla-x-final-arc",
+"title": "ORLA-X Final ARC",
+"lastRun": "2026-03-29",
+"votes": 2,
+"author": "Abdullah Soliman"
+},
+{
+"ref": "lukapopovici/arc3-sample-submission-forked",
+"title": "ARC3 Sample Submission - forked",
+"lastRun": "2026-03-27",
+"votes": 2,
+"author": "Luka Popovici"
+},
+{
+"ref": "jiweiliu/arc-agi-3-master-agen-fork",
+"title": "arc-agi-3-master-agen fork",
+"lastRun": "2026-03-27",
+"votes": 2,
+"author": "Jiwei Liu"
+},
+{
+"ref": "abdullahasoliman/soliman-arc-agi-3-agent-boundaryexplorer-v7",
+"title": "Soliman ARC-AGI-3 Agent - BoundaryExplorer v7",
+"lastRun": "2026-03-27",
+"votes": 2,
+"author": "Abdullah Soliman"
+},
+{
+"ref": "abdullahasoliman/soliman-arc-agi-3-agent-smartexplorer-v3",
+"title": "Soliman ARC-AGI-3 Agent - SmartExplorer v3",
+"lastRun": "2026-03-27",
+"votes": 2,
+"author": "Abdullah Soliman"
+},
+{
+"ref": "janettdoe/arc-agi-2",
+"title": "arc-agi-2",
+"lastRun": "2026-03-30",
+"votes": 2,
+"author": "janett doe"
+},
+{
+"ref": "abdullahasoliman/soliman-arc-agi-3-agent-graphexplorer-v2",
+"title": "Soliman ARC-AGI-3 Agent - GraphExplorer v2",
+"lastRun": "2026-03-27",
+"votes": 2,
+"author": "Abdullah Soliman"
+},
+{
+"ref": "abdullahasoliman/soliman-arc-agi-3-agent-graphexplorer-v1",
+"title": "Soliman ARC-AGI-3 Agent - GraphExplorer v1",
+"lastRun": "2026-03-27",
+"votes": 2,
+"author": "Abdullah Soliman"
+},
+{
+"ref": "thanhdoan123/notebookdb327a40a9",
+"title": "notebookdb327a40a9",
+"lastRun": "2026-03-27",
+"votes": 2,
+"author": "Thanh Doan 123"
+},
+{
+"ref": "ishitabahamnia/arc-prize-2026-arc-agi-3-submit-prediction",
+"title": "ARC Prize 2026 - ARC-AGI-3  Submit Prediction",
+"lastRun": "2026-03-26",
+"votes": 2,
+"author": "ishita bahamnia"
+},
+{
+"ref": "shauryyadav0072/notebook95ea0c4952",
+"title": "notebook95ea0c4952",
+"lastRun": "2026-03-26",
+"votes": 2,
+"author": "shauryyadav"
+},
+{
+"ref": "ga5534/notebook8466ae3bc5",
+"title": "notebook8466ae3bc5",
+"lastRun": "2026-06-30",
+"votes": 1,
+"author": "Artem Gorokhov"
+},
+{
+"ref": "matthewblakeward/notebookf7b840d211",
+"title": "notebookf7b840d211",
+"lastRun": "2026-06-30",
+"votes": 1,
+"author": "Matthew Blake Ward"
+},
+{
+"ref": "juanlavierigoiri/evidloom-arc-agi-3",
+"title": "Evidloom ARC-AGI-3",
+"lastRun": "2026-06-30",
+"votes": 1,
+"author": "Juan Lavieri Goiri"
+},
+{
+"ref": "boristown/arc-agi-3-public-baseline-with-replay-viewer",
+"title": "ARC-AGI-3 Public Baseline with Replay Viewer",
+"lastRun": "2026-06-28",
+"votes": 1,
+"author": "\u6697\u9ed1AGI"
+},
+{
+"ref": "kiranvitly/arc-prize-2026-arc-agi-3-starter",
+"title": "ARC Prize 2026 \u2014 ARC-AGI-3 Starter",
+"lastRun": "2026-06-26",
+"votes": 1,
+"author": "Kiran Vitly"
+},
+{
+"ref": "clawdyhuang/hermesarc-heartbeat-pipeline-test",
+"title": "HermesARC Heartbeat - Pipeline Test",
+"lastRun": "2026-06-25",
+"votes": 1,
+"author": "Clawdy Huang (Andy's AI)"
+},
+{
+"ref": "manderson240/arc-agi-3-baseline-20260624-1534",
+"title": "ARC-AGI-3 Baseline 20260624-1534",
+"lastRun": "2026-06-24",
+"votes": 1,
+"author": "Mike Anderson"
+},
+{
+"ref": "manderson240/arc-agi-3-baseline-20260624-1446",
+"title": "ARC-AGI-3 Baseline 20260624-1446",
+"lastRun": "2026-06-24",
+"votes": 1,
+"author": "Mike Anderson"
+},
+{
+"ref": "ronankmcgovern/arc3-random-control",
+"title": "ARC3 Random Control",
+"lastRun": "2026-06-19",
+"votes": 1,
+"author": "Ronan McGovern"
+},
+{
+"ref": "ghazarosbarseghyan91/arc-agi-3-hybrid-agent",
+"title": "ARC-AGI-3 \u2014 Hybrid Agent",
+"lastRun": "2026-06-23",
+"votes": 1,
+"author": "Ghazaros Barseghyan"
+},
+{
+"ref": "olasadek/the-code",
+"title": "the code",
+"lastRun": "2026-06-18",
+"votes": 1,
+"author": "ola sadek"
+},
+{
+"ref": "alexazander/arc-agi-3-hybrid-agent-v3-safe",
+"title": "ARC-AGI-3 Hybrid Agent V3 Safe",
+"lastRun": "2026-06-18",
+"votes": 1,
+"author": "Alex Paul"
+},
+{
+"ref": "tanmoypramanik07/notebook830926cece",
+"title": "notebook830926cece",
+"lastRun": "2026-06-16",
+"votes": 1,
+"author": "Tanmoy Pramanik"
+},
+{
+"ref": "jguevarag/arcitets-v1",
+"title": "ARCitets V1",
+"lastRun": "2026-06-15",
+"votes": 1,
+"author": "JEFERSON GUEVARA GARCIA"
+},
+{
+"ref": "xuanhuydinh/bilstm-bpe",
+"title": "BILSTM_BPE",
+"lastRun": "2026-06-21",
+"votes": 1,
+"author": "Xuan Huy Dinh"
+},
+{
+"ref": "aristotelesborges84/notebook67851faec7",
+"title": "notebook67851faec7",
+"lastRun": "2026-06-14",
+"votes": 1,
+"author": "Aristoteles Borges Oliveira"
+},
+{
+"ref": "meihuy/bilstm-bpe",
+"title": "BILSTM_BPE",
+"lastRun": "2026-06-14",
+"votes": 1,
+"author": "MeiHuy"
+},
+{
+"ref": "bytemuneeb/mitotic",
+"title": "Mitotic",
+"lastRun": "2026-06-12",
+"votes": 1,
+"author": "Muneeb Ahmed Siddiqui"
+},
+{
+"ref": "brainwaveml/sft-llm",
+"title": "sft-llm",
+"lastRun": "2026-06-25",
+"votes": 1,
+"author": "brainwaveml"
+},
+{
+"ref": "clawdyhuang/hermesarc-v5",
+"title": "hermesarc-v5",
+"lastRun": "2026-06-25",
+"votes": 1,
+"author": "Clawdy Huang (Andy's AI)"
+},
+{
+"ref": "matthewblakeward/cantgetright",
+"title": "CantGetRight",
+"lastRun": "2026-06-25",
+"votes": 1,
+"author": "Matthew Blake Ward"
+},
+{
+"ref": "plamen06/compressor",
+"title": "Compressor",
+"lastRun": "2026-06-08",
+"votes": 1,
+"author": "Plamen"
+},
+{
+"ref": "mncuchiinhuttt/arc-agi-3-agent",
+"title": "ARC AGI 3 Agent",
+"lastRun": "2026-06-09",
+"votes": 1,
+"author": "Vo Minh Long"
+},
+{
+"ref": "rithvikredrouthu/arc26-3-jonathan-v15-rtx",
+"title": "[ARC26-3] Jonathan v15 RTX",
+"lastRun": "2026-06-07",
+"votes": 1,
+"author": "Rithvik Redrouthu"
+},
+{
+"ref": "tkhanna96/arc3-borovska-hybrid-rtx-s5",
+"title": "arc3-borovska-hybrid-rtx-s5",
+"lastRun": "2026-06-05",
+"votes": 1,
+"author": "Tkhanna96"
+},
+{
+"ref": "devchandra/arc-agi-3-goose-forge-v52",
+"title": "ARC AGI 3 Goose Forge v52",
+"lastRun": "2026-05-28",
+"votes": 1,
+"author": "Dr Chandrasen Pandey"
+},
+{
+"ref": "pascalledesma/arc-agi-3-ashvin-forge-agent",
+"title": "ARC-AGI-3 Ashvin FORGE Agent",
+"lastRun": "2026-05-28",
+"votes": 1,
+"author": "Pascal"
+},
+{
+"ref": "timhaserjian/arc3-object-substrate-submission-candidate",
+"title": "ARC3 Object Substrate Submission Candidate",
+"lastRun": "2026-05-21",
+"votes": 1,
+"author": "Tim Haserjian"
+},
+{
+"ref": "dedquoc/arc-adaptive-intelligence-research-platform",
+"title": "ARC Adaptive Intelligence Research Platform",
+"lastRun": "2026-05-21",
+"votes": 1,
+"author": "De DQ"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v1-6",
+"title": "Resonance Agent ARC-AGI-3 v1.6",
+"lastRun": "2026-05-20",
+"votes": 1,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v1-4",
+"title": "Resonance Agent ARC-AGI-3 v1.4",
+"lastRun": "2026-05-20",
+"votes": 1,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v1-3",
+"title": "Resonance Agent ARC-AGI-3 v1.3",
+"lastRun": "2026-05-20",
+"votes": 1,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v1-2",
+"title": "Resonance Agent ARC-AGI-3 v1.2",
+"lastRun": "2026-05-20",
+"votes": 1,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "nobel16/arc-agi-3-multi-model-search",
+"title": "arc-agi-3-multi-model-search",
+"lastRun": "2026-05-20",
+"votes": 1,
+"author": "Nobel16"
+},
+{
+"ref": "saypranav/ls20-submission",
+"title": "ls20_submission",
+"lastRun": "2026-05-18",
+"votes": 1,
+"author": "Pranav Kumar"
+},
+{
+"ref": "zhengxuyu/arc-agi-3-hack-agent-v25-fixed",
+"title": "ARC-AGI-3 hack-agent v25 fixed",
+"lastRun": "2026-05-15",
+"votes": 1,
+"author": "Zhengxu Yu"
+},
+{
+"ref": "zhengxuyu/arc-agi-3-arc26-v1-mirror",
+"title": "ARC-AGI-3 arc26 v1 mirror",
+"lastRun": "2026-05-15",
+"votes": 1,
+"author": "Zhengxu Yu"
+},
+{
+"ref": "farmountain/arc-agi3-bfs-cache-builder",
+"title": "ARC AGI3 BFS Cache Builder",
+"lastRun": "2026-05-16",
+"votes": 1,
+"author": "Liew Keong Han"
+},
+{
+"ref": "farmountain/arc-agi3-v30-bfs-sg-hybrid",
+"title": "ARC AGI3 v30 BFS+SG Hybrid",
+"lastRun": "2026-05-13",
+"votes": 1,
+"author": "Liew Keong Han"
+},
+{
+"ref": "aer3is/arc-agi-3-state-tracker-v10",
+"title": "ARC-AGI-3 State Tracker V10",
+"lastRun": "2026-05-12",
+"votes": 1,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "sarahmarin/arc3-run",
+"title": "ARC3 Run",
+"lastRun": "2026-05-29",
+"votes": 1,
+"author": "BeanApologist"
+},
+{
+"ref": "minalkharat123/arc-agi-3-phase-1-audit-driven-fixes-12-fixes",
+"title": "ARC-AGI-3 Phase 1 \u2014 Audit-Driven Fixes (12 fixes)",
+"lastRun": "2026-05-10",
+"votes": 1,
+"author": "Minal kharat123"
+},
+{
+"ref": "minalkharat123/arc-agi-3-phase-0-probe-telemetry-agent",
+"title": "ARC-AGI-3 Phase 0 \u2014 Probe + Telemetry Agent",
+"lastRun": "2026-05-10",
+"votes": 1,
+"author": "Minal kharat123"
+},
+{
+"ref": "thezetaproject/brain-moe-v6-arc-agi-3",
+"title": "Brain MoE v6 ARC AGI 3",
+"lastRun": "2026-05-12",
+"votes": 1,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "pathik1511/action-learner",
+"title": "Action Learner",
+"lastRun": "2026-05-11",
+"votes": 1,
+"author": "Pathik Patel"
+},
+{
+"ref": "sonnguyenk17/retfound-dinov2",
+"title": "RETFound-DINOv2",
+"lastRun": "2026-05-09",
+"votes": 1,
+"author": "SonNguyenK17"
+},
+{
+"ref": "ntquang0410/nlp-group3",
+"title": "NLP_Group3",
+"lastRun": "2026-06-19",
+"votes": 1,
+"author": "Nguy\u1ec5n Thanh Quang"
+},
+{
+"ref": "ringustheimp/agi-3-agent",
+"title": "AGI-3 Agent ",
+"lastRun": "2026-04-29",
+"votes": 1,
+"author": "ringusTheImp"
+},
+{
+"ref": "guynachshon/arc-agi-3-state-graph-agent-no-neural",
+"title": "ARC-AGI-3 state-graph agent (no neural)",
+"lastRun": "2026-04-28",
+"votes": 1,
+"author": "Guy Nachshon"
+},
+{
+"ref": "rahulsinghnsec/arc3-rhae-efficient-myagent",
+"title": "ARC3 RHAE Efficient MyAgent",
+"lastRun": "2026-06-10",
+"votes": 1,
+"author": "rahul singh nsec"
+},
+{
+"ref": "rauffauzanrambe/arc-agi-3-smart-decision-agent",
+"title": "ARC AGI 3: Smart Decision Agent",
+"lastRun": "2026-04-21",
+"votes": 1,
+"author": "Ra'uf Fauzan Rambe"
+},
+{
+"ref": "srujansaix/s-arc3-sample-submission-stochastic-goose",
+"title": "S_ARC3 Sample Submission - Stochastic Goose",
+"lastRun": "2026-04-21",
+"votes": 1,
+"author": "Srujan Sai X"
+},
+{
+"ref": "koushikkumardinda/arc-prize-2026-arc-agi-3-interactive-agent",
+"title": "ARC Prize 2026: ARC-AGI-3 Interactive Agent",
+"lastRun": "2026-06-28",
+"votes": 1,
+"author": "KOUSHIK KUMAR DINDA"
+},
+{
+"ref": "gabrielmirea/arc3-simplified",
+"title": "ARC3-simplified",
+"lastRun": "2026-06-25",
+"votes": 1,
+"author": "Gabriel Mirea"
+},
+{
+"ref": "maeng31/aurora-x-arc-agi-3-bfs",
+"title": "AURORA-X ARC-AGI-3 BFS",
+"lastRun": "2026-04-28",
+"votes": 1,
+"author": "Mingeon Kim"
+},
+{
+"ref": "thezetaproject/jepa-progsynth-v1-arc-agi-3",
+"title": "JEPA-ProgSynth v1 \u2014 ARC-AGI-3",
+"lastRun": "2026-04-13",
+"votes": 1,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "thezetaproject/slot-gnn-symbolic-v1-arc-agi-3",
+"title": "Slot-GNN-Symbolic v1 \u2014 ARC-AGI-3",
+"lastRun": "2026-04-13",
+"votes": 1,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "thezetaproject/causal-jepa-trm-v1-arc-agi-3",
+"title": "Causal-JEPA-TRM v1 \u2014 ARC-AGI-3",
+"lastRun": "2026-04-13",
+"votes": 1,
+"author": "Isaiah Nwukor"
+},
+{
+"ref": "sandipanb12/sandy-agi-benchmark",
+"title": "Sandy AGI benchmark",
+"lastRun": "2026-04-12",
+"votes": 1,
+"author": "SANDIPAN BHATTACHERJEE"
+},
+{
+"ref": "rezaazami/0-26-arc-agi-3-agent",
+"title": "[0.26] ARC-AGI-3 Agent",
+"lastRun": "2026-04-05",
+"votes": 1,
+"author": "Reza Azami"
+},
+{
+"ref": "projectforty2/chronos-arc-agent",
+"title": "CHRONOS Arc Agent",
+"lastRun": "2026-04-02",
+"votes": 1,
+"author": "CHRONOS"
+},
+{
+"ref": "suneetsaini/lb-0-25-arc-agi-3-agent-tuned",
+"title": "[LB 0.25+]ARC-AGI-3 Agent Tuned",
+"lastRun": "2026-06-18",
+"votes": 1,
+"author": "Suneet Kumar Saini"
+},
+{
+"ref": "kevinrussell83/chronos-arc-agi-3-agent",
+"title": "CHRONOS ARC-AGI-3 Agent",
+"lastRun": "2026-03-29",
+"votes": 1,
+"author": "Kevin Russell"
+},
+{
+"ref": "amanatar/arc-agi-3-master-agent-ultra-optimized",
+"title": "ARC-AGI-3 Master Agent \u2014 Ultra-Optimized",
+"lastRun": "2026-03-27",
+"votes": 1,
+"author": "Aman Atar"
+},
+{
+"ref": "codingmaster24/arc-agi-3-v1",
+"title": "ARC-AGI-3 V1",
+"lastRun": "2026-03-27",
+"votes": 1,
+"author": "SIVA S"
+},
+{
+"ref": "gabrielchegemwihaki/notebookdf2e3b2278",
+"title": "notebookdf2e3b2278",
+"lastRun": "2026-03-26",
+"votes": 1,
+"author": "Gabriel chege mwihaki"
+},
+{
+"ref": "scrattle/sighted-fox-arc-agi-3-gemma-vllm",
+"title": "sighted-fox \u2014 ARC-AGI-3 (Gemma vLLM)",
+"lastRun": "2026-06-29",
+"votes": 0,
+"author": "Scrattle"
+},
+{
+"ref": "xinhao642/bfs-hybrid-version",
+"title": "BFS_hybrid_version",
+"lastRun": "2026-06-22",
+"votes": 0,
+"author": "xinhao642"
+},
+{
+"ref": "shreyas4/claude-code-v12-baseline",
+"title": "claude code v12 baseline",
+"lastRun": "2026-06-17",
+"votes": 0,
+"author": "Shreyas"
+},
+{
+"ref": "daltongabrielomondi/a-bfs-approach-by-leekang",
+"title": "A bfs approach by LeeKang",
+"lastRun": "2026-06-29",
+"votes": 0,
+"author": "Dalton Omondi"
+},
+{
+"ref": "sorenravn/arc-agi-3-v2-bfs-solver",
+"title": "ARC-AGI-3 v2 BFS solver",
+"lastRun": "2026-06-10",
+"votes": 0,
+"author": "S\u00f8ren Ravn Andersen"
+},
+{
+"ref": "mdashraful16/arc-prize-2026-arc-agi-3-starter",
+"title": "ARC Prize 2026 \u2014 ARC-AGI-3 Starter",
+"lastRun": "2026-06-22",
+"votes": 0,
+"author": "Md. Ashraful Islam"
+},
+{
+"ref": "tkhanna96/arc3-fork-parthenos-bfs-bfs300s-v0",
+"title": "arc3 fork parthenos bfs bfs300s v0",
+"lastRun": "2026-06-04",
+"votes": 0,
+"author": "Tkhanna96"
+},
+{
+"ref": "tkhanna96/arc3-parthenos-pristine-rtx-s1",
+"title": "arc3-parthenos-pristine-rtx-s1",
+"lastRun": "2026-06-05",
+"votes": 0,
+"author": "Tkhanna96"
+},
+{
+"ref": "thomasferraz/arc-agi-3-td-jepa-first-submission-5k-bfs",
+"title": "ARC-AGI-3 TD-JEPA first submission 5k, BFS",
+"lastRun": "2026-06-29",
+"votes": 0,
+"author": "Thomas Ferraz"
+},
+{
+"ref": "macleon/ethmraeon-clone-v3-arc-prize-2026-arc-agi-3",
+"title": "Ethmraeon Clone V3 - ARC Prize 2026 ARC-AGI-3",
+"lastRun": "2026-04-29",
+"votes": 0,
+"author": "macleonjinkan@hotmail.com"
+},
+{
+"ref": "aer3is/arc-agi-3-state-tracker-v6",
+"title": "ARC-AGI-3 State Tracker V6",
+"lastRun": "2026-05-09",
+"votes": 0,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "tkhanna96/arc3-parthenos-pristine-rtx-s2-var",
+"title": "arc3-parthenos-pristine-rtx-s2-var",
+"lastRun": "2026-06-05",
+"votes": 0,
+"author": "Tkhanna96"
+},
+{
+"ref": "tkhanna96/arc3-parthenos-cap220-rtx-s3",
+"title": "arc3-parthenos-cap220-rtx-s3",
+"lastRun": "2026-06-05",
+"votes": 0,
+"author": "Tkhanna96"
+},
+{
+"ref": "mtech24m0793/arc-agi3-notebook",
+"title": "ARC-AGI3-notebook",
+"lastRun": "2026-06-23",
+"votes": 0,
+"author": "Rajshekar"
+},
+{
+"ref": "farmountain/arc-agi3-v29-stochasticgoose",
+"title": "ARC AGI3 v29 StochasticGoose",
+"lastRun": "2026-05-13",
+"votes": 0,
+"author": "Liew Keong Han"
+},
+{
+"ref": "larissawf/arc-policy-runtime-sample-aligned",
+"title": "ARC Policy Runtime Sample-Aligned",
+"lastRun": "2026-04-22",
+"votes": 0,
+"author": "LarissaWF"
+},
+{
+"ref": "devchandra/arc-agi-3-ethraeon-forge-v53",
+"title": "ARC AGI 3 Ethraeon Forge v53",
+"lastRun": "2026-05-29",
+"votes": 0,
+"author": "Dr Chandrasen Pandey"
+},
+{
+"ref": "abdullahasoliman/arc-agi-3-hira-x-v15-fixed",
+"title": "ARC-AGI-3 HIRA-X v15 Fixed",
+"lastRun": "2026-03-30",
+"votes": 0,
+"author": "Abdullah Soliman"
+},
+{
+"ref": "clawdyhuang/hermesarc-v1",
+"title": "HermesARC v1",
+"lastRun": "2026-06-05",
+"votes": 0,
+"author": "Clawdy Huang (Andy's AI)"
+},
+{
+"ref": "jiaweili0001/arc3-ash-agent-smoke-no-submit",
+"title": "ARC3 Ash agent smoke no submit",
+"lastRun": "2026-06-16",
+"votes": 0,
+"author": "JIAWEILI0001"
+},
+{
+"ref": "wethepeople918/thewizard",
+"title": "TheWizard",
+"lastRun": "2026-06-23",
+"votes": 0,
+"author": "Nine1Eight"
+},
+{
+"ref": "muhammadsaeedpak/notebooka3c1c29e05",
+"title": "notebooka3c1c29e05",
+"lastRun": "2026-06-30",
+"votes": 0,
+"author": "Muhammad Saeed Pak"
+},
+{
+"ref": "abdullahasoliman/soliman-arc-agi-3-agent-boundaryexplorer-v9",
+"title": "Soliman ARC-AGI-3 Agent - BoundaryExplorer v9",
+"lastRun": "2026-03-27",
+"votes": 0,
+"author": "Abdullah Soliman"
+},
+{
+"ref": "abdullahasoliman/soliman-arc-agi-3-agent-v10-cnn-learning",
+"title": "Soliman ARC-AGI-3 Agent v10 - CNN Learning",
+"lastRun": "2026-03-27",
+"votes": 0,
+"author": "Abdullah Soliman"
+},
+{
+"ref": "encryptedoreo/arc-agi-3",
+"title": "ARC AGI 3",
+"lastRun": "2026-03-28",
+"votes": 0,
+"author": "EncryptedOreo"
+},
+{
+"ref": "abdullahasoliman/orla-x-hybrid-v3",
+"title": "ORLA-X Hybrid v3",
+"lastRun": "2026-03-28",
+"votes": 0,
+"author": "Abdullah Soliman"
+},
+{
+"ref": "metacore485/notebook9446e7b352",
+"title": "notebook9446e7b352",
+"lastRun": "2026-03-30",
+"votes": 0,
+"author": "metacore485"
+},
+{
+"ref": "wordingone/arc-agi-3-baseline-graph-explorer",
+"title": "ARC-AGI-3 Baseline Graph Explorer",
+"lastRun": "2026-03-31",
+"votes": 0,
+"author": "Hyunjun Han"
+},
+{
+"ref": "sillyveh/forge-arc-agi-3-agent",
+"title": "FORGE ARC-AGI-3 Agent",
+"lastRun": "2026-04-07",
+"votes": 0,
+"author": "sillyveh"
+},
+{
+"ref": "lishangliynu/arc-agi-3-competition-submit-v116",
+"title": "ARC AGI 3 Competition Submit V116",
+"lastRun": "2026-04-07",
+"votes": 0,
+"author": "lishangli@ynu"
+},
+{
+"ref": "lishangliynu/arc-agi3-submit-v117",
+"title": "ARC AGI3 Submit V117",
+"lastRun": "2026-04-07",
+"votes": 0,
+"author": "lishangli@ynu"
+},
+{
+"ref": "lishangliynu/arc-agi3-submit-parquet-v119",
+"title": "ARC AGI3 Submit Parquet V119",
+"lastRun": "2026-04-07",
+"votes": 0,
+"author": "lishangli@ynu"
+},
+{
+"ref": "lishangliynu/arc-agi3-submit-parquet-v121",
+"title": "ARC AGI3 Submit Parquet V121",
+"lastRun": "2026-04-07",
+"votes": 0,
+"author": "lishangli@ynu"
+},
+{
+"ref": "lishangliynu/block-analysis-v122",
+"title": "Block Analysis V122",
+"lastRun": "2026-04-07",
+"votes": 0,
+"author": "lishangli@ynu"
+},
+{
+"ref": "lishangliynu/wa30-targeted-v123",
+"title": "WA30 Targeted V123",
+"lastRun": "2026-04-07",
+"votes": 0,
+"author": "lishangli@ynu"
+},
+{
+"ref": "lishangliynu/level-analysis-v124",
+"title": "Level Analysis V124",
+"lastRun": "2026-04-07",
+"votes": 0,
+"author": "lishangli@ynu"
+},
+{
+"ref": "lishangliynu/level-analysis-v125",
+"title": "Level Analysis V125",
+"lastRun": "2026-04-07",
+"votes": 0,
+"author": "lishangli@ynu"
+},
+{
+"ref": "lishangliynu/multi-level-solver-v126",
+"title": "Multi-Level Solver V126",
+"lastRun": "2026-04-07",
+"votes": 0,
+"author": "lishangli@ynu"
+},
+{
+"ref": "lishangliynu/arc-agi3-final-submit-v127",
+"title": "ARC AGI3 Final Submit V127",
+"lastRun": "2026-04-07",
+"votes": 0,
+"author": "lishangli@ynu"
+},
+{
+"ref": "lishangliynu/multi-level-solver-v128",
+"title": "Multi-Level Solver V128",
+"lastRun": "2026-04-07",
+"votes": 0,
+"author": "lishangli@ynu"
+},
+{
+"ref": "lishangliynu/final-v131",
+"title": "Final V131",
+"lastRun": "2026-04-07",
+"votes": 0,
+"author": "lishangli@ynu"
+},
+{
+"ref": "doesmatter/notebook4f1199df3c",
+"title": "notebook4f1199df3c",
+"lastRun": "2026-04-16",
+"votes": 0,
+"author": "Does Matter"
+},
+{
+"ref": "noivan0/arc-agi-3-nvarc-final-6645",
+"title": "ARC-AGI-3 NVARC Final 6645",
+"lastRun": "2026-04-20",
+"votes": 0,
+"author": "noivan0"
+},
+{
+"ref": "francisbanda/arc-agi-3-mdl-program-synthesis-solver",
+"title": "ARC-AGI-3 MDL Program Synthesis Solver",
+"lastRun": "2026-04-26",
+"votes": 0,
+"author": "Francis Banda"
+},
+{
+"ref": "agentzz/arc-prize-forge-agent",
+"title": "ARC Prize FORGE Agent",
+"lastRun": "2026-04-29",
+"votes": 0,
+"author": "\u2e3bAgentZZ \u2e3b"
+},
+{
+"ref": "claudethazar/scripture",
+"title": "scripture",
+"lastRun": "2026-05-04",
+"votes": 0,
+"author": "balthazar"
+},
+{
+"ref": "alexandrebaux/arc-agi-3-region-of-interest-experiment",
+"title": "Arc Agi 3 - Region of interest experiment",
+"lastRun": "2026-05-06",
+"votes": 0,
+"author": "Alexandre Baux"
+},
+{
+"ref": "ricoallen/hardseal-occam-arc-agi-3",
+"title": "Hardseal Occam ARC AGI 3",
+"lastRun": "2026-05-08",
+"votes": 0,
+"author": "Rico Allen"
+},
+{
+"ref": "josianobrito/notebook15c68c3be0",
+"title": "notebook15c68c3be0",
+"lastRun": "2026-05-11",
+"votes": 0,
+"author": "Josiano Brito"
+},
+{
+"ref": "aer3is/arc-agi-3-state-tracker-v8",
+"title": "ARC-AGI-3 State Tracker V8",
+"lastRun": "2026-05-11",
+"votes": 0,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "aer3is/arc-agi-3-state-tracker-v9",
+"title": "ARC-AGI-3 State Tracker V9",
+"lastRun": "2026-05-12",
+"votes": 0,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "farmountain/arc-agi3-systematic-explorer-v1",
+"title": "ARC AGI3 Systematic Explorer v1",
+"lastRun": "2026-05-12",
+"votes": 0,
+"author": "Liew Keong Han"
+},
+{
+"ref": "farmountain/aera-exp-004-dual-model-0-5b-1-5b",
+"title": "AERA EXP-004 Dual Model 0.5B+1.5B",
+"lastRun": "2026-05-12",
+"votes": 0,
+"author": "Liew Keong Han"
+},
+{
+"ref": "sanyul/gemmarc",
+"title": "GemmARC",
+"lastRun": "2026-05-17",
+"votes": 0,
+"author": "sanyul"
+},
+{
+"ref": "saul369delgado/notebook189a90fa43",
+"title": "notebook189a90fa43",
+"lastRun": "2026-05-31",
+"votes": 0,
+"author": "Sa\u00fal Delgado "
+},
+{
+"ref": "farmountain/aera-arc-agi3-stats-v1",
+"title": "aera-arc-agi3-stats-v1",
+"lastRun": "2026-05-20",
+"votes": 0,
+"author": "Liew Keong Han"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v1-1",
+"title": "Resonance Agent ARC-AGI-3 v1.1",
+"lastRun": "2026-05-20",
+"votes": 0,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v1-7",
+"title": "Resonance Agent ARC-AGI-3 v1.7",
+"lastRun": "2026-05-21",
+"votes": 0,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v1-8",
+"title": "Resonance Agent ARC-AGI-3 v1.8",
+"lastRun": "2026-05-21",
+"votes": 0,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v2-0",
+"title": "Resonance Agent ARC-AGI-3 v2.0",
+"lastRun": "2026-05-21",
+"votes": 0,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v2-1",
+"title": "Resonance Agent ARC-AGI-3 v2.1",
+"lastRun": "2026-05-21",
+"votes": 0,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v2-2",
+"title": "Resonance Agent ARC AGI 3 v2.2",
+"lastRun": "2026-05-21",
+"votes": 0,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v2-4",
+"title": "Resonance Agent ARC AGI 3 v2.4",
+"lastRun": "2026-05-21",
+"votes": 0,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v32",
+"title": "Resonance Agent ARC AGI 3 v32",
+"lastRun": "2026-05-22",
+"votes": 0,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "aer3is/resonance-agent-arc-agi-3-v48",
+"title": "Resonance Agent ARC AGI 3 v48",
+"lastRun": "2026-05-22",
+"votes": 0,
+"author": "\u00c6R3iS"
+},
+{
+"ref": "josianobrito/notebookb2fbce8671",
+"title": "notebookb2fbce8671",
+"lastRun": "2026-06-02",
+"votes": 0,
+"author": "Josiano Brito"
+},
+{
+"ref": "trivu7904/arc3-sample-submission-random-agent-b5c036",
+"title": "ARC3 Sample Submission - Random Agent b5c036",
+"lastRun": "2026-06-03",
+"votes": 0,
+"author": "Tri Vu7904"
+},
+{
+"ref": "earnestgomer/submission-parquet",
+"title": "submission.parquet",
+"lastRun": "2026-05-27",
+"votes": 0,
+"author": "Earnest Gomer Jr"
+},
+{
+"ref": "pascalledesma/arc-agi-3-agent-v15-jonathan-chan",
+"title": "ARC-AGI-3 Agent v15 (Jonathan Chan)",
+"lastRun": "2026-05-28",
+"votes": 0,
+"author": "Pascal"
+},
+{
+"ref": "pascalledesma/arc-agi-3-agent-v15-jonathan-chan-v2",
+"title": "ARC-AGI-3 Agent v15 (Jonathan Chan) v2",
+"lastRun": "2026-05-28",
+"votes": 0,
+"author": "Pascal"
+},
+{
+"ref": "pascalledesma/arc-agi-3-ashvin-forge-agent-v2",
+"title": "ARC-AGI-3 Ashvin FORGE Agent v2",
+"lastRun": "2026-05-28",
+"votes": 0,
+"author": "Pascal"
+},
+{
+"ref": "hweowe/notebooke77cf6f6e2",
+"title": "notebooke77cf6f6e2",
+"lastRun": "2026-05-31",
+"votes": 0,
+"author": "hwe owe"
+},
+{
+"ref": "dangthithuhang/inference-empirical",
+"title": "inference_empirical",
+"lastRun": "2026-05-31",
+"votes": 0,
+"author": "Dugx_Mine"
+},
+{
+"ref": "dangthithuhang/inference-empirical-1",
+"title": "inference_empirical_1",
+"lastRun": "2026-05-31",
+"votes": 0,
+"author": "Dugx_Mine"
+},
+{
+"ref": "wethepeople918/megaman",
+"title": "MegaMan",
+"lastRun": "2026-06-04",
+"votes": 0,
+"author": "Nine1Eight"
+},
+{
+"ref": "clawdyhuang/hermesarc-v1-test-time-learning-agent",
+"title": "HermesARC v1 - Test-Time Learning Agent",
+"lastRun": "2026-06-05",
+"votes": 0,
+"author": "Clawdy Huang (Andy's AI)"
+},
+{
+"ref": "rithvikredrouthu/arc26-3-hybrid-0-46-cac-no-llm-rtx",
+"title": "[ARC26-3] Hybrid 0.46 + CAC no LLM RTX",
+"lastRun": "2026-06-07",
+"votes": 0,
+"author": "Rithvik Redrouthu"
+},
+{
+"ref": "rithvikredrouthu/arc26-3-hybrid-0-46-cac-qwen-rtx",
+"title": "[ARC26-3] Hybrid 0.46 + CAC Qwen RTX",
+"lastRun": "2026-06-07",
+"votes": 0,
+"author": "Rithvik Redrouthu"
+},
+{
+"ref": "magicsword001/observation-data-structure",
+"title": "Observation data structure",
+"lastRun": "2026-06-08",
+"votes": 0,
+"author": "MagicSword"
+},
+{
+"ref": "plamen06/action-identifier",
+"title": "Action Identifier",
+"lastRun": "2026-06-09",
+"votes": 0,
+"author": "Plamen"
+},
+{
+"ref": "magicsword001/arc-agi-3-public-demo-human-testing-hugging-face",
+"title": "ARC_AGI_3_public_demo_human_testing_Hugging Face",
+"lastRun": "2026-06-10",
+"votes": 0,
+"author": "MagicSword"
+},
+{
+"ref": "magicsword001/generate-gameplay-videos",
+"title": "Generate gameplay videos",
+"lastRun": "2026-06-29",
+"votes": 0,
+"author": "MagicSword"
+},
+{
+"ref": "abidachraf/fix6-model-jdid-11v2",
+"title": "fix6_model_jdid_11v2",
+"lastRun": "2026-06-11",
+"votes": 0,
+"author": "ABID Achraf"
+},
+{
+"ref": "clawdyhuang/hermesarc-v4-resnet-heuristics-d4-aug-bfs",
+"title": "HermesARC v4 - ResNet + Heuristics + D4 Aug + BFS",
+"lastRun": "2026-06-24",
+"votes": 0,
+"author": "Clawdy Huang (Andy's AI)"
+},
+{
+"ref": "hrbzhq/arc-agi-3-agent-forge-v21-combined",
+"title": "ARC-AGI-3 Agent - FORGE v21 Combined",
+"lastRun": "2026-06-12",
+"votes": 0,
+"author": "q zh"
+},
+{
+"ref": "hrbzhq/arc-agi-3-agent-submission",
+"title": "ARC-AGI-3 Agent - Submission",
+"lastRun": "2026-06-12",
+"votes": 0,
+"author": "q zh"
+},
+{
+"ref": "plamen06/arc-llm",
+"title": "ARC-LLM",
+"lastRun": "2026-06-12",
+"votes": 0,
+"author": "Plamen"
+},
+{
+"ref": "markbistreanchirodea/notebookaf44bf7a15",
+"title": "notebookaf44bf7a15",
+"lastRun": "2026-06-13",
+"votes": 0,
+"author": "Mark Bistrean-Chirodea"
+},
+{
+"ref": "datlq1202/sana-video",
+"title": "Sana_video",
+"lastRun": "2026-06-15",
+"votes": 0,
+"author": "Dat Le Quoc"
+},
+{
+"ref": "jiaweili0001/arc3-next-stable-arc26-agent-v15-ready",
+"title": "ARC3 next stable arc26 agent v15 ready",
+"lastRun": "2026-06-15",
+"votes": 0,
+"author": "JIAWEILI0001"
+},
+{
+"ref": "slsang29/notebook1d0855e5fc",
+"title": "notebook1d0855e5fc",
+"lastRun": "2026-06-15",
+"votes": 0,
+"author": "Simon Sang"
+},
+{
+"ref": "datlq122/notebookedaa3a2d6b",
+"title": "notebookedaa3a2d6b",
+"lastRun": "2026-06-17",
+"votes": 0,
+"author": "\u0110\u1ea1t L\u00ea"
+},
+{
+"ref": "lqdat122/notebook40ed5264cd",
+"title": "notebook40ed5264cd",
+"lastRun": "2026-06-21",
+"votes": 0,
+"author": "lqdat122"
+},
+{
+"ref": "alexazander/arc-agi-3-hybrid-agent-t4-submit",
+"title": "ARC-AGI-3 Hybrid Agent T4 Submit",
+"lastRun": "2026-06-18",
+"votes": 0,
+"author": "Alex Paul"
+},
+{
+"ref": "alexazander/arc-agi-3-hybrid-agent-v2-fix",
+"title": "ARC-AGI-3 Hybrid Agent V2 Fix",
+"lastRun": "2026-06-18",
+"votes": 0,
+"author": "Alex Paul"
+},
+{
+"ref": "ronankmcgovern/arc3-prod-submission",
+"title": "ARC3 Prod Submission",
+"lastRun": "2026-06-20",
+"votes": 0,
+"author": "Ronan McGovern"
+},
+{
+"ref": "alexazander/arc-agi-3-hybrid-agent-v4-cnn",
+"title": "ARC-AGI-3 Hybrid Agent V4 CNN",
+"lastRun": "2026-06-19",
+"votes": 0,
+"author": "Alex Paul"
+},
+{
+"ref": "hrbzhq/arc-agi-3-v10-agent",
+"title": "ARC AGI 3 v10 agent",
+"lastRun": "2026-06-22",
+"votes": 0,
+"author": "q zh"
+},
+{
+"ref": "shankara07/arc-agi-3-random-agent-baseline",
+"title": "ARC-AGI-3 Random Agent Baseline",
+"lastRun": "2026-06-20",
+"votes": 0,
+"author": "Shankara Ramasubramanian A S"
+},
+{
+"ref": "alexazander/arc-agi-3-stochastic-goose-original",
+"title": "ARC-AGI-3 Stochastic Goose (ORIGINAL)",
+"lastRun": "2026-06-20",
+"votes": 0,
+"author": "Alex Paul"
+},
+{
+"ref": "anglolodorf/forge-arc-agi-3-agent-319c3d",
+"title": "FORGE ARC-AGI-3 Agent 319c3d",
+"lastRun": "2026-06-21",
+"votes": 0,
+"author": "ANGOUAH"
+},
+{
+"ref": "krisskey/arc3-urm-submission-v11-sota",
+"title": "ARC3 URM Submission v11 \u2014 SOTA",
+"lastRun": "2026-06-29",
+"votes": 0,
+"author": "Kriss Key"
+},
+{
+"ref": "brainwaveml/notebook4a691a1418",
+"title": "notebook4a691a1418",
+"lastRun": "2026-06-24",
+"votes": 0,
+"author": "brainwaveml"
+},
+{
+"ref": "hrbzhq/arc-agi-3-submission",
+"title": "ARC AGI 3 Submission",
+"lastRun": "2026-06-25",
+"votes": 0,
+"author": "q zh"
+},
+{
+"ref": "aureioo/tomas-arc-agi-3-v6-1-path-fix",
+"title": "TOMAS ARC AGI 3 v6.1 Path Fix",
+"lastRun": "2026-06-30",
+"votes": 0,
+"author": "aureioo"
+},
+{
+"ref": "aureioo/tomas-arc-agi-3-v6-2-final",
+"title": "TOMAS ARC AGI 3 v6.2 Final",
+"lastRun": "2026-06-30",
+"votes": 0,
+"author": "aureioo"
+},
+{
+"ref": "prateiksinha/vllm-wheels",
+"title": "vllm_wheels",
+"lastRun": "2026-06-30",
+"votes": 0,
+"author": "Prateik Sinha"
+},
+{
+"ref": "aureioo/tomas-arc-agi-3-v6-3-informed-search",
+"title": "TOMAS ARC AGI 3 v6.3 Informed Search",
+"lastRun": "2026-06-30",
+"votes": 0,
+"author": "aureioo"
+},
+{
+"ref": "aureioo/arc-prize-2026-arc-agi-3-v640",
+"title": "arc prize 2026 arc agi 3 v640",
+"lastRun": "2026-06-30",
+"votes": 0,
+"author": "aureioo"
+},
+{
+"ref": "aureioo/tomas-arc-agi-3-v6-5-object-level-search",
+"title": "TOMAS ARC AGI 3 v6.5 Object-Level Search",
+"lastRun": "2026-06-30",
+"votes": 0,
+"author": "aureioo"
+}
+]

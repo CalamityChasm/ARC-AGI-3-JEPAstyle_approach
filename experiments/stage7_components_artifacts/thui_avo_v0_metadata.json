@@ -1,0 +1,49 @@
+{
+ "languageNullable": "python",
+ "kernelTypeNullable": "notebook",
+ "isPrivateNullable": false,
+ "enableGpuNullable": true,
+ "enableTpuNullable": false,
+ "enableInternetNullable": false,
+ "currentVersionNumberNullable": 1,
+ "dockerImageNullable": "gcr.io/kaggle-private-byod/python@sha256:57e612b484cf3df5026ee4dcc3cb176974b22b2bc0937fb1e16132a8be4cb13c",
+ "machineShapeNullable": "NvidiaRtxPro6000",
+ "id": 133235328,
+ "ref": "yocybercode/thui-avo-v0",
+ "title": "thui-avo-v0",
+ "author": "yocyber-code",
+ "slug": "thui-avo-v0",
+ "lastRunTime": "2026-09-17T02:53:51.2491052Z",
+ "language": "python",
+ "hasLanguage": true,
+ "kernelType": "notebook",
+ "hasKernelType": true,
+ "isPrivate": false,
+ "hasIsPrivate": true,
+ "enableGpu": true,
+ "hasEnableGpu": true,
+ "enableTpu": false,
+ "hasEnableTpu": true,
+ "enableInternet": false,
+ "hasEnableInternet": true,
+ "categoryIds": [
+  "gpu"
+ ],
+ "datasetDataSources": [
+  "driessmit1/arc3-vllm-h100-wheelhouse-v3",
+  "jakobbrggen/qwen3-8-27b-fp8-hf-snapshot",
+  "jakobbrggen/taaf-kaggle-source"
+ ],
+ "kernelDataSources": [],
+ "competitionDataSources": [
+  "arc-prize-2026-arc-agi-3"
+ ],
+ "modelDataSources": [],
+ "totalVotes": 0,
+ "currentVersionNumber": 1,
+ "hasCurrentVersionNumber": true,
+ "dockerImage": "gcr.io/kaggle-private-byod/python@sha256:57e612b484cf3df5026ee4dcc3cb176974b22b2bc0937fb1e16132a8be4cb13c",
+ "hasDockerImage": true,
+ "machineShape": "NvidiaRtxPro6000",
+ "hasMachineShape": true
+}
