@@ -715,3 +715,24 @@ in advance so a future session does not rediscover it as a surprise.
    prepare.
 5. **PROLONG-eval** as the fourth arm if AVO does not clear.
 6. Candidates 4 and 5 only after that.
+
+---
+
+## Appendix A — integration preconditions, checked rather than assumed
+
+All [VERIFIED] against the downloaded `raist321/taaf-avo-v27-bundle` /
+`jakobbrggen/taaf-kaggle-source` v27 tree:
+
+| precondition | required by | result |
+|---|---|---|
+| `taaf-kaggle-bundle.json` → `benchmark_label` | cell 7 `_find_bundle_dir` | **`"avo-kaggle"`** (distinct from the serving bundle's `"duck-harness-kaggle"`, so `assert BUNDLE_DIR != ANIM_BUNDLE_DIR` still holds) |
+| `src/ARC3-Inference/inference/utils/animation.py` exists | cell 7 assert | **present** |
+| no `serving_setup.py` in the solver bundle | cell 7 label disambiguation | **absent**, as with anim |
+| `bm.solver.animation_awareness is True and hard_noop_guard is True` | cell 11 assert | **both True** |
+| `bm.solver.max_runtime_s_per_game` | cell 13 pin (7920.0) | **already 7920.0** |
+| `target.max_runtime_s` | cell 13 assert (32400.0) | **54000.0 — MUST BE SET, NOT ASSERTED** |
+| the bundle's own `setup_commands.json` | ignored by our notebook | points at `driessmit1/arc3-vllm-h100-wheelhouse-v3` + `jakobbrggen/qwen3-8-27b-fp8-hf-snapshot`. **The anim bundle carries an equivalent FP8 setup command and our graft already ignores it** — cell 7 resolves the serving bundle by the `duck-harness-kaggle` label and runs keithtyser's command instead. No new risk. |
+| `inference/avo/` present, `avo_agent=True` in the pickle | the point of the swap | **both** |
+
+The one item in that table that would break a run is the `max_runtime_s`
+54000 → 32400 line. Everything else passes as written.
