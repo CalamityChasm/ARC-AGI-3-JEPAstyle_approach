@@ -1,0 +1,123 @@
+{
+ "jakobbrggen/taaf-kaggle-source-anim-20260807-anim": {
+  "bytes": 1946,
+  "avo_agent": null,
+  "animation_awareness": "NEWTRUE",
+  "animation_retrieval": null,
+  "hard_noop_guard": "NEWTRUE",
+  "max_runtime_s_per_game": "7920.0",
+  "concurrency": "28",
+  "max_actions_per_game": "'max_runtime_s_per_game'",
+  "model": "'local'"
+ },
+ "jakobbrggen/taaf-kaggle-source": {
+  "bytes": 2964,
+  "avo_agent": "NEWTRUE",
+  "animation_awareness": "NEWTRUE",
+  "animation_retrieval": "NEWFALSE",
+  "hard_noop_guard": "NEWTRUE",
+  "max_runtime_s_per_game": "7920.0",
+  "concurrency": "28",
+  "max_actions_per_game": "'max_runtime_s_per_game'",
+  "model": "'local'"
+ },
+ "tanapatriewruja/taaf-src-v10-persistence": {
+  "bytes": 3371,
+  "avo_agent": null,
+  "animation_awareness": null,
+  "animation_retrieval": null,
+  "hard_noop_guard": null,
+  "max_runtime_s_per_game": "3600.0",
+  "concurrency": "5",
+  "max_actions_per_game": "'max_runtime_s_per_game'",
+  "model": "'local'"
+ },
+ "raist321/taaf-polyphony-v25-bundle": {
+  "bytes": 2165,
+  "avo_agent": null,
+  "animation_awareness": null,
+  "animation_retrieval": null,
+  "hard_noop_guard": null,
+  "max_runtime_s_per_game": "7920.0",
+  "concurrency": "28",
+  "max_actions_per_game": "'max_runtime_s_per_game'",
+  "model": "'local'"
+ },
+ "iseesmth/duck-harness-prolong-source-20260811": {
+  "bytes": 3293,
+  "avo_agent": null,
+  "animation_awareness": null,
+  "animation_retrieval": null,
+  "hard_noop_guard": null,
+  "max_runtime_s_per_game": "7920.0",
+  "concurrency": "28",
+  "max_actions_per_game": "'max_runtime_s_per_game'",
+  "model": "'local'"
+ },
+ "iseesmth/duck-harness-nca-source-20260811": {
+  "bytes": 3473,
+  "avo_agent": null,
+  "animation_awareness": null,
+  "animation_retrieval": null,
+  "hard_noop_guard": null,
+  "max_runtime_s_per_game": "7920.0",
+  "concurrency": "28",
+  "max_actions_per_game": "'max_runtime_s_per_game'",
+  "model": "'local'"
+ },
+ "toprakg/taaf-kaggle-source": {
+  "bytes": 2126,
+  "avo_agent": null,
+  "animation_awareness": null,
+  "animation_retrieval": null,
+  "hard_noop_guard": null,
+  "max_runtime_s_per_game": "2700.0",
+  "concurrency": "6",
+  "max_actions_per_game": "'max_runtime_s_per_game'",
+  "model": "'vrfai/Qwen3.6-27B-FP8'"
+ },
+ "gktrkakman/taaf-src-subv1": {
+  "bytes": 3227,
+  "avo_agent": null,
+  "animation_awareness": null,
+  "animation_retrieval": null,
+  "hard_noop_guard": null,
+  "max_runtime_s_per_game": "5400.0",
+  "concurrency": "28",
+  "max_actions_per_game": "'max_runtime_s_per_game'",
+  "model": "'local'"
+ },
+ "brentwoodard/relator-duck-v11-hybrid-source": {
+  "bytes": 3289,
+  "avo_agent": null,
+  "animation_awareness": null,
+  "animation_retrieval": null,
+  "hard_noop_guard": null,
+  "max_runtime_s_per_game": "7920.0",
+  "concurrency": "28",
+  "max_actions_per_game": "'max_runtime_s_per_game'",
+  "model": "'local'"
+ },
+ "jeroencottaar/taaf-kaggle-source-share": {
+  "bytes": 3281,
+  "avo_agent": null,
+  "animation_awareness": null,
+  "animation_retrieval": null,
+  "hard_noop_guard": null,
+  "max_runtime_s_per_game": "7920.0",
+  "concurrency": "28",
+  "max_actions_per_game": "'max_runtime_s_per_game'",
+  "model": "'local'"
+ },
+ "iseesmth/taaf-kaggle-source-prolong-eval": {
+  "bytes": 3362,
+  "avo_agent": null,
+  "animation_awareness": "NEWTRUE",
+  "animation_retrieval": null,
+  "hard_noop_guard": "NEWTRUE",
+  "max_runtime_s_per_game": "7920.0",
+  "concurrency": "28",
+  "max_actions_per_game": "'max_runtime_s_per_game'",
+  "model": "'local'"
+ }
+}
