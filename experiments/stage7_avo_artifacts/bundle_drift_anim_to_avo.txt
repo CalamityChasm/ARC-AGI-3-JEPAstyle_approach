@@ -1,0 +1,43 @@
+base  = <scratch>\anim
+other = <scratch>\avo
+
+base  ARC3-Inference                   9158303     DIRTY  feature/animation-awareness  feat: proactively suggest animation retrieval when stuck (s…
+other ARC3-Inference                   74ff3df     clean  experiment/avo-v2         exp: pin the kaggle-avo arm to the control run's model and …
+
+=== source files that differ (.py only, __pycache__ excluded) ===
+  ARC3-Inference/inference/framework/solver.py               242 changed lines
+  (only in other) ARC3-Inference/inference/avo/agent.py      210 changed lines
+  ARC3-Inference/inference/agent/tool_agent.py               198 changed lines
+  (only in other) ARC3-Inference/inference/avo/supervisor.py   163 changed lines
+  (only in other) ARC3-Inference/inference/avo/memory.py     159 changed lines
+  (only in other) ARC3-Inference/inference/avo/settings.py   104 changed lines
+  ARC3-Inference/inference/utils/animation.py                 85 changed lines
+  (only in other) ARC3-Inference/inference/avo/prompts.py     76 changed lines
+  ARC3-Inference/inference/agent/vision_context.py            64 changed lines
+  (only in other) ARC3-Inference/inference/avo/__init__.py    21 changed lines
+  ARC3-Inference/inference/agent/prompts.py                    9 changed lines
+  ARC3-Inference/inference/framework/kaggle.py                 8 changed lines
+
+=== pickled solver fields ===
+  _stop_event                                        <threading.Event at 0x21eee67ae90: unset>  ->  <threading.Event at 0x21eee797890: unset>
+  animation_retrieval                                                               '<absent>'  ->  False
+  avo_agent                                                                         '<absent>'  ->  True
+  kaggle_model_dataset_source                   'driessmit1/vrfai-qwen3-6-27b-fp8-hf-snapshot'  ->  'jakobbrggen/qwen3-8-27b-fp8-hf-snapshot'
+  kaggle_served_model_name                                             'vrfai/Qwen3.6-27B-FP8'  ->  'Qwen/Qwen3.8-27B-FP8'
+  local_server_repo_dir               '/Users/jakobbruggen/Desktop/duck-harness/ARC3-Inference  ->  '/Users/jakobbruggen/Desktop/duck-harness/.claude/worktr
+
+=== deploy target fields ===
+  dataset_ref                              'jakobbrggen/taaf-kaggle-source-anim-20260807-anim'  ->  None
+  dataset_version_message                 'Update taaf-anim-20260807-anim TAAF source bundle.'  ->  'Update taaf-avo-kaggle TAAF source bundle.'
+  extra_source_repos                  [PurePosixPath('/Users/jakobbruggen/Desktop/duck-harness  ->  [PurePosixPath('/Users/jakobbruggen/Desktop/duck-harness
+  kernel_id                                              'jakobbrggen/taaf-anim-20260807-anim'  ->  'jakobbrggen/taaf-avo-kaggle'
+  kernel_slug                                                        'taaf-anim-20260807-anim'  ->  'taaf-avo-kaggle'
+  kernel_title                                                       'taaf-anim-20260807-anim'  ->  'taaf-avo-kaggle'
+  max_runtime_s                                                                        32400.0  ->  54000.0
+  source_dataset_ref                       'jakobbrggen/taaf-kaggle-source-anim-20260807-anim'  ->  'jakobbrggen/taaf-kaggle-source'
+
+=== benchmark-level fields (excluding solver) ===
+  games                               [GameAPI(allow_deepcopy=False, game_id='', number_of_lev  ->  [GameAPI(allow_deepcopy=False, game_id='', number_of_lev
+  job_dir                             PurePosixPath('/Users/jakobbruggen/Desktop/duck-harness/  ->  PurePosixPath('/Users/jakobbruggen/Desktop/duck-harness/
+  label                                                                   'anim-20260807-anim'  ->  'avo-kaggle'
+  n_passes                                                                                   4  ->  1
