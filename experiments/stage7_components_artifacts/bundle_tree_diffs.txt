@@ -1,0 +1,233 @@
+### b01
+Files b00/src/ARC3-Inference/Makefile and b01/src/ARC3-Inference/Makefile differ
+Files b00/src/ARC3-Inference/inference/agent/prompts.py and b01/src/ARC3-Inference/inference/agent/prompts.py differ
+Files b00/src/ARC3-Inference/inference/agent/tool_agent.py and b01/src/ARC3-Inference/inference/agent/tool_agent.py differ
+Files b00/src/ARC3-Inference/inference/agent/vision_context.py and b01/src/ARC3-Inference/inference/agent/vision_context.py differ
+Only in b01/src/ARC3-Inference/inference: avo
+Files b00/src/ARC3-Inference/inference/framework/kaggle.py and b01/src/ARC3-Inference/inference/framework/kaggle.py differ
+Files b00/src/ARC3-Inference/inference/framework/solver.py and b01/src/ARC3-Inference/inference/framework/solver.py differ
+Files b00/src/ARC3-Inference/inference/utils/animation.py and b01/src/ARC3-Inference/inference/utils/animation.py differ
+Files b00/src/ARC3-Inference/scripts/reorganize_runs.sh and b01/src/ARC3-Inference/scripts/reorganize_runs.sh differ
+
+### b02
+Files b00/src/ARC3-Inference/Makefile and b02/src/ARC3-Inference/Makefile differ
+Files b00/src/ARC3-Inference/README.md and b02/src/ARC3-Inference/README.md differ
+Files b00/src/ARC3-Inference/configs/eval.json and b02/src/ARC3-Inference/configs/eval.json differ
+Files b00/src/ARC3-Inference/configs/inference.json and b02/src/ARC3-Inference/configs/inference.json differ
+Files b00/src/ARC3-Inference/configs/inference.openrouter.json and b02/src/ARC3-Inference/configs/inference.openrouter.json differ
+Files b00/src/ARC3-Inference/configs/significance.json and b02/src/ARC3-Inference/configs/significance.json differ
+Files b00/src/ARC3-Inference/inference/__init__.py and b02/src/ARC3-Inference/inference/__init__.py differ
+Files b00/src/ARC3-Inference/inference/agent/__init__.py and b02/src/ARC3-Inference/inference/agent/__init__.py differ
+Files b00/src/ARC3-Inference/inference/agent/action_names.py and b02/src/ARC3-Inference/inference/agent/action_names.py differ
+Only in b00/src/ARC3-Inference/inference/agent: noop_guard.py
+Files b00/src/ARC3-Inference/inference/agent/prompts.py and b02/src/ARC3-Inference/inference/agent/prompts.py differ
+Files b00/src/ARC3-Inference/inference/agent/python_tool_sandbox.py and b02/src/ARC3-Inference/inference/agent/python_tool_sandbox.py differ
+Files b00/src/ARC3-Inference/inference/agent/runtime_state.py and b02/src/ARC3-Inference/inference/agent/runtime_state.py differ
+Files b00/src/ARC3-Inference/inference/agent/tool_agent.py and b02/src/ARC3-Inference/inference/agent/tool_agent.py differ
+Files b00/src/ARC3-Inference/inference/agent/vision_context.py and b02/src/ARC3-Inference/inference/agent/vision_context.py differ
+Files b00/src/ARC3-Inference/inference/framework/__init__.py and b02/src/ARC3-Inference/inference/framework/__init__.py differ
+Files b00/src/ARC3-Inference/inference/framework/kaggle.py and b02/src/ARC3-Inference/inference/framework/kaggle.py differ
+Files b00/src/ARC3-Inference/inference/framework/run.py and b02/src/ARC3-Inference/inference/framework/run.py differ
+Files b00/src/ARC3-Inference/inference/framework/solver.py and b02/src/ARC3-Inference/inference/framework/solver.py differ
+Files b00/src/ARC3-Inference/inference/tools/__init__.py and b02/src/ARC3-Inference/inference/tools/__init__.py differ
+Files b00/src/ARC3-Inference/inference/tools/chat.py and b02/src/ARC3-Inference/inference/tools/chat.py differ
+Files b00/src/ARC3-Inference/inference/tools/config_value.py and b02/src/ARC3-Inference/inference/tools/config_value.py differ
+Files b00/src/ARC3-Inference/inference/tools/eval.py and b02/src/ARC3-Inference/inference/tools/eval.py differ
+Files b00/src/ARC3-Inference/inference/tools/eval_plot.py and b02/src/ARC3-Inference/inference/tools/eval_plot.py differ
+Files b00/src/ARC3-Inference/inference/tools/significance.py and b02/src/ARC3-Inference/inference/tools/significance.py differ
+Files b00/src/ARC3-Inference/inference/tools/traces.py and b02/src/ARC3-Inference/inference/tools/traces.py differ
+Files b00/src/ARC3-Inference/inference/tools/vllm_runtime_lora_guard.py and b02/src/ARC3-Inference/inference/tools/vllm_runtime_lora_guard.py differ
+Only in b00/src/ARC3-Inference/inference/utils: animation.py
+Files b00/src/ARC3-Inference/inference/utils/grid_utils.py and b02/src/ARC3-Inference/inference/utils/grid_utils.py differ
+Files b00/src/ARC3-Inference/inference/utils/openai_compat.py and b02/src/ARC3-Inference/inference/utils/openai_compat.py differ
+Files b00/src/ARC3-Inference/inference/utils/run_artifacts.py and b02/src/ARC3-Inference/inference/utils/run_artifacts.py differ
+Files b00/src/ARC3-Inference/inference/utils/segmentation.py and b02/src/ARC3-Inference/inference/utils/segmentation.py differ
+Files b00/src/ARC3-Inference/inference/utils/viewer_artifacts.py and b02/src/ARC3-Inference/inference/utils/viewer_artifacts.py differ
+Files b00/src/ARC3-Inference/pyproject.toml and b02/src/ARC3-Inference/pyproject.toml differ
+Files b00/src/ARC3-Inference/scripts/ensure_server_api_key.sh and b02/src/ARC3-Inference/scripts/ensure_server_api_key.sh differ
+Only in b00/src/ARC3-Inference/scripts: pull_kaggle_runs.sh
+Only in b00/src/ARC3-Inference/scripts: reorganize_runs.sh
+Files b00/src/ARC3-Inference/scripts/server_curl.sh and b02/src/ARC3-Inference/scripts/server_curl.sh differ
+Files b00/src/ARC3-Inference/uv.lock and b02/src/ARC3-Inference/uv.lock differ
+Files b00/src/ARC3-Inference/viewer/__init__.py and b02/src/ARC3-Inference/viewer/__init__.py differ
+Files b00/src/ARC3-Inference/viewer/data.py and b02/src/ARC3-Inference/viewer/data.py differ
+Files b00/src/ARC3-Inference/viewer/index.html and b02/src/ARC3-Inference/viewer/index.html differ
+Files b00/src/ARC3-Inference/viewer/server.py and b02/src/ARC3-Inference/viewer/server.py differ
+Files b00/src/tufa-arc-agi-framework/Makefile and b02/src/tufa-arc-agi-framework/Makefile differ
+Files b00/src/tufa-arc-agi-framework/README.md and b02/src/tufa-arc-agi-framework/README.md differ
+Files b00/src/tufa-arc-agi-framework/pyproject.toml and b02/src/tufa-arc-agi-framework/pyproject.toml differ
+Files b00/src/tufa-arc-agi-framework/scripts/refresh_examples.py and b02/src/tufa-arc-agi-framework/scripts/refresh_examples.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/__init__.py and b02/src/tufa-arc-agi-framework/src/taaf/__init__.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/benchmark.py and b02/src/tufa-arc-agi-framework/src/taaf/benchmark.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/competition_arcade.py and b02/src/tufa-arc-agi-framework/src/taaf/competition_arcade.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/deploy.py and b02/src/tufa-arc-agi-framework/src/taaf/deploy.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/deploy_inline.py and b02/src/tufa-arc-agi-framework/src/taaf/deploy_inline.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/deploy_kaggle.py and b02/src/tufa-arc-agi-framework/src/taaf/deploy_kaggle.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/deploy_slurm.py and b02/src/tufa-arc-agi-framework/src/taaf/deploy_slurm.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/diagnostics.py and b02/src/tufa-arc-agi-framework/src/taaf/diagnostics.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/game.py and b02/src/tufa-arc-agi-framework/src/taaf/game.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/game_api.py and b02/src/tufa-arc-agi-framework/src/taaf/game_api.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/game_examples.py and b02/src/tufa-arc-agi-framework/src/taaf/game_examples.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/kaggle/taaf_kaggle_run.ipynb and b02/src/tufa-arc-agi-framework/src/taaf/kaggle/taaf_kaggle_run.ipynb differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/kaggle/taaf_kaggle_run_share.ipynb and b02/src/tufa-arc-agi-framework/src/taaf/kaggle/taaf_kaggle_run_share.ipynb differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/kaggle_random.py and b02/src/tufa-arc-agi-framework/src/taaf/kaggle_random.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/solver.py and b02/src/tufa-arc-agi-framework/src/taaf/solver.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/solver_examples.py and b02/src/tufa-arc-agi-framework/src/taaf/solver_examples.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/standard_benchmarks.py and b02/src/tufa-arc-agi-framework/src/taaf/standard_benchmarks.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/support.py and b02/src/tufa-arc-agi-framework/src/taaf/support.py differ
+Files b00/src/tufa-arc-agi-framework/uv.lock and b02/src/tufa-arc-agi-framework/uv.lock differ
+
+### b03
+Files b00/src/ARC3-Inference/Makefile and b03/src/ARC3-Inference/Makefile differ
+Files b00/src/ARC3-Inference/README.md and b03/src/ARC3-Inference/README.md differ
+Only in b00/src/ARC3-Inference/inference: agent
+Only in b03/src/ARC3-Inference/inference: core
+Files b00/src/ARC3-Inference/inference/framework/kaggle.py and b03/src/ARC3-Inference/inference/framework/kaggle.py differ
+Files b00/src/ARC3-Inference/inference/framework/solver.py and b03/src/ARC3-Inference/inference/framework/solver.py differ
+Only in b03/src/ARC3-Inference/inference: polyphony
+Only in b00/src/ARC3-Inference/inference/utils: animation.py
+Only in b00/src/ARC3-Inference/inference/utils: segmentation.py
+Files b00/src/ARC3-Inference/scripts/reorganize_runs.sh and b03/src/ARC3-Inference/scripts/reorganize_runs.sh differ
+
+### b04
+Files b00/src/ARC3-Inference/README.md and b04/src/ARC3-Inference/README.md differ
+Files b00/src/ARC3-Inference/configs/inference.json and b04/src/ARC3-Inference/configs/inference.json differ
+Only in b00/src/ARC3-Inference/inference/agent: noop_guard.py
+Only in b04/src/ARC3-Inference/inference/agent: programmatic_memory.py
+Files b00/src/ARC3-Inference/inference/agent/prompts.py and b04/src/ARC3-Inference/inference/agent/prompts.py differ
+Files b00/src/ARC3-Inference/inference/agent/python_tool_sandbox.py and b04/src/ARC3-Inference/inference/agent/python_tool_sandbox.py differ
+Files b00/src/ARC3-Inference/inference/agent/runtime_state.py and b04/src/ARC3-Inference/inference/agent/runtime_state.py differ
+Files b00/src/ARC3-Inference/inference/agent/tool_agent.py and b04/src/ARC3-Inference/inference/agent/tool_agent.py differ
+Files b00/src/ARC3-Inference/inference/framework/run.py and b04/src/ARC3-Inference/inference/framework/run.py differ
+Files b00/src/ARC3-Inference/inference/framework/solver.py and b04/src/ARC3-Inference/inference/framework/solver.py differ
+Only in b00/src/ARC3-Inference/inference/utils: animation.py
+Only in b00/src/ARC3-Inference/scripts: pull_kaggle_runs.sh
+Only in b00/src/ARC3-Inference/scripts: reorganize_runs.sh
+Files b00/src/tufa-arc-agi-framework/src/taaf/deploy_kaggle.py and b04/src/tufa-arc-agi-framework/src/taaf/deploy_kaggle.py differ
+
+### b05
+Files b00/src/ARC3-Inference/configs/inference.json and b05/src/ARC3-Inference/configs/inference.json differ
+Only in b05/src/ARC3-Inference/configs: training
+Only in b00/src/ARC3-Inference/inference/agent: noop_guard.py
+Files b00/src/ARC3-Inference/inference/agent/prompts.py and b05/src/ARC3-Inference/inference/agent/prompts.py differ
+Files b00/src/ARC3-Inference/inference/agent/python_tool_sandbox.py and b05/src/ARC3-Inference/inference/agent/python_tool_sandbox.py differ
+Files b00/src/ARC3-Inference/inference/agent/tool_agent.py and b05/src/ARC3-Inference/inference/agent/tool_agent.py differ
+Files b00/src/ARC3-Inference/inference/framework/kaggle.py and b05/src/ARC3-Inference/inference/framework/kaggle.py differ
+Files b00/src/ARC3-Inference/inference/framework/run.py and b05/src/ARC3-Inference/inference/framework/run.py differ
+Files b00/src/ARC3-Inference/inference/framework/solver.py and b05/src/ARC3-Inference/inference/framework/solver.py differ
+Only in b00/src/ARC3-Inference/inference/utils: animation.py
+Only in b00/src/ARC3-Inference/scripts: pull_kaggle_runs.sh
+Only in b00/src/ARC3-Inference/scripts: reorganize_runs.sh
+Only in b05/src/ARC3-Inference/scripts: train_nca_qwen36.sh
+Files b00/src/tufa-arc-agi-framework/src/taaf/deploy_kaggle.py and b05/src/tufa-arc-agi-framework/src/taaf/deploy_kaggle.py differ
+
+### b06
+Files b00/src/ARC3-Inference/Makefile and b06/src/ARC3-Inference/Makefile differ
+Files b00/src/ARC3-Inference/README.md and b06/src/ARC3-Inference/README.md differ
+Only in b06/src/ARC3-Inference/configs: eval.deepinfra.json
+Files b00/src/ARC3-Inference/configs/eval.json and b06/src/ARC3-Inference/configs/eval.json differ
+Only in b06/src/ARC3-Inference/configs: inference.cerebras.json
+Only in b06/src/ARC3-Inference/configs: inference.deepinfra.json
+Only in b06/src/ARC3-Inference/configs: inference.gemma.json
+Files b00/src/ARC3-Inference/configs/inference.json and b06/src/ARC3-Inference/configs/inference.json differ
+Files b00/src/ARC3-Inference/configs/inference.openrouter.json and b06/src/ARC3-Inference/configs/inference.openrouter.json differ
+Only in b06/src/ARC3-Inference/configs: inference.runpod.json
+Files b00/src/ARC3-Inference/inference/agent/__init__.py and b06/src/ARC3-Inference/inference/agent/__init__.py differ
+Only in b06/src/ARC3-Inference/inference/agent: loop_engineering.py
+Only in b00/src/ARC3-Inference/inference/agent: noop_guard.py
+Only in b06/src/ARC3-Inference/inference/agent: programmatic_memory.py
+Files b00/src/ARC3-Inference/inference/agent/prompts.py and b06/src/ARC3-Inference/inference/agent/prompts.py differ
+Files b00/src/ARC3-Inference/inference/agent/python_tool_sandbox.py and b06/src/ARC3-Inference/inference/agent/python_tool_sandbox.py differ
+Files b00/src/ARC3-Inference/inference/agent/runtime_state.py and b06/src/ARC3-Inference/inference/agent/runtime_state.py differ
+Files b00/src/ARC3-Inference/inference/agent/tool_agent.py and b06/src/ARC3-Inference/inference/agent/tool_agent.py differ
+Only in b06/src/ARC3-Inference/inference/agent: trace_index.py
+Files b00/src/ARC3-Inference/inference/framework/kaggle.py and b06/src/ARC3-Inference/inference/framework/kaggle.py differ
+Files b00/src/ARC3-Inference/inference/framework/run.py and b06/src/ARC3-Inference/inference/framework/run.py differ
+Files b00/src/ARC3-Inference/inference/framework/solver.py and b06/src/ARC3-Inference/inference/framework/solver.py differ
+Files b00/src/ARC3-Inference/inference/tools/chat.py and b06/src/ARC3-Inference/inference/tools/chat.py differ
+Files b00/src/ARC3-Inference/inference/tools/eval.py and b06/src/ARC3-Inference/inference/tools/eval.py differ
+Only in b00/src/ARC3-Inference/inference/utils: animation.py
+Files b00/src/ARC3-Inference/inference/utils/openai_compat.py and b06/src/ARC3-Inference/inference/utils/openai_compat.py differ
+Only in b06/src/ARC3-Inference/scripts: compare_runs.py
+Only in b06/src/ARC3-Inference/scripts: loop_recommend.py
+Only in b00/src/ARC3-Inference/scripts: pull_kaggle_runs.sh
+Only in b00/src/ARC3-Inference/scripts: reorganize_runs.sh
+Only in b06/src/ARC3-Inference/scripts: runpod_bootstrap.sh
+Only in b06/src/ARC3-Inference/scripts: runpod_launch.sh
+Files b00/src/tufa-arc-agi-framework/src/taaf/deploy_kaggle.py and b06/src/tufa-arc-agi-framework/src/taaf/deploy_kaggle.py differ
+
+### b07
+Files b00/src/ARC3-Inference/Makefile and b07/src/ARC3-Inference/Makefile differ
+Only in b07/src/ARC3-Inference/configs: inference.cerebras.json
+Only in b07/src/ARC3-Inference/configs: inference.deepinfra.json
+Only in b07/src/ARC3-Inference/configs: inference.gemma.json
+Files b00/src/ARC3-Inference/configs/inference.json and b07/src/ARC3-Inference/configs/inference.json differ
+Files b00/src/ARC3-Inference/configs/inference.openrouter.json and b07/src/ARC3-Inference/configs/inference.openrouter.json differ
+Only in b07/src/ARC3-Inference/configs: inference.runpod.json
+Only in b07/src/ARC3-Inference/inference/agent: REPORT.md
+Only in b07/src/ARC3-Inference/inference/agent: compaction.py
+Only in b07/src/ARC3-Inference/inference/agent: external_history.py
+Only in b00/src/ARC3-Inference/inference/agent: noop_guard.py
+Files b00/src/ARC3-Inference/inference/agent/prompts.py and b07/src/ARC3-Inference/inference/agent/prompts.py differ
+Files b00/src/ARC3-Inference/inference/agent/python_tool_sandbox.py and b07/src/ARC3-Inference/inference/agent/python_tool_sandbox.py differ
+Files b00/src/ARC3-Inference/inference/agent/tool_agent.py and b07/src/ARC3-Inference/inference/agent/tool_agent.py differ
+Only in b07/src/ARC3-Inference/inference/framework: budget.py
+Files b00/src/ARC3-Inference/inference/framework/kaggle.py and b07/src/ARC3-Inference/inference/framework/kaggle.py differ
+Only in b07/src/ARC3-Inference/inference/framework: observability.py
+Files b00/src/ARC3-Inference/inference/framework/run.py and b07/src/ARC3-Inference/inference/framework/run.py differ
+Files b00/src/ARC3-Inference/inference/framework/solver.py and b07/src/ARC3-Inference/inference/framework/solver.py differ
+Only in b07/src/ARC3-Inference/inference: meta
+Files b00/src/ARC3-Inference/inference/tools/chat.py and b07/src/ARC3-Inference/inference/tools/chat.py differ
+Only in b00/src/ARC3-Inference/inference/utils: animation.py
+Files b00/src/ARC3-Inference/inference/utils/openai_compat.py and b07/src/ARC3-Inference/inference/utils/openai_compat.py differ
+Files b00/src/ARC3-Inference/pyproject.toml and b07/src/ARC3-Inference/pyproject.toml differ
+Only in b00/src/ARC3-Inference/scripts: pull_kaggle_runs.sh
+Only in b00/src/ARC3-Inference/scripts: reorganize_runs.sh
+Files b00/src/ARC3-Inference/uv.lock and b07/src/ARC3-Inference/uv.lock differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/deploy_kaggle.py and b07/src/tufa-arc-agi-framework/src/taaf/deploy_kaggle.py differ
+
+### b09
+Files b00/src/ARC3-Inference/Makefile and b09/src/ARC3-Inference/Makefile differ
+Files b00/src/ARC3-Inference/README.md and b09/src/ARC3-Inference/README.md differ
+Files b00/src/ARC3-Inference/configs/inference.json and b09/src/ARC3-Inference/configs/inference.json differ
+Files b00/src/ARC3-Inference/configs/inference.openrouter.json and b09/src/ARC3-Inference/configs/inference.openrouter.json differ
+Only in b00/src/ARC3-Inference/inference/agent: noop_guard.py
+Files b00/src/ARC3-Inference/inference/agent/prompts.py and b09/src/ARC3-Inference/inference/agent/prompts.py differ
+Files b00/src/ARC3-Inference/inference/agent/python_tool_sandbox.py and b09/src/ARC3-Inference/inference/agent/python_tool_sandbox.py differ
+Files b00/src/ARC3-Inference/inference/agent/tool_agent.py and b09/src/ARC3-Inference/inference/agent/tool_agent.py differ
+Files b00/src/ARC3-Inference/inference/framework/run.py and b09/src/ARC3-Inference/inference/framework/run.py differ
+Files b00/src/ARC3-Inference/inference/framework/solver.py and b09/src/ARC3-Inference/inference/framework/solver.py differ
+Files b00/src/ARC3-Inference/inference/tools/eval.py and b09/src/ARC3-Inference/inference/tools/eval.py differ
+Files b00/src/ARC3-Inference/inference/tools/significance.py and b09/src/ARC3-Inference/inference/tools/significance.py differ
+Files b00/src/ARC3-Inference/inference/tools/traces.py and b09/src/ARC3-Inference/inference/tools/traces.py differ
+Only in b00/src/ARC3-Inference/inference/utils: animation.py
+Only in b09/src/ARC3-Inference/inference/utils: rearc_baselines.py
+Only in b09/src/ARC3-Inference/inference/utils: rearc_version.py
+Files b00/src/ARC3-Inference/pyproject.toml and b09/src/ARC3-Inference/pyproject.toml differ
+Only in b00/src/ARC3-Inference/scripts: pull_kaggle_runs.sh
+Only in b00/src/ARC3-Inference/scripts: reorganize_runs.sh
+Files b00/src/ARC3-Inference/uv.lock and b09/src/ARC3-Inference/uv.lock differ
+Files b00/src/tufa-arc-agi-framework/README.md and b09/src/tufa-arc-agi-framework/README.md differ
+Files b00/src/tufa-arc-agi-framework/pyproject.toml and b09/src/tufa-arc-agi-framework/pyproject.toml differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/competition_arcade.py and b09/src/tufa-arc-agi-framework/src/taaf/competition_arcade.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/deploy.py and b09/src/tufa-arc-agi-framework/src/taaf/deploy.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/deploy_kaggle.py and b09/src/tufa-arc-agi-framework/src/taaf/deploy_kaggle.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/deploy_slurm.py and b09/src/tufa-arc-agi-framework/src/taaf/deploy_slurm.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/game_api.py and b09/src/tufa-arc-agi-framework/src/taaf/game_api.py differ
+Files b00/src/tufa-arc-agi-framework/src/taaf/standard_benchmarks.py and b09/src/tufa-arc-agi-framework/src/taaf/standard_benchmarks.py differ
+Files b00/src/tufa-arc-agi-framework/uv.lock and b09/src/tufa-arc-agi-framework/uv.lock differ
+
+### b10
+Files b00/src/ARC3-Inference/README.md and b10/src/ARC3-Inference/README.md differ
+Files b00/src/ARC3-Inference/configs/inference.json and b10/src/ARC3-Inference/configs/inference.json differ
+Only in b10/src/ARC3-Inference/inference/agent: programmatic_memory.py
+Files b00/src/ARC3-Inference/inference/agent/prompts.py and b10/src/ARC3-Inference/inference/agent/prompts.py differ
+Files b00/src/ARC3-Inference/inference/agent/python_tool_sandbox.py and b10/src/ARC3-Inference/inference/agent/python_tool_sandbox.py differ
+Files b00/src/ARC3-Inference/inference/agent/runtime_state.py and b10/src/ARC3-Inference/inference/agent/runtime_state.py differ
+Files b00/src/ARC3-Inference/inference/agent/tool_agent.py and b10/src/ARC3-Inference/inference/agent/tool_agent.py differ
+Files b00/src/ARC3-Inference/inference/framework/run.py and b10/src/ARC3-Inference/inference/framework/run.py differ
+Files b00/src/ARC3-Inference/inference/framework/solver.py and b10/src/ARC3-Inference/inference/framework/solver.py differ
+Only in b00/src/ARC3-Inference/scripts: pull_kaggle_runs.sh
+Only in b00/src/ARC3-Inference/scripts: reorganize_runs.sh
+Files b00/src/tufa-arc-agi-framework/src/taaf/deploy_kaggle.py and b10/src/tufa-arc-agi-framework/src/taaf/deploy_kaggle.py differ
+

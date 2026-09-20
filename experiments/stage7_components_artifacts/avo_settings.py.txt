@@ -1,0 +1,104 @@
+"""Environment-resolved knobs for the AVO arm.
+
+Every flag defaults to the value used for the 15h Kaggle run, and every one
+is readable off a constructed agent so the solver can record it in the run
+directory the same way it records the animation flags.
+"""
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass
+
+
+def _env_int(name: str, default: int) -> int:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        return default
+
+
+def _env_float(name: str, default: float) -> float:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        return float(raw)
+    except ValueError:
+        return default
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    raw = os.environ.get(name, "").strip().lower()
+    if not raw:
+        return default
+    return raw in {"1", "true", "yes", "on"}
+
+
+@dataclass(frozen=True)
+class AvoSettings:
+    """One immutable snapshot of the AVO configuration."""
+
+    # Turns without a score gain or a previously unseen frame before the
+    # supervisor intervenes. Three is short on purpose: on a 64x64 grid an
+    # agent that has learned nothing in three turns is usually re-reading
+    # the same wall, and the cost of an unnecessary nudge is one paragraph.
+    stagnation_turns: int = 3
+
+    # Turns without a score or level gain before the supervisor intervenes
+    # regardless of how many novel frames the agent produced. The first run
+    # showed why this is needed: frame novelty alone reset the stall counter
+    # on nearly every turn, so twelve games that scored zero over 767 turns
+    # drew 30 interventions -- the same rate as the games that were scoring.
+    # Twelve is three full inspect/plan/implement/evaluate cycles.
+    unrewarded_turns: int = 12
+
+    # After this many consecutive interventions the supervisor stops
+    # suggesting variations and orders a hard reset of the approach.
+    escalation_interventions: int = 3
+
+    # Memory entries kept per category. The digest goes into every prompt,
+    # so this is a context-budget decision, not a storage one.
+    max_facts: int = 24
+    max_rules: int = 16
+    max_failures: int = 16
+
+    # Fraction of the per-game budget after which AVO stops building a model
+    # and just plays the best policy it has. Without this the arm's most
+    # likely failure is an elegant world model and no score.
+    exploit_deadline: float = 0.6
+
+    # Whether the four-phase loop is announced to the model at all. Off
+    # gives a memory+supervisor-only ablation against the same base agent.
+    phased_loop: bool = True
+
+    @classmethod
+    def from_env(cls) -> "AvoSettings":
+        return cls(
+            stagnation_turns=max(1, _env_int("ARC3_AVO_STAGNATION_TURNS", 3)),
+            unrewarded_turns=max(1, _env_int("ARC3_AVO_UNREWARDED_TURNS", 12)),
+            escalation_interventions=max(
+                1, _env_int("ARC3_AVO_ESCALATION_INTERVENTIONS", 3)
+            ),
+            max_facts=max(1, _env_int("ARC3_AVO_MAX_FACTS", 24)),
+            max_rules=max(1, _env_int("ARC3_AVO_MAX_RULES", 16)),
+            max_failures=max(1, _env_int("ARC3_AVO_MAX_FAILURES", 16)),
+            exploit_deadline=min(
+                1.0, max(0.0, _env_float("ARC3_AVO_EXPLOIT_DEADLINE", 0.6))
+            ),
+            phased_loop=_env_bool("ARC3_AVO_PHASED_LOOP", True),
+        )
+
+    def as_dict(self) -> dict[str, object]:
+        return {
+            "stagnation_turns": self.stagnation_turns,
+            "unrewarded_turns": self.unrewarded_turns,
+            "escalation_interventions": self.escalation_interventions,
+            "max_facts": self.max_facts,
+            "max_rules": self.max_rules,
+            "max_failures": self.max_failures,
+            "exploit_deadline": self.exploit_deadline,
+            "phased_loop": self.phased_loop,
+        }

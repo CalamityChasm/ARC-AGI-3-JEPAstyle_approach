@@ -1,0 +1,163 @@
+"""The part of AVO that watches the agent rather than the game.
+
+NVIDIA describe a supervisor that "monitors the broader search trajectory
+and detects stagnation or unproductive cycles", redirecting the main agent
+while leaving turn-by-turn decisions to it. That division is kept here: the
+supervisor never picks an action, it only writes a paragraph into the next
+prompt.
+
+Progress is deliberately defined more loosely than "score went up". On
+ARC-AGI-3 a turn that reveals a previously unseen frame is progress even at
+a flat score, because it is what a world model is built from; without that
+the supervisor would fire constantly during legitimate exploration.
+
+That definition alone turned out to be too loose to detect anything. In the
+first 25-game run almost every turn produced a pixel-wise novel frame on the
+64x64 grid, so ``barren_turns`` was reset before it could ever reach the
+threshold: the twelve games that finished on a score of zero drew 30
+interventions across 767 turns, and the thirteen games that scored drew 33
+across 747 -- the supervisor could not tell the two apart, and four games
+that ran 59 to 96 turns without a point were never nudged once.
+
+So there are two triggers now. ``barren_turns`` keeps the original, gentle
+meaning and still yields to frame novelty. ``unrewarded_turns`` counts turns
+since the last score or level gain and ignores novelty entirely, which is
+what makes "exploring busily, achieving nothing" visible at all. Novelty no
+longer clears the escalation ladder either, because a stalled game that
+keeps generating new frames would otherwise never escalate.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+
+from inference.avo.settings import AvoSettings
+
+
+@dataclass
+class TurnSignal:
+    """What the agent's turn produced, from the supervisor's point of view."""
+
+    score: float = 0.0
+    level: int = 0
+    frame_hash: str = ""
+    effective_actions: int = 0
+
+
+@dataclass
+class Supervisor:
+    """Stateless between games, stateful across the turns of one game."""
+
+    settings: AvoSettings = field(default_factory=AvoSettings)
+    best_score: float = 0.0
+    best_level: int = 0
+    barren_turns: int = 0
+    unrewarded_turns: int = 0
+    interventions: int = 0
+    seen_frames: set[str] = field(default_factory=set)
+    _last_reason: str = ""
+
+    def observe(self, signal: TurnSignal) -> None:
+        """Fold one turn into the trajectory. Call once per ``analyze``."""
+        rewarded = False
+        if signal.score > self.best_score:
+            self.best_score = signal.score
+            rewarded = True
+        if signal.level > self.best_level:
+            self.best_level = signal.level
+            rewarded = True
+
+        novel = bool(signal.frame_hash) and signal.frame_hash not in self.seen_frames
+        if novel:
+            self.seen_frames.add(signal.frame_hash)
+
+        # Only a score or a level clears the ladder. Novelty is cheap on a
+        # 64x64 grid, and letting it reset ``interventions`` was what kept the
+        # escalation from ever advancing in a game that was going nowhere.
+        if rewarded:
+            self.barren_turns = 0
+            self.unrewarded_turns = 0
+            self.interventions = 0
+            self._last_reason = ""
+            return
+
+        self.unrewarded_turns += 1
+        if novel:
+            self.barren_turns = 0
+            self._last_reason = ""
+            return
+
+        self.barren_turns += 1
+        if signal.effective_actions == 0:
+            self._last_reason = "no action changed the grid"
+        else:
+            self._last_reason = "the grid changed but into states already seen"
+
+    @property
+    def looping(self) -> bool:
+        """Stuck on states it has already seen -- the original, fast trigger."""
+        return self.barren_turns >= self.settings.stagnation_turns
+
+    @property
+    def unrewarded(self) -> bool:
+        """Busy but not scoring -- fires even while every frame is novel."""
+        return self.unrewarded_turns >= self.settings.unrewarded_turns
+
+    @property
+    def stagnating(self) -> bool:
+        return self.looping or self.unrewarded
+
+    def directive(self) -> str:
+        """The intervention text, or empty string when the trajectory is fine.
+
+        Consumes the intervention: calling this marks one as spent, so the
+        escalation ladder advances once per firing rather than once per read.
+        """
+        if not self.stagnating:
+            return ""
+        # A loop is the more specific diagnosis, so it names the reason even
+        # when both triggers happen to be ready on the same turn.
+        if self.looping:
+            turns = self.barren_turns
+            reason = self._last_reason
+        else:
+            turns = self.unrewarded_turns
+            reason = "the frames kept changing but the score and the level did not"
+        self.interventions += 1
+        self.barren_turns = 0
+        self.unrewarded_turns = 0
+        self._last_reason = ""
+
+        if self.interventions >= self.settings.escalation_interventions:
+            # Start the ladder over. A hard redirect asks the agent to drop its
+            # approach and try another; repeating that verbatim every few turns
+            # for the rest of a game -- which is what happens when level gains
+            # are as rare as they are here -- makes it noise rather than a
+            # redirect. Soft nudges resume so the new approach gets its own run.
+            stalls = self.interventions
+            self.interventions = 0
+            return (
+                "SUPERVISOR -- HARD REDIRECT\n"
+                f"You have now stalled {stalls} times "
+                f"({reason}). Your current approach is wrong, not "
+                "merely unlucky. Abandon it. State in one sentence the "
+                "assumption you have been treating as settled, then act as if "
+                "it is false. Prefer an action class you have used least, and "
+                "record what you ruled out before trying anything else."
+            )
+        return (
+            "SUPERVISOR -- STAGNATION\n"
+            f"The last {turns} turns produced no progress: {reason}. "
+            "Do not repeat the previous plan. Name one concrete hypothesis you "
+            "have not yet tested, choose the single action that would "
+            "distinguish it fastest, and say what result would falsify it."
+        )
+
+    def reset(self) -> None:
+        """Called at a level or game boundary; keeps settings, drops history."""
+        self.best_score = 0.0
+        self.best_level = 0
+        self.barren_turns = 0
+        self.unrewarded_turns = 0
+        self.interventions = 0
+        self.seen_frames = set()
+        self._last_reason = ""

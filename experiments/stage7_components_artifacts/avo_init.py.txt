@@ -1,0 +1,21 @@
+"""The AVO arm: inspect -> plan -> implement -> evaluate, with durable memory.
+
+NVIDIA's AVO ("Agentic Variation Operators") reached 100.00 RHAE on the
+ARC-AGI-3 public set by wrapping a frontier model in three things the model
+does not have on its own: a memory that survives the context window, an
+explicit loop that separates forming a hypothesis from testing it, and a
+supervisor that notices when the loop stops making progress and says so.
+
+None of that is model weights, which is the point -- the same underlying
+model scores roughly 30% unwrapped. So this module is deliberately thin: it
+subclasses the duck harness's ``ToolAgent`` and keeps every piece of the
+existing plumbing (the OpenAI-compatible client, the python sandbox, the
+no-op guard, vision context, token accounting, the ``analyze`` contract the
+solver calls). What it adds is the wrapper.
+"""
+from inference.avo.agent import AvoAgent
+from inference.avo.memory import AvoMemory
+from inference.avo.settings import AvoSettings
+from inference.avo.supervisor import Supervisor
+
+__all__ = ["AvoAgent", "AvoMemory", "AvoSettings", "Supervisor"]
