@@ -447,11 +447,21 @@ helps.** Register an outcome measure too, not just a mechanism measure.
 The next lever must target **whether a level is solvable at all**, not how many
 actions are spent on it. Tufa's own stated weak areas are "context management
 and perception", and there is direct evidence of a perception tax in our own
-run: HUD/status-bar reasoning appears in **all 25 of 25 games** (4,608 mentions
-in the anim run). The model re-derives HUD geometry from scratch, misattributes
-HUD pixels to game objects ("my white-object tracker accidentally matched the
-growing row-0 HUD bar ... that reading was HUD noise"), and spends turns
-establishing "did only the HUD change?".
+run. The model re-derives HUD geometry from scratch, misattributes HUD pixels
+to game objects ("my white-object tracker accidentally matched the growing
+row-0 HUD bar ... that reading was HUD noise"), and spends turns establishing
+"did only the HUD change?".
+
+**Correction, made before the arm ran:** this lead was first recorded here as
+"**all 25 of 25 games**, 4,608 mentions". That raw count is **~85% harness
+boilerplate** -- the base `VISUAL_GAME_ADDENDUM` already carries a HUD warning
+and is quoted back in all 940 prompts (SYSTEM 2,820 + USER 1,051). The honest
+figure is **718 model-generated mentions across 24 of 25 games, of which 286
+derive geometry** (a row/col index or range on the same line). The finding
+survives -- 286 real geometry derivations is a genuine tax -- but it is ~6x
+smaller than first stated. **Registering the falsifier on 4,608 would have made
+it unfalsifiable, since this arm adds HUD words to the prompt itself.** It is
+registered on 718 / 286.
 
 A rule-based status-bar detector already exists in this repo
 (`graph_explorer_agent.py: identify_status_bars_with_rule`, ported from
