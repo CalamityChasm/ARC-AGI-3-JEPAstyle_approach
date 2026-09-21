@@ -1,0 +1,226 @@
+{
+  "anim": {
+    "dir": "C:\\Users\\DESKTO~1\\AppData\\Local\\Temp\\claude\\C--Users-desktop-06-Cal-ARC-AGI-3-JEPAstyle-approach\\902520ce-29b5-44e1-ba34-7bc1c302e3b8\\scratchpad\\anim_out",
+    "games": {
+      "ar25-0c556536": {
+        "field_references": 0,
+        "mentions_all_sections": 179,
+        "mentions_geometry": 15,
+        "mentions_model": 24,
+        "model_blocks": 108
+      },
+      "bp35-0a0ad940": {
+        "field_references": 0,
+        "mentions_all_sections": 137,
+        "mentions_geometry": 5,
+        "mentions_model": 6,
+        "model_blocks": 124
+      },
+      "cd82-fb555c5d": {
+        "field_references": 0,
+        "mentions_all_sections": 180,
+        "mentions_geometry": 9,
+        "mentions_model": 33,
+        "model_blocks": 129
+      },
+      "cn04-2fe56bfb": {
+        "field_references": 0,
+        "mentions_all_sections": 139,
+        "mentions_geometry": 4,
+        "mentions_model": 4,
+        "model_blocks": 140
+      },
+      "dc22-fdcac232": {
+        "field_references": 0,
+        "mentions_all_sections": 355,
+        "mentions_geometry": 24,
+        "mentions_model": 107,
+        "model_blocks": 152
+      },
+      "ft09-0d8bbf25": {
+        "field_references": 0,
+        "mentions_all_sections": 254,
+        "mentions_geometry": 27,
+        "mentions_model": 109,
+        "model_blocks": 130
+      },
+      "g50t-5849a774": {
+        "field_references": 0,
+        "mentions_all_sections": 223,
+        "mentions_geometry": 40,
+        "mentions_model": 69,
+        "model_blocks": 116
+      },
+      "ka59-38d34dbb": {
+        "field_references": 0,
+        "mentions_all_sections": 189,
+        "mentions_geometry": 4,
+        "mentions_model": 9,
+        "model_blocks": 146
+      },
+      "lf52-271a04aa": {
+        "field_references": 0,
+        "mentions_all_sections": 179,
+        "mentions_geometry": 3,
+        "mentions_model": 7,
+        "model_blocks": 153
+      },
+      "lp85-305b61c3": {
+        "field_references": 0,
+        "mentions_all_sections": 179,
+        "mentions_geometry": 8,
+        "mentions_model": 22,
+        "model_blocks": 148
+      },
+      "ls20-9607627b": {
+        "field_references": 0,
+        "mentions_all_sections": 176,
+        "mentions_geometry": 20,
+        "mentions_model": 29,
+        "model_blocks": 119
+      },
+      "m0r0-492f87ba": {
+        "field_references": 0,
+        "mentions_all_sections": 162,
+        "mentions_geometry": 6,
+        "mentions_model": 16,
+        "model_blocks": 144
+      },
+      "r11l-495a7899": {
+        "field_references": 0,
+        "mentions_all_sections": 126,
+        "mentions_geometry": 3,
+        "mentions_model": 3,
+        "model_blocks": 154
+      },
+      "re86-8af5384d": {
+        "field_references": 0,
+        "mentions_all_sections": 153,
+        "mentions_geometry": 5,
+        "mentions_model": 10,
+        "model_blocks": 133
+      },
+      "s5i5-18d95033": {
+        "field_references": 0,
+        "mentions_all_sections": 254,
+        "mentions_geometry": 19,
+        "mentions_model": 47,
+        "model_blocks": 148
+      },
+      "sb26-7fbdac44": {
+        "field_references": 0,
+        "mentions_all_sections": 178,
+        "mentions_geometry": 4,
+        "mentions_model": 7,
+        "model_blocks": 138
+      },
+      "sc25-635fd71a": {
+        "field_references": 0,
+        "mentions_all_sections": 157,
+        "mentions_geometry": 9,
+        "mentions_model": 20,
+        "model_blocks": 156
+      },
+      "sk48-d8078629": {
+        "field_references": 0,
+        "mentions_all_sections": 165,
+        "mentions_geometry": 9,
+        "mentions_model": 14,
+        "model_blocks": 101
+      },
+      "sp80-589a99af": {
+        "field_references": 0,
+        "mentions_all_sections": 182,
+        "mentions_geometry": 8,
+        "mentions_model": 19,
+        "model_blocks": 129
+      },
+      "su15-1944f8ab": {
+        "field_references": 0,
+        "mentions_all_sections": 250,
+        "mentions_geometry": 25,
+        "mentions_model": 67,
+        "model_blocks": 161
+      },
+      "tn36-ef4dde99": {
+        "field_references": 0,
+        "mentions_all_sections": 174,
+        "mentions_geometry": 10,
+        "mentions_model": 20,
+        "model_blocks": 145
+      },
+      "tr87-cd924810": {
+        "field_references": 0,
+        "mentions_all_sections": 130,
+        "mentions_geometry": 0,
+        "mentions_model": 0,
+        "model_blocks": 141
+      },
+      "tu93-0768757b": {
+        "field_references": 0,
+        "mentions_all_sections": 153,
+        "mentions_geometry": 3,
+        "mentions_model": 11,
+        "model_blocks": 143
+      },
+      "vc33-5430563c": {
+        "field_references": 0,
+        "mentions_all_sections": 240,
+        "mentions_geometry": 24,
+        "mentions_model": 61,
+        "model_blocks": 157
+      },
+      "wa30-ee6fef47": {
+        "field_references": 0,
+        "mentions_all_sections": 175,
+        "mentions_geometry": 2,
+        "mentions_model": 4,
+        "model_blocks": 122
+      }
+    },
+    "sections": {
+      "ANALYZER STATUS": {
+        "blocks": 940,
+        "mentions": 0
+      },
+      "ASSISTANT": {
+        "blocks": 737,
+        "mentions": 92
+      },
+      "MODEL RESPONSE META": {
+        "blocks": 1358,
+        "mentions": 62
+      },
+      "SYSTEM PROMPT": {
+        "blocks": 940,
+        "mentions": 2820
+      },
+      "THINKING": {
+        "blocks": 1358,
+        "mentions": 563
+      },
+      "TOOL CALL": {
+        "blocks": 1342,
+        "mentions": 63
+      },
+      "TOOL RESULT": {
+        "blocks": 1342,
+        "mentions": 38
+      },
+      "USER PROMPT": {
+        "blocks": 943,
+        "mentions": 1051
+      }
+    },
+    "total": {
+      "field_references": 0,
+      "games": 25,
+      "games_mentioning": 24,
+      "games_mentioning_any_section": 25,
+      "mentions_all_sections": 4689,
+      "mentions_geometry": 286,
+      "mentions_model": 718,
+      "model_blocks": 3437
+    }
+  }
+}

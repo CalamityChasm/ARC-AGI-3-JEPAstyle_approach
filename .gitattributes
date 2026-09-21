@@ -1,0 +1,10 @@
+# The repo is developed on a box with core.autocrlf=true. Two kinds of file
+# must never be touched by that, because their bytes are load-bearing:
+#
+#  * gzipped test fixtures -- a single translated byte corrupts the archive and
+#    takes the whole suite down on a fresh clone;
+#  * the vendored pristine solver source, whose sha256 is pinned in
+#    scripts/_build_hud_bundle.py. (tests/test_hud_arm.py normalises line
+#    endings before hashing, so this is belt and braces, not the only guard.)
+*.gz binary
+tests/fixtures/bundle_segmentation_anim.py.txt -text

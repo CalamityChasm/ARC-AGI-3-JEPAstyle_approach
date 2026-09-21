@@ -1,0 +1,25 @@
+{
+  "base_dataset": "jakobbrggen/taaf-kaggle-source-anim-20260807-anim",
+  "benchmark_label": "anim-20260807-anim",
+  "env_flag": "ARC3_HUD_ANNOTATION",
+  "files_patched": {
+    "inference/agent/prompts.py": {
+      "after": "17437920a8a2fac7ec85b2476f912e302b07b264508402f5898b565809e32e46",
+      "before": "463f09b308450782408361ba37393b6b75f98b457dee1e562f5cf6f53495753f"
+    },
+    "inference/agent/python_tool_sandbox.py": {
+      "after": "9a63e8558d3120ade380a6107c68254b7a145defbd4d706adcfe1983b12f5164",
+      "before": "c7d47f14a556953fff3f889d34d1a8a42e1413104e2444cf5a7e33ee4445a08f"
+    },
+    "inference/agent/tool_agent.py": {
+      "after": "b900a3b857474d10aa9fd4bec7b375cd07709e135c9d5d220677ed2aefc2d6ec",
+      "before": "856bf9b895d0ad8b959c8f828c7132b0e09eaa47f4c5cc6173785354090f8be7"
+    },
+    "inference/utils/segmentation.py": {
+      "after": "902d7305db4522ebd46491f02177de6ef6088510aab83db741ff6190fb234ec5",
+      "before": "e9499bd859b4488455b481d3f0577a2c59feba9f78b92f20befc5d294ee09ee0"
+    }
+  },
+  "files_unchanged": 71,
+  "published_as": "calamitychasm/taaf-anim-hud-v1"
+}

@@ -1,0 +1,308 @@
+Unified diff: jakobbrggen/taaf-kaggle-source-anim-20260807-anim v1  ->  calamitychasm/taaf-anim-hud-v1
+Four files differ; 71 files byte-identical (scripts/_build_hud_bundle.py asserts this).
+
+--- a/inference/utils/segmentation.py	2026-09-21 00:26:24.888223700 -0500
+--- a/inference/utils/segmentation.py	2026-09-21 00:40:00.886104100 -0500
+@@ -6,6 +6,7 @@
+ """
+ 
+ import hashlib
++import os
+ 
+ _ORTH = ((-1, 0), (1, 0), (0, -1), (0, 1))
+ # clockwise Moore-neighbour offsets, starting at NW
+@@ -72,6 +73,134 @@
+     payload = repr((color, norm)).encode()
+     return hashlib.sha1(payload).hexdigest()[:16]
+ 
++# ---------------------------------------------------------------------------
++# [calamitychasm] HUD annotation -- ADDITIVE AND ADVISORY ONLY.
++#
++# Ported from Rudakov, Shock & Cowley, arXiv:2512.24156 (MIT); see
++# THIRD_PARTY_NOTICE.md. Gated OFF by default: with ARC3_HUD_ANNOTATION unset,
++# segment_layer's return value is identical to the unpatched bundle's, key for
++# key, and no node carries a "hud" field.
++#
++# The gate is read per call rather than at import because the only caller is the
++# Python-tool sandbox, which is a fresh subprocess per tool call.
++# ---------------------------------------------------------------------------
++
++
++def _hud_annotation_enabled():
++    return os.environ.get("ARC3_HUD_ANNOTATION", "").strip().lower() in (
++        "1",
++        "true",
++        "yes",
++        "on",
++    )
++
++
++# Upstream thresholds (arXiv:2512.24156, MIT). Do not retune without re-running
++# the edge-depth validation -- these are what bound the flag to the frame border.
++_HUD_EDGE_DISTANCE = 3
++_HUD_RATIO_THRESHOLD = 5
++_HUD_TWINS_THRESHOLD = 3
++
++
++def _hud_bbox(boundary):
++    """(min_row, min_col, max_row, max_col) of a node's boundary corner points."""
++    rows = [p[0] for p in boundary]
++    cols = [p[1] for p in boundary]
++    return (min(rows), min(cols), max(rows), max(cols))
++
++
++def _hud_edges(bbox, height, width):
++    """Which frame edges this bbox sits *fully* against, upstream's rule verbatim.
++
++    'left'/'top' require the whole bbox within `_HUD_EDGE_DISTANCE` of the edge;
++    'right'/'bottom' use upstream's stricter `min > extent - distance` form.
++    """
++    min_row, min_col, max_row, max_col = bbox
++    edges = []
++    if max_col < _HUD_EDGE_DISTANCE:
++        edges.append("left")
++    if min_col > width - _HUD_EDGE_DISTANCE:
++        edges.append("right")
++    if max_row < _HUD_EDGE_DISTANCE:
++        edges.append("top")
++    if min_row > height - _HUD_EDGE_DISTANCE:
++        edges.append("bottom")
++    return edges
++
++
++def _hud_is_long(bbox, direction):
++    """Is the bbox a long thin bar, in an orientation consistent with its edge?"""
++    min_row, min_col, max_row, max_col = bbox
++    col_extent = max_col - min_col + 1
++    row_extent = max_row - min_row + 1
++    ratio = col_extent / row_extent
++    if ratio >= _HUD_RATIO_THRESHOLD and direction in ("any", "horizontal"):
++        return True
++    if ratio <= 1.0 / _HUD_RATIO_THRESHOLD and direction in ("any", "vertical"):
++        return True
++    return False
++
++
++def detect_hud_nodes(nodes, height, width):
++    """Advisory ids of nodes that look like HUD / status-bar chrome.
++
++    Two shapes qualify, both of which must sit fully against a frame edge:
++      1. a **line** -- aspect ratio >= 5:1 in the orientation that edge implies;
++      2. **dots** -- >= 3 identical objects (same ``hash``) on the same edge.
++
++    Returns a sorted list of node ids. Never raises on well-formed nodes, and
++    never inspects anything but the node dicts it was handed: this is a pure
++    read-side annotation and removes nothing.
++    """
++    if not nodes or height <= 0 or width <= 0:
++        return []
++
++    bboxes = [_hud_bbox(node["boundary"]) for node in nodes]
++    edges_of = [_hud_edges(bbox, height, width) for bbox in bboxes]
++
++    by_hash = {}
++    for i, node in enumerate(nodes):
++        by_hash.setdefault(node["hash"], []).append(i)
++
++    checked = set()
++    hud = set()
++    for i, node in enumerate(nodes):
++        if i in checked:
++            continue
++        checked.add(i)
++        edges = edges_of[i]
++        if not edges:
++            continue
++
++        directions = []
++        if "left" in edges or "right" in edges:
++            directions.append("vertical")
++        if "top" in edges or "bottom" in edges:
++            directions.append("horizontal")
++        direction = "any" if len(directions) == 2 else directions[0]
++
++        if _hud_is_long(bboxes[i], direction):
++            hud.add(i)
++            continue
++
++        # Not a line: fall back to the "dots" rule. A twin counts only if it is
++        # itself on one of the same edges. Upstream consumes twins so they are
++        # not re-evaluated as group leaders later; preserved.
++        edge_set = set(edges)
++        twins = [
++            j
++            for j in by_hash.get(node["hash"], ())
++            if j != i and edge_set.intersection(edges_of[j])
++        ]
++        for j in twins:
++            checked.add(j)
++        if len(twins) + 1 < _HUD_TWINS_THRESHOLD:
++            continue
++        hud.add(i)
++        hud.update(twins)
++
++    return sorted(hud)
++
+ 
+ def segment_layer(layer, color_chars):
+     """Segment one frame layer into connected-component nodes.
+@@ -102,6 +231,12 @@
+       - ``nodes``: list of the node dicts above, in id order.
+       - ``adjacency_list``: sorted list of ``[i, j]`` id pairs for components that share
+         a 4-connected edge (includes parent/child pairs, since they physically touch).
++
++    When ``ARC3_HUD_ANNOTATION`` is set, and only then, two advisory fields are
++    **added** (nothing is removed or altered): each node gains ``hud`` (bool), and the
++    returned dict gains ``hud_node_ids`` (the sorted ids where ``hud`` is True). These
++    are a shape-and-position heuristic for timer/score/status chrome -- see
++    ``detect_hud_nodes`` -- and may be both wrong and incomplete.
+     """
+     height = len(layer)
+     width = len(layer[0]) if height else 0
+@@ -200,4 +335,12 @@
+             }
+         )
+ 
++    # [calamitychasm] advisory HUD annotation; strictly additive, gated off by default.
++    if _hud_annotation_enabled():
++        hud_ids = detect_hud_nodes(nodes, height, width)
++        flagged = set(hud_ids)
++        for node in nodes:
++            node["hud"] = node["id"] in flagged
++        return {"nodes": nodes, "adjacency_list": adjacency_list, "hud_node_ids": hud_ids}
++
+     return {"nodes": nodes, "adjacency_list": adjacency_list}
+--- a/inference/agent/python_tool_sandbox.py	2026-09-21 00:26:24.864225200 -0500
+--- a/inference/agent/python_tool_sandbox.py	2026-09-21 00:40:00.781524600 -0500
+@@ -425,7 +425,7 @@
+ 
+ 
+ def _sandbox_env() -> dict[str, str]:
+-    return {
++    env = {
+         "PYTHONUNBUFFERED": "1",
+         "PYTHONIOENCODING": "utf-8",
+         "PYTHONDONTWRITEBYTECODE": "1",
+@@ -433,6 +433,14 @@
+         "TMPDIR": "/tmp",
+         "PATH": os.environ.get("PATH", ""),
+     }
++    # [calamitychasm] The sandbox is a subprocess with an explicit allowlist env, and
++    # segment_layer -- the only caller of the HUD detector -- runs *inside* it. Without
++    # this one passthrough the gate could never reach the detector and the arm would
++    # silently ship as a no-op. Nothing else is added: the allowlist stays an allowlist.
++    _hud_flag = os.environ.get("ARC3_HUD_ANNOTATION")
++    if _hud_flag is not None:
++        env["ARC3_HUD_ANNOTATION"] = _hud_flag
++    return env
+ 
+ 
+ def _send_json_line(handle: Any, payload: dict[str, Any]) -> None:
+--- a/inference/agent/prompts.py	2026-09-21 00:26:24.864225200 -0500
+--- a/inference/agent/prompts.py	2026-09-21 00:40:00.777532000 -0500
+@@ -1,7 +1,54 @@
+ """Prompt templates for the analyzer agent."""
+ 
++import os
++
+ from inference.utils.grid_utils import ARC_COLOR_LEGEND
+ 
++# [calamitychasm] HUD-annotation arm. Read once at import, in the host process, because
++# the prompt constants below are built at import time. Default OFF: with the flag unset
++# every string in this module is byte-identical to the unpatched bundle's.
++_HUD_ANNOTATION = os.environ.get("ARC3_HUD_ANNOTATION", "").strip().lower() in (
++    "1",
++    "true",
++    "yes",
++    "on",
++)
++
++# Deliberately honest about what the flag is and is not. The detector is a rule over
++# shape and position with no knowledge of the game; it misses HUD blocks set away from
++# the edges, and it can flag a genuine playable object that happens to be a long
++# edge-hugging bar. Overstating it would buy a confident wrong belief, which is worse
++# than the status quo of re-deriving the geometry every turn.
++_HUD_SEGMENTATION_BULLETS = (
++    "- Each node also carries `hud` (bool), and `segmentation['hud_node_ids']` lists the ids"
++    " flagged True. The flag marks a node that sits flush against a frame edge and is either"
++    " a long thin bar (at least 5:1) or one of at least three identical shapes along that"
++    " edge -- the shape of a timer / score / status strip rather than a playable object.\n"
++    "- HEURISTIC. It is a rule over shape and position only and knows nothing about this"
++    " game. It MISSES HUD drawn as a block away from the edges, and it can wrongly flag a"
++    " real object that happens to be a long edge-hugging bar. Nothing is hidden because of"
++    " it: every node is present exactly as it would be otherwise, flagged or not. Verify"
++    " before relying on it -- if a flagged object responds to your actions in a way that"
++    " matters, it is not HUD, and if the interior stops making sense look for HUD the flag"
++    " missed.\n"
++) if _HUD_ANNOTATION else ""
++
++_HUD_PYTHON_BULLET = (
++    "- `segmentation['hud_node_ids']` is a cheap first pass at which objects are timer /"
++    " status chrome. Use it to skip re-deriving HUD geometry by hand, then confirm it from"
++    " behaviour rather than trusting it.\n"
++) if _HUD_ANNOTATION else ""
++
++_HUD_TOOL_SENTENCE = (
++    " Nodes may carry an advisory, sometimes-wrong `hud` flag (also `segmentation['hud_node_ids']`)"
++    " marking probable timer/status chrome; nothing is hidden because of it."
++) if _HUD_ANNOTATION else ""
++
++_HUD_TURN_LINE = (
++    "`segmentation['hud_node_ids']` is a heuristic, possibly wrong, list of probable"
++    " timer/status-chrome nodes -- use it instead of re-deriving HUD geometry, but confirm it."
++) if _HUD_ANNOTATION else ""
++
+ TOOL_CALL_FORMAT_GUIDANCE = (
+     "When calling `python`, emit exactly the tool-call format shown elsewhere in this prompt for this model. "
+     "Use only that format; do not add markdown fences, prose wrappers, or alternate tool-call syntax. "
+@@ -42,6 +89,7 @@
+     "- `current_frame.segmentation` parses the board into objects. It returns `{'nodes': [...], 'adjacency_list': [...]}`.\n"
+     "- Each node in `segmentation['nodes']` is one 4-connected same-color object with: `id` (index, ordered top-most-left-most), `color` (ARC color character), `hash` (a signature of the object's color and shape that ignores its position -- equal hashes mean the same object regardless of where it is, so use it to track an object across frames or to spot multiple identical objects in one frame), `pixels` (cell count), `boundary` (clockwise outer-perimeter corner points as `[row, col]`), and `children` (ids of objects fully enclosed by this one).\n"
+     "- `segmentation['adjacency_list']` is a list of `[i, j]` node-id pairs whose objects share an edge.\n"
++    + _HUD_SEGMENTATION_BULLETS +
+     
+     "- `current_frame.step` is the current environment step count.\n"
+     "- `current_frame.level` is the current level number.\n"
+@@ -83,6 +131,7 @@
+     "\n\nPython tool guidance:\n"
+     "- Use `current_frame.segmentation` as your primary view of the board -- objects, colors, containment, adjacency, and cross-frame object hashes.\n"
+     "- Use `current_frame.ascii` only to read a small, specific region of the board when `segmentation` is not enough; never use it to scan or summarize the whole board.\n"
++    + _HUD_PYTHON_BULLET +
+     "- Every `python` tool call starts fresh. Re-import modules or re-define any custom utility logic you need.\n"
+     "- The only importable standard-library modules are: bisect, collections, copy, fractions, functools, heapq, itertools, json, math, operator, random, re, statistics, string.\n"
+     "- The only tool is `python`; call it with one ephemeral `code` string.\n"
+--- a/inference/agent/tool_agent.py	2026-09-21 00:26:24.868225200 -0500
+--- a/inference/agent/tool_agent.py	2026-09-21 00:40:00.781524600 -0500
+@@ -15,6 +15,8 @@
+ 
+ from inference.agent.action_names import to_engine_action, to_model_action
+ from inference.agent.prompts import (
++    _HUD_TOOL_SENTENCE,   # [calamitychasm] HUD arm; empty string when the flag is off
++    _HUD_TURN_LINE,
+     COMPACT_TOOL_SESSION_ADDENDUM,
+     GAME_OVERVIEW_ADDENDUM,
+     PYTHON_ADDENDUM,
+@@ -184,6 +186,7 @@
+     "For before/after diffs, compare `previous_frame` to `current_frame` or use `last_transition.before_frame` and `.after_frame`. "
+     "For MOUSE, pass `row` and `col` integer fields; legacy x/y fields are rejected. "
+     "The raw numeric grid is not available. Use `.segmentation` as the primary view; use `.ascii` only to read a small, specific region. "
++    + _HUD_TOOL_SENTENCE +
+     "Use `print(...)` for compact output or assign final data to `result`."
+ )
+ 
+@@ -1459,6 +1462,7 @@
+                 "Only tool: `python`. It receives `current_frame`, `previous_frame`, `history`, `transitions`, `last_transition`, `valid_actions`, `last_action_result`, and `action(actions)`.",
+                 "Only letter-coded board views and lightweight metadata are exposed; raw numeric color IDs are not available.",
+                 "Keep tool output compact: use `current_frame.segmentation` as the primary view, and `current_frame.ascii` only for a small specific region; never print full boards.",
++                *( [_HUD_TURN_LINE] if _HUD_TURN_LINE else [] ),
+                 "For the most recent change, compare `previous_frame` to `current_frame`, or `last_transition.before_frame` to `last_transition.after_frame`; `history[-1].frame` is the current frame, not the previous one.",
+                 "Use Python to inspect the evidence, refine that world model from the newest history, and search or score candidate actions or short sequences against the current goal as you currently understand it.",
+                 "Maintain a compact working world model of what the current level seems to contain, what actions appear to do, what the goal seems to be, what is still uncertain, and what plan currently looks best.",
+@@ -2301,6 +2305,7 @@
+                         "Then investigate and revise your working world model of what the level contains, what actions appear to do, what the current goal seems to be, and what plan looks best. "
+                         "If helpful, include short world-model update lines such as `World model:`, `Goal model:`, `Action model:`, `Recent findings:`, `Open questions:`, `Plan:`, or `Cross-level notes:`. "
+                         "Call the `python` tool with code that inspects `current_frame`, `previous_frame`, `last_transition`, `history`, or `valid_actions` -- use `current_frame.segmentation` as the primary view, and `.ascii` only for a small specific region -- "
++                        + ("(nodes may carry an advisory, sometimes-wrong `hud` flag) " if _HUD_TURN_LINE else "") +
+                         "compare `previous_frame` to `current_frame` for the most recent change, "
+                         "derives a compact board summary, programs a small search or scorer over candidate actions or short sequences, "
+                         "then call `action(actions)` inside Python with the best valid action or ordered batch that your code selected. "

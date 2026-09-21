@@ -1,0 +1,18 @@
+base  = C:\Users\DESKTO~1\AppData\Local\Temp\claude\C--Users-desktop-06-Cal-ARC-AGI-3-JEPAstyle-approach\902520ce-29b5-44e1-ba34-7bc1c302e3b8\scratchpad\bundle
+other = C:\Users\DESKTO~1\AppData\Local\Temp\claude\C--Users-desktop-06-Cal-ARC-AGI-3-JEPAstyle-approach\902520ce-29b5-44e1-ba34-7bc1c302e3b8\scratchpad\hud_bundle
+
+base  ARC3-Inference                   9158303     DIRTY  feature/animation-awareness  feat: proactively suggest animation retrieval when stuck (s…
+other ARC3-Inference                   9158303     DIRTY  feature/animation-awareness  feat: proactively suggest animation retrieval when stuck (s…
+
+=== source files that differ (.py only, __pycache__ excluded) ===
+  ARC3-Inference/inference/utils/segmentation.py             143 changed lines
+  ARC3-Inference/inference/agent/prompts.py                   49 changed lines
+  ARC3-Inference/inference/agent/python_tool_sandbox.py       10 changed lines
+  ARC3-Inference/inference/agent/tool_agent.py                 5 changed lines
+
+=== pickled solver fields ===
+  _stop_event                                        <threading.Event at 0x15b7fe63610: unset>  ->  <threading.Event at 0x15b7ffc7d90: unset>
+
+=== deploy target fields ===
+
+=== benchmark-level fields (excluding solver) ===
