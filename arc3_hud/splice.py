@@ -233,9 +233,11 @@ _HUD_PYTHON_BULLET = (
     " behaviour rather than trusting it.\\n"
 ) if _HUD_ANNOTATION else ""
 
+# Leading AND trailing space: this is spliced between two adjacent literals in a
+# concatenated run, so both sides need the separator.
 _HUD_TOOL_SENTENCE = (
     " Nodes may carry an advisory, sometimes-wrong `hud` flag (also `segmentation['hud_node_ids']`)"
-    " marking probable timer/status chrome; nothing is hidden because of it."
+    " marking probable timer/status chrome; nothing is hidden because of it. "
 ) if _HUD_ANNOTATION else ""
 
 _HUD_TURN_LINE = (

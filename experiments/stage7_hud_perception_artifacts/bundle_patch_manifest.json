@@ -4,7 +4,7 @@
   "env_flag": "ARC3_HUD_ANNOTATION",
   "files_patched": {
     "inference/agent/prompts.py": {
-      "after": "17437920a8a2fac7ec85b2476f912e302b07b264508402f5898b565809e32e46",
+      "after": "198af775650b1ae0afdbe58cf3e65ece7530c4f840230b870fc6acfa043e4049",
       "before": "463f09b308450782408361ba37393b6b75f98b457dee1e562f5cf6f53495753f"
     },
     "inference/agent/python_tool_sandbox.py": {

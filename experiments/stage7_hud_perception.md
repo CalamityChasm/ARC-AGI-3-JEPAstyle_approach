@@ -457,6 +457,24 @@ Recorded plainly rather than worked around silently.
    inside a mounted dataset is a silent way to run source that is not the source
    in the diff. The build script now excludes it and the staging dir was rebuilt
    clean (79 files, 0 `.pyc`).
+9. **The notebook's own verification cell had a bug, and only executing it
+   found that.** The end-to-end probe asserted that the interior block was not
+   flagged, but selected it by the colour character `"B"` — which is
+   `ARC_COLOR_CHARS[5]`, the *edge bar*, not `ARC_COLOR_CHARS[7]` = `"P"`, the
+   block. The assert therefore fired on the bar being correctly flagged and
+   **would have killed the run at setup**. `compile()` cannot catch this and
+   neither can a unit test of the detector; it was found by exec'ing the cell
+   verbatim against the real patched bundle with `ANIM_BUNDLE_DIR` bound the way
+   cells 3, 7 and 9 bind it. Fixed, and a matching positive assert added (the
+   bar *must* be the node that fired). **Simulate an inserted notebook cell, do
+   not merely compile it.**
+10. **A missing sentence separator in the tool description.** The spliced
+    sentence had a leading but no trailing space, producing
+    `...nothing is hidden because of it.Use \`print(...)\`...` in a string the
+    model sees every turn. Cosmetic, but this is a perception arm whose whole
+    mechanism is prompt quality. Caught by printing the rendered constant rather
+    than trusting the source. Fixed in dataset **v2**, and the kernel re-pushed
+    against it before the queued run started, so no compute was spent on v1.
 
 ---
 

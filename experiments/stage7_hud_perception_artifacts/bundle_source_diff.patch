@@ -2,7 +2,7 @@ Unified diff: jakobbrggen/taaf-kaggle-source-anim-20260807-anim v1  ->  calamity
 Four files differ; 71 files byte-identical (scripts/_build_hud_bundle.py asserts this).
 
 --- a/inference/utils/segmentation.py	2026-09-21 00:26:24.888223700 -0500
---- a/inference/utils/segmentation.py	2026-09-21 00:40:00.886104100 -0500
++++ b/inference/utils/segmentation.py	2026-09-21 01:09:58.383545100 -0500
 @@ -6,6 +6,7 @@
  """
  
@@ -173,7 +173,7 @@ Four files differ; 71 files byte-identical (scripts/_build_hud_bundle.py asserts
 +
      return {"nodes": nodes, "adjacency_list": adjacency_list}
 --- a/inference/agent/python_tool_sandbox.py	2026-09-21 00:26:24.864225200 -0500
---- a/inference/agent/python_tool_sandbox.py	2026-09-21 00:40:00.781524600 -0500
++++ b/inference/agent/python_tool_sandbox.py	2026-09-21 01:09:58.287734800 -0500
 @@ -425,7 +425,7 @@
  
  
@@ -199,8 +199,8 @@ Four files differ; 71 files byte-identical (scripts/_build_hud_bundle.py asserts
  
  def _send_json_line(handle: Any, payload: dict[str, Any]) -> None:
 --- a/inference/agent/prompts.py	2026-09-21 00:26:24.864225200 -0500
---- a/inference/agent/prompts.py	2026-09-21 00:40:00.777532000 -0500
-@@ -1,7 +1,54 @@
++++ b/inference/agent/prompts.py	2026-09-21 01:09:58.287734800 -0500
+@@ -1,7 +1,56 @@
  """Prompt templates for the analyzer agent."""
  
 +import os
@@ -242,9 +242,11 @@ Four files differ; 71 files byte-identical (scripts/_build_hud_bundle.py asserts
 +    " behaviour rather than trusting it.\n"
 +) if _HUD_ANNOTATION else ""
 +
++# Leading AND trailing space: this is spliced between two adjacent literals in a
++# concatenated run, so both sides need the separator.
 +_HUD_TOOL_SENTENCE = (
 +    " Nodes may carry an advisory, sometimes-wrong `hud` flag (also `segmentation['hud_node_ids']`)"
-+    " marking probable timer/status chrome; nothing is hidden because of it."
++    " marking probable timer/status chrome; nothing is hidden because of it. "
 +) if _HUD_ANNOTATION else ""
 +
 +_HUD_TURN_LINE = (
@@ -255,7 +257,7 @@ Four files differ; 71 files byte-identical (scripts/_build_hud_bundle.py asserts
  TOOL_CALL_FORMAT_GUIDANCE = (
      "When calling `python`, emit exactly the tool-call format shown elsewhere in this prompt for this model. "
      "Use only that format; do not add markdown fences, prose wrappers, or alternate tool-call syntax. "
-@@ -42,6 +89,7 @@
+@@ -42,6 +91,7 @@
      "- `current_frame.segmentation` parses the board into objects. It returns `{'nodes': [...], 'adjacency_list': [...]}`.\n"
      "- Each node in `segmentation['nodes']` is one 4-connected same-color object with: `id` (index, ordered top-most-left-most), `color` (ARC color character), `hash` (a signature of the object's color and shape that ignores its position -- equal hashes mean the same object regardless of where it is, so use it to track an object across frames or to spot multiple identical objects in one frame), `pixels` (cell count), `boundary` (clockwise outer-perimeter corner points as `[row, col]`), and `children` (ids of objects fully enclosed by this one).\n"
      "- `segmentation['adjacency_list']` is a list of `[i, j]` node-id pairs whose objects share an edge.\n"
@@ -263,7 +265,7 @@ Four files differ; 71 files byte-identical (scripts/_build_hud_bundle.py asserts
      
      "- `current_frame.step` is the current environment step count.\n"
      "- `current_frame.level` is the current level number.\n"
-@@ -83,6 +131,7 @@
+@@ -83,6 +133,7 @@
      "\n\nPython tool guidance:\n"
      "- Use `current_frame.segmentation` as your primary view of the board -- objects, colors, containment, adjacency, and cross-frame object hashes.\n"
      "- Use `current_frame.ascii` only to read a small, specific region of the board when `segmentation` is not enough; never use it to scan or summarize the whole board.\n"
@@ -272,7 +274,7 @@ Four files differ; 71 files byte-identical (scripts/_build_hud_bundle.py asserts
      "- The only importable standard-library modules are: bisect, collections, copy, fractions, functools, heapq, itertools, json, math, operator, random, re, statistics, string.\n"
      "- The only tool is `python`; call it with one ephemeral `code` string.\n"
 --- a/inference/agent/tool_agent.py	2026-09-21 00:26:24.868225200 -0500
---- a/inference/agent/tool_agent.py	2026-09-21 00:40:00.781524600 -0500
++++ b/inference/agent/tool_agent.py	2026-09-21 01:09:58.291760300 -0500
 @@ -15,6 +15,8 @@
  
  from inference.agent.action_names import to_engine_action, to_model_action

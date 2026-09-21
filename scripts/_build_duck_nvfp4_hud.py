@@ -153,18 +153,21 @@ assert _sandbox_mod._sandbox_env().get("ARC3_HUD_ANNOTATION") == "1", _sandbox_m
 
 # 4. End-to-end on a synthetic board: a 40x1 bar flush against row 0 is HUD; a 3x3
 #    block in the interior is not. Cheap, and it proves the wiring rather than the intent.
+_CHARS = "WwgGcBMPRbSYOrNp"          # inference.utils.grid_utils.ARC_COLOR_CHARS
 _probe = [[0] * 64 for _ in range(64)]
 for _c in range(40):
-    _probe[0][_c] = 5
+    _probe[0][_c] = 5                # _CHARS[5] == "B" -- the edge bar
 for _r in range(30, 33):
     for _c in range(30, 33):
-        _probe[_r][_c] = 7
-_out = _seg_mod.segment_layer(_probe, "WwgGcBMPRbSYOrNp")
+        _probe[_r][_c] = 7           # _CHARS[7] == "P" -- the interior block
+_out = _seg_mod.segment_layer(_probe, _CHARS)
 assert "hud_node_ids" in _out, _out.keys()
 _flagged = {n["id"] for n in _out["nodes"] if n["hud"]}
 assert _flagged == set(_out["hud_node_ids"]) and _flagged, _out["hud_node_ids"]
-_interior = [n for n in _out["nodes"] if n["color"] == "B"]
+_interior = [n for n in _out["nodes"] if n["color"] == _CHARS[7]]
 assert _interior and not any(n["hud"] for n in _interior), "HUD arm: flagged an interior object"
+# ...and the bar itself must be the thing that fired, not something incidental.
+assert any(n["hud"] for n in _out["nodes"] if n["color"] == _CHARS[5]), "HUD arm: the edge bar was not flagged"
 
 print(f"HUD_ARM flag=1 detector={_seg_mod.detect_hud_nodes.__name__} "
       f"thresholds=({_seg_mod._HUD_EDGE_DISTANCE},{_seg_mod._HUD_RATIO_THRESHOLD},{_seg_mod._HUD_TWINS_THRESHOLD}) "
