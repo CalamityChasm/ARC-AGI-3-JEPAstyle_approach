@@ -377,6 +377,98 @@ The like-for-like comparator for a single AVO run is the incumbent's own
 
 ---
 
-## 6. Recommendation
+## 6. Result — the falsifier passed, and the arm still lost
 
-*(pending the free run)*
+Free run `calamitychasm/arc3-duck-nvfp4-avo`, COMPLETE 2026-09-20. Every figure
+below is a **count** from the run's own artifacts, produced by
+`scripts/summarize_avo_run.py` (data: `experiments/stage7_avo_data.json`).
+
+### 6.1 Single-variable check, done before reading any outcome
+
+`effective_flags.json` reports `ARC3_MODEL_DATASET_SOURCE:
+jakobbrggen/qwen3-8-27b-fp8-hf-snapshot`, which reads like a model swap. It is an
+**inert bundle default**. The authoritative record is `vllm-server-identity.json`,
+and both arms served the identical model at an identical serving shape:
+`Qwen/Qwen3.8-Flash-Next-NVFP4`, `--max-num-seqs 8`,
+`--kv-cache-memory-bytes 5368709120`, `--max-model-len 32768`. The solver bundle is
+the only difference.
+
+### 6.2 AVO did exactly what it was built to do
+
+|  | avo | anim |
+|---|---:|---:|
+| turns (`analyze()` calls) | 951 | 940 |
+| executed / dead | 688 / 263 | 586 / 354 |
+| **dead-turn rate** | **27.7%** | **37.7%** |
+| model calls | 1,338 (53.5/game) | 1,358 (54.3/game) |
+| **P(act \| >=2 dead before)** | **48/88 = 54.5%** | 51/152 = 33.6% |
+
+The pre-registered falsifier (§3.5) is **passed decisively**. Binomial sd at the
+null's 33.6% over 88 trials is ~5.0pp, so 54.5% sits ~4.2 sd out. AVO cut the
+dead-turn rate by 10 absolute points on an *identical* deliberation budget — 951 vs
+940 turns, 1,338 vs 1,358 model calls — and its own counters confirm the machinery
+ran (931 AVO turns, 368 exploit turns, 63 interventions, 8 hard redirects, and a
+real `avo_memory.json`). This is not a broken or inert arm.
+
+### 6.3 And it lost anyway
+
+|  | avo | anim |
+|---|---:|---:|
+| actions | **3,094** (123.8/game) | 2,615 (104.6/game) |
+| &nbsp;&nbsp;in levels that were cleared | 1,253 | 1,345 |
+| &nbsp;&nbsp;in levels **never** cleared | **1,841** | 1,270 |
+| &nbsp;&nbsp;share in never-cleared levels | **59.5%** | 48.6% |
+| **levels cleared** | **35**/183 | 42/183 |
+| games scoring >= 1 | 21 of 25 | 20 of 25 |
+| public-25 mean *(cannot rank)* | 6.65 | 9.97 |
+
+**This is the whole finding.** AVO converted dead turns into +18.3% more actions,
+and spent **every one of them, and then some, on levels it never cleared** (+45%
+there, while actions inside cleared levels actually *fell*). It un-sticks the model
+in the literal sense the falsifier measured — it makes it act — but acting more on a
+level you cannot solve is not progress, and RHAE punishes it twice: squared
+efficiency, capped by completion.
+
+The loss concentrates exactly where `w_l = l` hurts most:
+
+| level | 1 | 2 | 3 | 4 | 5 |
+|---|---:|---:|---:|---:|---:|
+| avo cleared | 21 | 9 | 3 | 2 | 0 |
+| anim cleared | 20 | 10 | 6 | 5 | 1 |
+
+Index-weighted, anim takes 43 points of depth (3x6 + 4x5 + 5x1) against AVO's 17.
+AVO matches at level 1 and collapses from level 3 up.
+
+## 7. What this closes
+
+Three independent mechanisms have now converted deliberation into actions. **All
+three failed to convert actions into score:**
+
+| mechanism | actions | outcome |
+|---|---|---|
+| commit floor | +48% | −10% score |
+| no-thinking | +203% | 0.64 score |
+| **AVO** | **+18.3%** | **42 → 35 levels cleared** |
+
+**The 46% dead-turn measurement is real. The theory of change built on it is not.**
+Action count is not the bottleneck. The chassis is not clock-starved in a way that
+more committed actions fix — spending less deliberation per action makes each action
+worse about as fast as it makes them more numerous, and the marginal action lands on
+a level that was never going to be cleared.
+
+This retires the open lead in CLAUDE.md §9. **Arm 2 (phased loop enabled) should not
+be pushed**: it moves the same dial further in the direction that just failed.
+
+## 8. Recommendation
+
+**Do not submit AVO.** Negative, and unusually well-explained for a negative: a
+pre-registered falsifier passed cleanly while the outcome moved the other way, with
+counted telemetry showing precisely why.
+
+Caveats kept honest: n=1 free run per arm. The turn/call/action counts are
+noise-free; **levels cleared is an outcome and carries the same run-to-run variance
+as score**, so 42 vs 35 is supporting evidence, not proof. And this tests AVO grafted
+onto our chassis, not AVO as its authors run it.
+
+The next lever must target **whether a level is solvable at all** (perception,
+model capability) rather than how many actions get spent on it.
