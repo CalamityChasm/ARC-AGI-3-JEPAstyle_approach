@@ -1,0 +1,1477 @@
+{
+ "runs": {
+  "anim": {
+   "armed_converted": 51,
+   "armed_turns": 152,
+   "avo_counters": {},
+   "avo_memory_files": 0,
+   "dead": 354,
+   "dir": "C:\\Users\\DESKTO~1\\AppData\\Local\\Temp\\claude\\C--Users-desktop-06-Cal-ARC-AGI-3-JEPAstyle-approach\\902520ce-29b5-44e1-ba34-7bc1c302e3b8\\scratchpad\\anim_out",
+   "executed": 586,
+   "games": {
+    "ar25-0c556536": {
+     "actions": 120,
+     "actions_per_level": [
+      18,
+      25,
+      45,
+      23,
+      9,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      32,
+      50,
+      75,
+      37,
+      89,
+      159,
+      233,
+      73
+     ],
+     "levels_cleared": 4,
+     "levels_total": 8,
+     "score": 27.77777777777778,
+     "state": "gave_up",
+     "wallclock_s": 7920.423112629
+    },
+    "bp35-0a0ad940": {
+     "actions": 45,
+     "actions_per_level": [
+      34,
+      11,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      21,
+      48,
+      44,
+      38,
+      33,
+      87,
+      86,
+      131,
+      163
+     ],
+     "levels_cleared": 1,
+     "levels_total": 9,
+     "score": 0.8477508650519032,
+     "state": "gave_up",
+     "wallclock_s": 7920.496103978001
+    },
+    "cd82-fb555c5d": {
+     "actions": 65,
+     "actions_per_level": [
+      34,
+      31,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      55,
+      8,
+      41,
+      21,
+      23,
+      23
+     ],
+     "levels_cleared": 1,
+     "levels_total": 6,
+     "score": 4.761904761904762,
+     "state": "gave_up",
+     "wallclock_s": 7920.258537319999
+    },
+    "cn04-2fe56bfb": {
+     "actions": 34,
+     "actions_per_level": [
+      24,
+      10,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      29,
+      54,
+      85,
+      300,
+      208,
+      113
+     ],
+     "levels_cleared": 1,
+     "levels_total": 6,
+     "score": 4.761904761904762,
+     "state": "gave_up",
+     "wallclock_s": 7920.514360986999
+    },
+    "dc22-fdcac232": {
+     "actions": 97,
+     "actions_per_level": [
+      97,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      59,
+      102,
+      67,
+      98,
+      324,
+      578
+     ],
+     "levels_cleared": 0,
+     "levels_total": 6,
+     "score": 0.0,
+     "state": "gave_up",
+     "wallclock_s": 7920.397468849001
+    },
+    "ft09-0d8bbf25": {
+     "actions": 63,
+     "actions_per_level": [
+      4,
+      7,
+      14,
+      17,
+      21,
+      0
+     ],
+     "base_actions_per_level": [
+      43,
+      12,
+      23,
+      28,
+      65,
+      37
+     ],
+     "levels_cleared": 4,
+     "levels_total": 6,
+     "score": 47.61904761904761,
+     "state": "gave_up",
+     "wallclock_s": 7964.315141915
+    },
+    "g50t-5849a774": {
+     "actions": 202,
+     "actions_per_level": [
+      114,
+      88,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      78,
+      175,
+      179,
+      230,
+      96,
+      54,
+      67
+     ],
+     "levels_cleared": 1,
+     "levels_total": 7,
+     "score": 1.6719430154333204,
+     "state": "gave_up",
+     "wallclock_s": 7920.4917133690005
+    },
+    "ka59-38d34dbb": {
+     "actions": 159,
+     "actions_per_level": [
+      19,
+      65,
+      75,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      28,
+      109,
+      51,
+      51,
+      33,
+      132,
+      326
+     ],
+     "levels_cleared": 2,
+     "levels_total": 7,
+     "score": 10.714285714285714,
+     "state": "gave_up",
+     "wallclock_s": 7920.4654373779995
+    },
+    "lf52-271a04aa": {
+     "actions": 115,
+     "actions_per_level": [
+      9,
+      106,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      32,
+      81,
+      60,
+      71,
+      205,
+      148,
+      244,
+      109,
+      164,
+      225
+     ],
+     "levels_cleared": 2,
+     "levels_total": 10,
+     "score": 4.21427877924852,
+     "state": "gave_up",
+     "wallclock_s": 7920.661479506
+    },
+    "lp85-305b61c3": {
+     "actions": 89,
+     "actions_per_level": [
+      8,
+      11,
+      18,
+      26,
+      13,
+      13,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      17,
+      38,
+      31,
+      16,
+      41,
+      60,
+      26,
+      159
+     ],
+     "levels_cleared": 5,
+     "levels_total": 8,
+     "score": 39.34664694280079,
+     "state": "gave_up",
+     "wallclock_s": 7950.315937011001
+    },
+    "ls20-9607627b": {
+     "actions": 89,
+     "actions_per_level": [
+      89,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      22,
+      123,
+      73,
+      84,
+      96,
+      192,
+      186
+     ],
+     "levels_cleared": 1,
+     "levels_total": 7,
+     "score": 0.21822641441376447,
+     "state": "gave_up",
+     "wallclock_s": 7920.3034640509995
+    },
+    "m0r0-492f87ba": {
+     "actions": 95,
+     "actions_per_level": [
+      34,
+      61,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      30,
+      111,
+      203,
+      26,
+      500,
+      237
+     ],
+     "levels_cleared": 1,
+     "levels_total": 6,
+     "score": 3.7073652990608004,
+     "state": "gave_up",
+     "wallclock_s": 7920.436205639
+    },
+    "r11l-495a7899": {
+     "actions": 28,
+     "actions_per_level": [
+      6,
+      11,
+      11,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      22,
+      33,
+      51,
+      26,
+      52,
+      49
+     ],
+     "levels_cleared": 2,
+     "levels_total": 6,
+     "score": 14.285714285714285,
+     "state": "gave_up",
+     "wallclock_s": 7965.414604105999
+    },
+    "re86-8af5384d": {
+     "actions": 185,
+     "actions_per_level": [
+      21,
+      38,
+      68,
+      57,
+      1,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      26,
+      42,
+      86,
+      108,
+      189,
+      139,
+      424,
+      241
+     ],
+     "levels_cleared": 4,
+     "levels_total": 8,
+     "score": 27.77777777777778,
+     "state": "gave_up",
+     "wallclock_s": 7920.257540001001
+    },
+    "s5i5-18d95033": {
+     "actions": 122,
+     "actions_per_level": [
+      32,
+      48,
+      42,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      20,
+      89,
+      106,
+      54,
+      162,
+      38,
+      86,
+      83
+     ],
+     "levels_cleared": 2,
+     "levels_total": 8,
+     "score": 7.473958333333333,
+     "state": "gave_up",
+     "wallclock_s": 7920.253284521
+    },
+    "sb26-7fbdac44": {
+     "actions": 140,
+     "actions_per_level": [
+      11,
+      129,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      18,
+      28,
+      18,
+      19,
+      31,
+      23,
+      58,
+      18
+     ],
+     "levels_cleared": 1,
+     "levels_total": 8,
+     "score": 2.7777777777777777,
+     "state": "gave_up",
+     "wallclock_s": 7920.249708411
+    },
+    "sc25-635fd71a": {
+     "actions": 94,
+     "actions_per_level": [
+      94,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      36,
+      6,
+      32,
+      83,
+      143,
+      50
+     ],
+     "levels_cleared": 0,
+     "levels_total": 6,
+     "score": 0.0,
+     "state": "gave_up",
+     "wallclock_s": 7926.212336405
+    },
+    "sk48-d8078629": {
+     "actions": 157,
+     "actions_per_level": [
+      157,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      61,
+      177,
+      101,
+      103,
+      230,
+      181,
+      125,
+      92
+     ],
+     "levels_cleared": 0,
+     "levels_total": 8,
+     "score": 0.0,
+     "state": "gave_up",
+     "wallclock_s": 7920.650630106999
+    },
+    "sp80-589a99af": {
+     "actions": 215,
+     "actions_per_level": [
+      215,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      39,
+      58,
+      25,
+      148,
+      96,
+      152
+     ],
+     "levels_cleared": 0,
+     "levels_total": 6,
+     "score": 0.0,
+     "state": "gave_up",
+     "wallclock_s": 7920.559675108001
+    },
+    "su15-1944f8ab": {
+     "actions": 55,
+     "actions_per_level": [
+      23,
+      32,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      22,
+      42,
+      26,
+      115,
+      36,
+      31,
+      8,
+      40,
+      41
+     ],
+     "levels_cleared": 1,
+     "levels_total": 9,
+     "score": 2.0331863053980257,
+     "state": "gave_up",
+     "wallclock_s": 7920.143794742
+    },
+    "tn36-ef4dde99": {
+     "actions": 49,
+     "actions_per_level": [
+      49,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      32,
+      72,
+      26,
+      40,
+      30,
+      55,
+      62
+     ],
+     "levels_cleared": 0,
+     "levels_total": 7,
+     "score": 0.0,
+     "state": "gave_up",
+     "wallclock_s": 7920.653492956
+    },
+    "tr87-cd924810": {
+     "actions": 38,
+     "actions_per_level": [
+      36,
+      2,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      54,
+      58,
+      40,
+      45,
+      71,
+      146
+     ],
+     "levels_cleared": 1,
+     "levels_total": 6,
+     "score": 4.761904761904762,
+     "state": "gave_up",
+     "wallclock_s": 7955.498703563
+    },
+    "tu93-0768757b": {
+     "actions": 100,
+     "actions_per_level": [
+      19,
+      29,
+      25,
+      27,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      19,
+      16,
+      34,
+      42,
+      123,
+      80,
+      14,
+      23,
+      111
+     ],
+     "levels_cleared": 4,
+     "levels_total": 9,
+     "score": 21.463997886114417,
+     "state": "gave_up",
+     "wallclock_s": 7958.270429911
+    },
+    "vc33-5430563c": {
+     "actions": 111,
+     "actions_per_level": [
+      16,
+      13,
+      31,
+      51,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      7,
+      18,
+      44,
+      61,
+      131,
+      34,
+      152
+     ],
+     "levels_cleared": 3,
+     "levels_total": 7,
+     "score": 21.219308035714285,
+     "state": "gave_up",
+     "wallclock_s": 7945.234923320001
+    },
+    "wa30-ee6fef47": {
+     "actions": 148,
+     "actions_per_level": [
+      77,
+      71,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      71,
+      119,
+      183,
+      98,
+      368,
+      68,
+      79,
+      442,
+      415
+     ],
+     "levels_cleared": 1,
+     "levels_total": 9,
+     "score": 1.8893948764078632,
+     "state": "gave_up",
+     "wallclock_s": 7920.638286927
+    }
+   },
+   "label": "anim-20260807-anim",
+   "model_calls": 1358,
+   "turns": 940
+  },
+  "avo": {
+   "armed_converted": 48,
+   "armed_turns": 88,
+   "avo_counters": {
+    "avo_exploit_turns": 368,
+    "avo_hard_redirects": 8,
+    "avo_interventions": 63,
+    "avo_turns": 931
+   },
+   "avo_memory_files": 1,
+   "dead": 263,
+   "dir": "C:\\Users\\DESKTO~1\\AppData\\Local\\Temp\\claude\\C--Users-desktop-06-Cal-ARC-AGI-3-JEPAstyle-approach\\902520ce-29b5-44e1-ba34-7bc1c302e3b8\\scratchpad\\avo_out",
+   "executed": 688,
+   "games": {
+    "ar25-0c556536": {
+     "actions": 89,
+     "actions_per_level": [
+      16,
+      26,
+      47,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      32,
+      50,
+      75,
+      37,
+      89,
+      159,
+      233,
+      73
+     ],
+     "levels_cleared": 2,
+     "levels_total": 8,
+     "score": 8.333333333333332,
+     "state": "gave_up",
+     "wallclock_s": 7920.448065078
+    },
+    "bp35-0a0ad940": {
+     "actions": 115,
+     "actions_per_level": [
+      76,
+      39,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      21,
+      48,
+      44,
+      38,
+      33,
+      87,
+      86,
+      131,
+      163
+     ],
+     "levels_cleared": 1,
+     "levels_total": 9,
+     "score": 0.16966759002770088,
+     "state": "gave_up",
+     "wallclock_s": 7920.641491676
+    },
+    "cd82-fb555c5d": {
+     "actions": 89,
+     "actions_per_level": [
+      85,
+      4,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      55,
+      8,
+      41,
+      21,
+      23,
+      23
+     ],
+     "levels_cleared": 1,
+     "levels_total": 6,
+     "score": 1.9937386719393642,
+     "state": "gave_up",
+     "wallclock_s": 7920.297792571001
+    },
+    "cn04-2fe56bfb": {
+     "actions": 77,
+     "actions_per_level": [
+      74,
+      3,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      29,
+      54,
+      85,
+      300,
+      208,
+      113
+     ],
+     "levels_cleared": 1,
+     "levels_total": 6,
+     "score": 0.7313297853838394,
+     "state": "gave_up",
+     "wallclock_s": 7949.605009918001
+    },
+    "dc22-fdcac232": {
+     "actions": 60,
+     "actions_per_level": [
+      60,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      59,
+      102,
+      67,
+      98,
+      324,
+      578
+     ],
+     "levels_cleared": 0,
+     "levels_total": 6,
+     "score": 0.0,
+     "state": "gave_up",
+     "wallclock_s": 7920.393359262
+    },
+    "ft09-0d8bbf25": {
+     "actions": 90,
+     "actions_per_level": [
+      7,
+      7,
+      15,
+      19,
+      42,
+      0
+     ],
+     "base_actions_per_level": [
+      43,
+      12,
+      23,
+      28,
+      65,
+      37
+     ],
+     "levels_cleared": 4,
+     "levels_total": 6,
+     "score": 47.61904761904761,
+     "state": "gave_up",
+     "wallclock_s": 7926.097886257
+    },
+    "g50t-5849a774": {
+     "actions": 69,
+     "actions_per_level": [
+      66,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      78,
+      175,
+      179,
+      230,
+      96,
+      54,
+      67
+     ],
+     "levels_cleared": 1,
+     "levels_total": 7,
+     "score": 3.571428571428571,
+     "state": "gave_up",
+     "wallclock_s": 7920.262045816001
+    },
+    "ka59-38d34dbb": {
+     "actions": 169,
+     "actions_per_level": [
+      32,
+      59,
+      78,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      28,
+      109,
+      51,
+      51,
+      33,
+      132,
+      326
+     ],
+     "levels_cleared": 2,
+     "levels_total": 7,
+     "score": 10.714285714285714,
+     "state": "gave_up",
+     "wallclock_s": 7920.481185954999
+    },
+    "lf52-271a04aa": {
+     "actions": 59,
+     "actions_per_level": [
+      21,
+      38,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      32,
+      81,
+      60,
+      71,
+      205,
+      148,
+      244,
+      109,
+      164,
+      225
+     ],
+     "levels_cleared": 1,
+     "levels_total": 10,
+     "score": 1.8181818181818181,
+     "state": "gave_up",
+     "wallclock_s": 7920.544668746001
+    },
+    "lp85-305b61c3": {
+     "actions": 63,
+     "actions_per_level": [
+      9,
+      28,
+      26,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      17,
+      38,
+      31,
+      16,
+      41,
+      60,
+      26,
+      159
+     ],
+     "levels_cleared": 2,
+     "levels_total": 8,
+     "score": 8.333333333333332,
+     "state": "gave_up",
+     "wallclock_s": 7920.486100991
+    },
+    "ls20-9607627b": {
+     "actions": 203,
+     "actions_per_level": [
+      24,
+      179,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      22,
+      123,
+      73,
+      84,
+      96,
+      192,
+      186
+     ],
+     "levels_cleared": 1,
+     "levels_total": 7,
+     "score": 3.0009920634920633,
+     "state": "gave_up",
+     "wallclock_s": 7932.353571103
+    },
+    "m0r0-492f87ba": {
+     "actions": 41,
+     "actions_per_level": [
+      28,
+      13,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      30,
+      111,
+      203,
+      26,
+      500,
+      237
+     ],
+     "levels_cleared": 1,
+     "levels_total": 6,
+     "score": 4.761904761904762,
+     "state": "gave_up",
+     "wallclock_s": 7920.486334252
+    },
+    "r11l-495a7899": {
+     "actions": 71,
+     "actions_per_level": [
+      7,
+      64,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      22,
+      33,
+      51,
+      26,
+      52,
+      49
+     ],
+     "levels_cleared": 1,
+     "levels_total": 6,
+     "score": 4.761904761904762,
+     "state": "gave_up",
+     "wallclock_s": 7942.73400749
+    },
+    "re86-8af5384d": {
+     "actions": 277,
+     "actions_per_level": [
+      21,
+      63,
+      52,
+      107,
+      34,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      26,
+      42,
+      86,
+      108,
+      189,
+      139,
+      424,
+      241
+     ],
+     "levels_cleared": 4,
+     "levels_total": 8,
+     "score": 26.566679498667735,
+     "state": "gave_up",
+     "wallclock_s": 7920.297157861999
+    },
+    "s5i5-18d95033": {
+     "actions": 106,
+     "actions_per_level": [
+      20,
+      86,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      20,
+      89,
+      106,
+      54,
+      162,
+      38,
+      86,
+      83
+     ],
+     "levels_cleared": 1,
+     "levels_total": 8,
+     "score": 2.7777777777777777,
+     "state": "gave_up",
+     "wallclock_s": 7920.270355014
+    },
+    "sb26-7fbdac44": {
+     "actions": 140,
+     "actions_per_level": [
+      10,
+      130,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      18,
+      28,
+      18,
+      19,
+      31,
+      23,
+      58,
+      18
+     ],
+     "levels_cleared": 1,
+     "levels_total": 8,
+     "score": 2.7777777777777777,
+     "state": "gave_up",
+     "wallclock_s": 7920.228386131001
+    },
+    "sc25-635fd71a": {
+     "actions": 85,
+     "actions_per_level": [
+      85,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      36,
+      6,
+      32,
+      83,
+      143,
+      50
+     ],
+     "levels_cleared": 0,
+     "levels_total": 6,
+     "score": 0.0,
+     "state": "gave_up",
+     "wallclock_s": 7920.37179708
+    },
+    "sk48-d8078629": {
+     "actions": 217,
+     "actions_per_level": [
+      217,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      61,
+      177,
+      101,
+      103,
+      230,
+      181,
+      125,
+      92
+     ],
+     "levels_cleared": 0,
+     "levels_total": 8,
+     "score": 0.0,
+     "state": "gave_up",
+     "wallclock_s": 7920.49399221
+    },
+    "sp80-589a99af": {
+     "actions": 140,
+     "actions_per_level": [
+      39,
+      101,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      39,
+      58,
+      25,
+      148,
+      96,
+      152
+     ],
+     "levels_cleared": 1,
+     "levels_total": 6,
+     "score": 4.761904761904762,
+     "state": "gave_up",
+     "wallclock_s": 7920.51414077
+    },
+    "su15-1944f8ab": {
+     "actions": 44,
+     "actions_per_level": [
+      13,
+      25,
+      6,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      22,
+      42,
+      26,
+      115,
+      36,
+      31,
+      8,
+      40,
+      41
+     ],
+     "levels_cleared": 2,
+     "levels_total": 9,
+     "score": 6.666666666666667,
+     "state": "gave_up",
+     "wallclock_s": 7920.212976346999
+    },
+    "tn36-ef4dde99": {
+     "actions": 136,
+     "actions_per_level": [
+      56,
+      18,
+      62,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      32,
+      72,
+      26,
+      40,
+      30,
+      55,
+      62
+     ],
+     "levels_cleared": 2,
+     "levels_total": 7,
+     "score": 9.380466472303208,
+     "state": "gave_up",
+     "wallclock_s": 7943.751369164999
+    },
+    "tr87-cd924810": {
+     "actions": 129,
+     "actions_per_level": [
+      129,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      54,
+      58,
+      40,
+      45,
+      71,
+      146
+     ],
+     "levels_cleared": 0,
+     "levels_total": 6,
+     "score": 0.0,
+     "state": "gave_up",
+     "wallclock_s": 7920.243853385
+    },
+    "tu93-0768757b": {
+     "actions": 192,
+     "actions_per_level": [
+      22,
+      19,
+      151,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      19,
+      16,
+      34,
+      42,
+      123,
+      80,
+      14,
+      23,
+      111
+     ],
+     "levels_cleared": 2,
+     "levels_total": 9,
+     "score": 4.809222926825545,
+     "state": "gave_up",
+     "wallclock_s": 7920.510835722
+    },
+    "vc33-5430563c": {
+     "actions": 171,
+     "actions_per_level": [
+      19,
+      16,
+      105,
+      31,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      7,
+      18,
+      44,
+      61,
+      131,
+      34,
+      152
+     ],
+     "levels_cleared": 3,
+     "levels_total": 7,
+     "score": 10.580488546823558,
+     "state": "gave_up",
+     "wallclock_s": 7920.547495216
+    },
+    "wa30-ee6fef47": {
+     "actions": 262,
+     "actions_per_level": [
+      49,
+      213,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "base_actions_per_level": [
+      71,
+      119,
+      183,
+      98,
+      368,
+      68,
+      79,
+      442,
+      415
+     ],
+     "levels_cleared": 1,
+     "levels_total": 9,
+     "score": 2.2222222222222223,
+     "state": "gave_up",
+     "wallclock_s": 7920.672794683
+    }
+   },
+   "label": "avo-kaggle",
+   "model_calls": 1338,
+   "turns": 951
+  }
+ },
+ "totals": {
+  "anim": {
+   "actions": 2615,
+   "actions_in_cleared_levels": 1345,
+   "actions_in_never_cleared_levels": 1270,
+   "by_index": {
+    "1": {
+     "actions": 1240,
+     "cleared": 20
+    },
+    "2": {
+     "actions": 788,
+     "cleared": 10
+    },
+    "3": {
+     "actions": 329,
+     "cleared": 6
+    },
+    "4": {
+     "actions": 201,
+     "cleared": 5
+    },
+    "5": {
+     "actions": 44,
+     "cleared": 1
+    },
+    "6": {
+     "actions": 13,
+     "cleared": 0
+    },
+    "7": {
+     "actions": 0,
+     "cleared": 0
+    },
+    "8": {
+     "actions": 0,
+     "cleared": 0
+    },
+    "9": {
+     "actions": 0,
+     "cleared": 0
+    },
+    "10": {
+     "actions": 0,
+     "cleared": 0
+    }
+   },
+   "games": 25,
+   "games_scoring": 20,
+   "levels": 42,
+   "levels_available": 183,
+   "mean_score": 9.972966079642891,
+   "wallclock_s": 198233.11637271
+  },
+  "avo": {
+   "actions": 3094,
+   "actions_in_cleared_levels": 1253,
+   "actions_in_never_cleared_levels": 1841,
+   "by_index": {
+    "1": {
+     "actions": 1185,
+     "cleared": 21
+    },
+    "2": {
+     "actions": 1134,
+     "cleared": 9
+    },
+    "3": {
+     "actions": 542,
+     "cleared": 3
+    },
+    "4": {
+     "actions": 157,
+     "cleared": 2
+    },
+    "5": {
+     "actions": 76,
+     "cleared": 0
+    },
+    "6": {
+     "actions": 0,
+     "cleared": 0
+    },
+    "7": {
+     "actions": 0,
+     "cleared": 0
+    },
+    "8": {
+     "actions": 0,
+     "cleared": 0
+    },
+    "9": {
+     "actions": 0,
+     "cleared": 0
+    },
+    "10": {
+     "actions": 0,
+     "cleared": 0
+    }
+   },
+   "games": 25,
+   "games_scoring": 21,
+   "levels": 35,
+   "levels_available": 183,
+   "mean_score": 6.654094187009285,
+   "wallclock_s": 198102.9466727
+  }
+ }
+}
