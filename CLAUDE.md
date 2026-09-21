@@ -317,6 +317,153 @@ solvability**. **Stop spending slots on this lineage.** The remaining directions
 are perception (their stated gap, where our measured 9-155 s analyzer timeouts
 also live) and model capability -- not more serving tuning.
 
+### 9. CURRENT STANDING — 2026-09-21 (supersedes the 2026-09-07 header above)
+
+**Best score 3.79. Rank ~204 / 3,175. Top 5.7%. The top-10% mission target is
+met.** The header above ("top 10% = 2.99", "we sit at 2.95") is stale; the bar
+has risen to ~3.5 and we cleared it. **But 3.79 is one draw from a mean-3.40
+distribution, not a level we hold** -- see the corrected table below.
+
+#### What actually produced the gain — component swaps, not tuning
+
+| step | score | what changed |
+|---|---:|---|
+| own code (19 submissions) | <= 0.25 | JEPA / GraphExplorer agents |
+| forked Duck (FP8) | 2.57 | serving profile, concurrency, budget fix |
+| **NVFP4 stack** | 2.83 mean | whole stack swapped (model + runtime + bundle) |
+| **+ anim solver graft** | **3.53 mean** | solver bundle swapped, model untouched |
+
+**Both wins were whole-subsystem replacements. Every parameter change failed.**
+The model bundle is a sealed appliance (verifies 419 per-file SHA-256s), so the
+solver was the only remaining degree of freedom -- and swapping it is worth
+**+20%** (Welch t=2.65, p=0.038 at n=4 per side).
+
+**Correction (2026-09-21):** an earlier version of this section reported the
+graft at +25% with "anim's range 3.37-3.79 does not overlap baseline's
+2.42-3.11". anim's 4th draw came in at **3.02**, so **the ranges now overlap**
+and that non-overlap claim is withdrawn. The effect survives -- it is still
+significant, and the means still differ by 0.57 -- but it is smaller and less
+clean than n=3 made it look. This is the third time in this project that an
+effect shrank when n grew; assume it will happen again.
+
+#### Measured distributions (the thing to compare any new arm against)
+
+| config | n | scores | mean | sd |
+|---|---:|---|---:|---:|
+| NVFP4 baseline | 4 | 2.84, 2.95, 2.42, 3.11 | 2.830 | 0.295 |
+| **+ anim graft** | **4** | 3.43, 3.79, **3.37, 3.02** | **3.402** | **0.315** |
+| + wipe guard | 1 | 2.53 | — | — |
+
+anim is the incumbent and the thing to beat: **mean 3.402, sd 0.315, n=4.**
+
+#### THE MEASUREMENT RULE THAT MATTERS MOST
+
+**A single free public-25 run has SE +/-2.46 and CANNOT rank candidates.**
+Measured from an accidental null arm: on 16 games a mechanism provably never
+touched, paired per-game scores still moved sd 12.30 (one game 4.76 -> 47.62).
+Resolving a +0.10 effect needs ~3,840 runs per arm.
+
+**A real submission is the LESS noisy instrument** (~10% relative vs ~25%), and
+submissions are separate compute that expires daily if unused. Consequences:
+- Free runs are valid ONLY for catastrophe detection and **exact telemetry**
+  (counts, not samples -- noise-free).
+- Ranking happens on the hidden set, n>=3 per arm before any claim.
+- **Submit every day.** An unused slot wastes ~9h of free compute. Two were
+  lost this way (2026-09-13, 2026-09-19) to scheduled submitters that died --
+  a detached OS process survives a session ending but NOT a machine sleep.
+  **Submit interactively; do not schedule.**
+
+This rule retroactively invalidated a "seven interventions, seven regressions"
+conclusion recorded earlier: re-measured against +/-2.46, only ctx16k (-81%,
+3.5 SE) was a real regression. Several confident write-ups in this file rest on
+n=1 free-run comparisons that cannot support them.
+
+#### Closed lines (do not re-attempt without new information)
+
+- **Serving/throughput**: fp8 KV architecturally impossible (`QSA requires a
+  BF16 main KV cache`); KV pool cannot grow (81.8 GiB weights on a 95 GiB
+  card, 8 GiB OOMs); prefix caching is a *correctness hazard* on this
+  Mamba/GDN model (identical actions, -47% score); multimodal upscale inert
+  (66 vision tokens at every setting).
+- **Context reduction**: history dedupe -34%, ctx16k -81%. Context is
+  load-bearing, not slack.
+- **Model swap**: sealed bundle. Of 409 Kaggle models, everything fitting
+  95 GiB is a weaker coder; the one better option is 184 GiB.
+- **Residency does not buy turns**: three runs confirm turns obey
+  `agg_tok_s x T / (tokens_per_action x N)`, but `tokens_per_action` varies
+  3.5x and cancels every throughput gain. Total actions are pinned near 2,615
+  by wall-clock; calls/game near 54 by latency.
+
+#### The open lead
+
+**46.1% of the run's entire wall clock goes to `analyze()` turns that execute
+no game action** (91,295 s of 198,233 s; replicated at 48.6% and 49.8%). Dead
+turns are also the expensive kind (median 258 s vs 173 s), and
+`solver.py:360-361` replays the same analysis after every yield -- so a game
+that stops committing burns the rest of its fixed 7,920 s clock.
+
+The deep games ran out of **clock, not ideas**: `re86` had spent **1 action**
+on level 5 when time expired, `tu93` **0** -- each worth +11 to +24 under RHAE's
+index weighting (`w_l = l`, so depth beats breadth 3.8x: +15.61 vs +4.13 per
+level).
+
+#### That lead is now CLOSED (2026-09-21) -- action count is not the bottleneck
+
+Three independent mechanisms have now converted deliberation into actions.
+**All three failed to convert actions into score:**
+
+| mechanism | actions | outcome |
+|---|---|---|
+| commit floor | +48% | -10% score |
+| no-thinking | +203% | 0.64 score |
+| **AVO solver bundle** | **+18.3%** | **levels cleared 42 -> 35** |
+
+The AVO arm is the decisive one, because it **passed its pre-registered
+falsifier and lost anyway** (`experiments/stage7_avo.md`, branch `stage7-avo`).
+On an identical deliberation budget (951 vs 940 turns, 1,338 vs 1,358 model
+calls) it cut the dead-turn rate **37.7% -> 27.7%** and moved
+P(act | >=2 dead before) from **33.6% to 54.5%** (~4.2 binomial sd). The
+machinery demonstrably ran: 931 AVO turns, 368 exploit turns, 63 interventions,
+a real `avo_memory.json`.
+
+**And every extra action landed on a level that was never cleared** -- 1,841 vs
+1,270 there (+45%), while actions *inside* cleared levels actually fell
+(1,253 vs 1,345). Share of actions in never-cleared levels: **48.6% -> 59.5%**.
+The loss concentrates at level index 3+, exactly where `w_l = l` hurts: anim
+takes 43 points of index-weighted depth against AVO's 17.
+
+**The 46% dead-turn measurement is real; the theory of change built on it is
+not.** Acting more on a level you cannot solve is not progress, and RHAE
+punishes it twice (squared efficiency, capped by completion). Do not push AVO
+arm 2 (phased loop); it moves the same dial further.
+
+The falsifier discipline itself is vindicated and remains the standard: a
+counted, pre-registered test is what the +/-2.46 score cannot give. Note the
+sharper lesson -- **passing a mechanism falsifier does not mean the mechanism
+helps.** Register an outcome measure too, not just a mechanism measure.
+
+#### The open lead now: perception / solvability
+
+The next lever must target **whether a level is solvable at all**, not how many
+actions are spent on it. Tufa's own stated weak areas are "context management
+and perception", and there is direct evidence of a perception tax in our own
+run: HUD/status-bar reasoning appears in **all 25 of 25 games** (4,608 mentions
+in the anim run). The model re-derives HUD geometry from scratch, misattributes
+HUD pixels to game objects ("my white-object tracker accidentally matched the
+growing row-0 HUD bar ... that reading was HUD noise"), and spends turns
+establishing "did only the HUD change?".
+
+A rule-based status-bar detector already exists in this repo
+(`graph_explorer_agent.py: identify_status_bars_with_rule`, ported from
+arXiv:2512.24156, MIT). Validated against real frames from the anim run it
+fires on **22 of 25 games**, flags only 0.8-3.1% of cells, and reaches a
+maximum depth of **0-2 cells from the frame edge** -- it never touches the
+board interior. It catches edge *bars*, not deep corner *blocks*.
+
+Arm in progress on `stage7-hud-perception`: annotate `segmentation`'s nodes
+with an advisory `hud` flag. **Annotate, never mask** -- no pixel or node is
+removed, so a wrong heuristic costs nothing and the model can override it.
+
 ## Repo / branch layout
 
 - `master` -- Stage 0 (harness) is complete and stable here. Don't rebase
