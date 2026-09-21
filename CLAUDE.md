@@ -4016,6 +4016,26 @@ above to narrow it down without spending more of the daily quota.
 
 ## Gotchas learned the hard way (don't re-discover these)
 
+- **(2026-09-21) `kaggle kernels push` needs `PYTHONUTF8=1` on this box.** Kaggle
+  CLI 2.2.3 reads the notebook with the system ANSI codepage (cp1252), and every
+  notebook in the Duck/anim lineage carries non-ASCII characters (32 bytes in
+  `arc3-duck-nvfp4-hud.ipynb`), so the push dies with
+  `'charmap' codec can't decode byte 0x9d`. Verified directly: the file genuinely
+  fails a cp1252 decode. Set `PYTHONUTF8=1` for any kernel push in this lineage.
+- **(2026-09-21) An env var does NOT reach `segment_layer` just because you set
+  it.** `segment_layer` runs in the Python-tool **sandbox subprocess**, which
+  `inference/agent/python_tool_sandbox.py` launches with an explicit *allowlist*
+  env, not the parent's. A new flag must be added to that allowlist or the
+  feature is a **silent no-op with the entire prompt change still in place** --
+  every prompt describing a field that never exists, and all notebook asserts
+  green. That is the hardest failure shape to detect after the fact; it is the
+  same class as this file's `action_input` bug.
+- **(2026-09-21) Check a new branch's merge base before merging it.** The HUD arm
+  was branched off `f1dba78` while three PRs landed on `master` the same day; its
+  diff vs `master` showed **3,964 deletions**, and merging it as-is would have
+  silently removed the entire AVO result from `master`. `git merge-base
+  --is-ancestor origin/master HEAD` takes a second and catches it.
+
 - **(2026-09-05) All three real submission notebooks had silently shrunk the
   gateway-readiness wait from the official reference's proven 600s down to
   90s -- found only by diffing our notebook against `arcprize/
