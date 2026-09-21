@@ -317,11 +317,12 @@ solvability**. **Stop spending slots on this lineage.** The remaining directions
 are perception (their stated gap, where our measured 9-155 s analyzer timeouts
 also live) and model capability -- not more serving tuning.
 
-### 9. CURRENT STANDING — 2026-09-19 (supersedes the 2026-09-07 header above)
+### 9. CURRENT STANDING — 2026-09-21 (supersedes the 2026-09-07 header above)
 
-**Score 3.79. Rank ~177 / 3,112. Top 5.7%. The top-10% mission target is met.**
-The header above ("top 10% = 2.99", "we sit at 2.95") is stale; the bar has
-risen to ~3.47 and we cleared it.
+**Best score 3.79. Rank ~204 / 3,175. Top 5.7%. The top-10% mission target is
+met.** The header above ("top 10% = 2.99", "we sit at 2.95") is stale; the bar
+has risen to ~3.5 and we cleared it. **But 3.79 is one draw from a mean-3.40
+distribution, not a level we hold** -- see the corrected table below.
 
 #### What actually produced the gain — component swaps, not tuning
 
@@ -334,17 +335,26 @@ risen to ~3.47 and we cleared it.
 
 **Both wins were whole-subsystem replacements. Every parameter change failed.**
 The model bundle is a sealed appliance (verifies 419 per-file SHA-256s), so the
-solver was the only remaining degree of freedom -- and swapping it was worth
-+25% (Welch t=3.55, df~5, p<0.05; anim's range 3.37-3.79 does not overlap
-baseline's 2.42-3.11).
+solver was the only remaining degree of freedom -- and swapping it is worth
+**+20%** (Welch t=2.65, p=0.038 at n=4 per side).
+
+**Correction (2026-09-21):** an earlier version of this section reported the
+graft at +25% with "anim's range 3.37-3.79 does not overlap baseline's
+2.42-3.11". anim's 4th draw came in at **3.02**, so **the ranges now overlap**
+and that non-overlap claim is withdrawn. The effect survives -- it is still
+significant, and the means still differ by 0.57 -- but it is smaller and less
+clean than n=3 made it look. This is the third time in this project that an
+effect shrank when n grew; assume it will happen again.
 
 #### Measured distributions (the thing to compare any new arm against)
 
 | config | n | scores | mean | sd |
 |---|---:|---|---:|---:|
 | NVFP4 baseline | 4 | 2.84, 2.95, 2.42, 3.11 | 2.830 | 0.295 |
-| **+ anim graft** | 3 | 3.43, 3.79, 3.37 | **3.530** | **0.227** |
+| **+ anim graft** | **4** | 3.43, 3.79, **3.37, 3.02** | **3.402** | **0.315** |
 | + wipe guard | 1 | 2.53 | — | — |
+
+anim is the incumbent and the thing to beat: **mean 3.402, sd 0.315, n=4.**
 
 #### THE MEASUREMENT RULE THAT MATTERS MOST
 
@@ -397,12 +407,62 @@ on level 5 when time expired, `tu93` **0** -- each worth +11 to +24 under RHAE's
 index weighting (`w_l = l`, so depth beats breadth 3.8x: +15.61 vs +4.13 per
 level).
 
-Two arms are built on the anim graft and testing this: a **commit floor** and
-**no-thinking**. The commit floor carries a *counted* falsifier registered
-before the result -- the untreated chassis's own P(act | >=2 dead turns before)
-is **32.0% (164/513)** across three runs, comparable at ~4.7pp binomial sd.
-That is the kind of test the +/-2.46 score cannot give, and is the standard any
-future mechanism should be held to.
+#### That lead is now CLOSED (2026-09-21) -- action count is not the bottleneck
+
+Three independent mechanisms have now converted deliberation into actions.
+**All three failed to convert actions into score:**
+
+| mechanism | actions | outcome |
+|---|---|---|
+| commit floor | +48% | -10% score |
+| no-thinking | +203% | 0.64 score |
+| **AVO solver bundle** | **+18.3%** | **levels cleared 42 -> 35** |
+
+The AVO arm is the decisive one, because it **passed its pre-registered
+falsifier and lost anyway** (`experiments/stage7_avo.md`, branch `stage7-avo`).
+On an identical deliberation budget (951 vs 940 turns, 1,338 vs 1,358 model
+calls) it cut the dead-turn rate **37.7% -> 27.7%** and moved
+P(act | >=2 dead before) from **33.6% to 54.5%** (~4.2 binomial sd). The
+machinery demonstrably ran: 931 AVO turns, 368 exploit turns, 63 interventions,
+a real `avo_memory.json`.
+
+**And every extra action landed on a level that was never cleared** -- 1,841 vs
+1,270 there (+45%), while actions *inside* cleared levels actually fell
+(1,253 vs 1,345). Share of actions in never-cleared levels: **48.6% -> 59.5%**.
+The loss concentrates at level index 3+, exactly where `w_l = l` hurts: anim
+takes 43 points of index-weighted depth against AVO's 17.
+
+**The 46% dead-turn measurement is real; the theory of change built on it is
+not.** Acting more on a level you cannot solve is not progress, and RHAE
+punishes it twice (squared efficiency, capped by completion). Do not push AVO
+arm 2 (phased loop); it moves the same dial further.
+
+The falsifier discipline itself is vindicated and remains the standard: a
+counted, pre-registered test is what the +/-2.46 score cannot give. Note the
+sharper lesson -- **passing a mechanism falsifier does not mean the mechanism
+helps.** Register an outcome measure too, not just a mechanism measure.
+
+#### The open lead now: perception / solvability
+
+The next lever must target **whether a level is solvable at all**, not how many
+actions are spent on it. Tufa's own stated weak areas are "context management
+and perception", and there is direct evidence of a perception tax in our own
+run: HUD/status-bar reasoning appears in **all 25 of 25 games** (4,608 mentions
+in the anim run). The model re-derives HUD geometry from scratch, misattributes
+HUD pixels to game objects ("my white-object tracker accidentally matched the
+growing row-0 HUD bar ... that reading was HUD noise"), and spends turns
+establishing "did only the HUD change?".
+
+A rule-based status-bar detector already exists in this repo
+(`graph_explorer_agent.py: identify_status_bars_with_rule`, ported from
+arXiv:2512.24156, MIT). Validated against real frames from the anim run it
+fires on **22 of 25 games**, flags only 0.8-3.1% of cells, and reaches a
+maximum depth of **0-2 cells from the frame edge** -- it never touches the
+board interior. It catches edge *bars*, not deep corner *blocks*.
+
+Arm in progress on `stage7-hud-perception`: annotate `segmentation`'s nodes
+with an advisory `hud` flag. **Annotate, never mask** -- no pixel or node is
+removed, so a wrong heuristic costs nothing and the model can override it.
 
 ## Repo / branch layout
 
