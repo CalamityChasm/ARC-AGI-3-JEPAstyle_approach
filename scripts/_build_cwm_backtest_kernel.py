@@ -47,10 +47,13 @@ DATASET_SLUG = "cwm-backtest"
 DATASET_OWNER = "calamitychasm"
 KERNEL_SLUG = "arc3-cwm-backtest"
 
-#: 32768-token context shared between prompt and response. At ~3 chars per
-#: token for digit-heavy text, 60k chars leaves comfortable room for a
-#: 4096-token reply. Segments over budget are shrunk, not dropped.
-PROMPT_CHAR_BUDGET = 60_000
+#: 32768-token context is shared between prompt AND response. The first
+#: run budgeted 60k chars of prompt (~20k tokens) against a 4096-token
+#: reply -- which left the model no room to both think and answer, and it
+#: spent the whole reply budget thinking. Rebalanced: ~36k chars of prompt
+#: (~12k tokens) leaves ~16k tokens for the answer inside 32768.
+#: Segments over budget are shrunk, not dropped.
+PROMPT_CHAR_BUDGET = 36_000
 
 
 VALIDATION_CELL = r'''
@@ -149,7 +152,7 @@ MAX_ATTEMPTS = int(os.environ.get("CWM_MAX_ATTEMPTS", "3"))
 # pulled, so an unbounded run that overruns a deadline yields NOTHING
 # however carefully it persists. 25 segments is ample to separate the
 # pre-registered <10% / 10-40% / >40% bands.
-MAX_SEGMENTS = int(os.environ.get("CWM_MAX_SEGMENTS", "25")) or None
+MAX_SEGMENTS = int(os.environ.get("CWM_MAX_SEGMENTS", "12")) or None
 
 
 class VLLMClient:
@@ -157,22 +160,35 @@ class VLLMClient:
 
     Deliberately not the `openai` package: this kernel is offline and the
     duck bundle does not guarantee that dependency. One POST per call.
+
+    `finish_reason` is counted because the previous run had to *infer*
+    that its 4096-token budget was being consumed by reasoning. Inferring
+    is not measuring: `length` vs `stop` says it outright.
     """
 
-    def __init__(self):
+    def __init__(self, max_tokens=4096, enable_thinking=None, label=""):
+        self.max_tokens = max_tokens
+        self.enable_thinking = enable_thinking
+        self.label = label
         self.field_counts = {}
+        self.finish_reasons = {}
         self.errors = 0
 
-    def complete(self, system, user, max_tokens=4096):
-        body = json.dumps({
+    def complete(self, system, user, max_tokens=None):
+        payload_body = {
             "model": MODEL_ID,
             "messages": [
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            "max_tokens": max_tokens,
+            "max_tokens": max_tokens or self.max_tokens,
             "temperature": 0.0,
-        }).encode("utf-8")
+        }
+        if self.enable_thinking is not None:
+            payload_body["chat_template_kwargs"] = {
+                "enable_thinking": self.enable_thinking
+            }
+        body = json.dumps(payload_body).encode("utf-8")
         request = urllib.request.Request(
             BASE_URL + "/chat/completions", data=body,
             headers={"Content-Type": "application/json"},
@@ -180,7 +196,10 @@ class VLLMClient:
         with urllib.request.urlopen(request, timeout=900) as response:
             payload = json.loads(response.read().decode("utf-8"))
 
-        message = payload["choices"][0]["message"]
+        choice = payload["choices"][0]
+        reason = choice.get("finish_reason") or "unknown"
+        self.finish_reasons[reason] = self.finish_reasons.get(reason, 0) + 1
+        message = choice["message"]
         # THE GOTCHA THIS PROJECT ALREADY PAID FOR: this build's Qwen3
         # reasoning parser puts generated tokens in `reasoning`, not
         # `content`. A harness that reads only `content` reports a healthy
@@ -197,22 +216,22 @@ class VLLMClient:
         return ""
 
 
-client = VLLMClient()
-
 # ---- preflight: the server answers, and we know which field it uses ----
+# The previous run's preflight used a SHORT prompt, answered in `content`,
+# and passed -- while every real prompt came back as reasoning-only and
+# produced no code at all. A preflight that does not exercise the real
+# shape of the task is not a preflight. This one sends a genuine (small)
+# world-model request and asserts a `class WorldModel` actually comes back.
+_probe_client = VLLMClient(max_tokens=2048, label="probe")
 print("preflight: probing the server...", flush=True)
-_probe = client.complete(
-    "You are a terse assistant.",
-    "Reply with exactly: READY",
-    max_tokens=2048,
-)
-print(f"preflight reply ({len(_probe)} chars): {_probe.strip()[:200]!r}", flush=True)
-print(f"preflight field counts: {client.field_counts}", flush=True)
+_probe = _probe_client.complete("You are a terse assistant.", "Reply with exactly: READY")
+print(f"preflight reply ({len(_probe)} chars): {_probe.strip()[:120]!r} "
+      f"fields={_probe_client.field_counts} finish={_probe_client.finish_reasons}",
+      flush=True)
 assert _probe.strip(), (
     "server returned nothing in content/reasoning/reasoning_content -- "
     "do NOT trust any result from this run"
 )
-client.field_counts.clear()
 
 # ---- the measurement ----
 segments = load_segments(SEGMENTS_PATH)
@@ -247,67 +266,107 @@ if MAX_SEGMENTS:
     segments = ordered[:MAX_SEGMENTS]
     print(f"pilot: {len(segments)} segments across "
           f"{len({s.game_id for s in segments})} games "
-          f"(levels {sorted({s.level for s in segments})})", flush=True)
-
-config = BacktestConfig(max_attempts=MAX_ATTEMPTS)
-results = []
-started = time.time()
+          f"(levels {sorted({s.level for s in segments})}) x {len(ARMS)} arms", flush=True)
 
 RESULTS_PATH = Path("/kaggle/working/cwm_backtest_results.json")
 SOURCES_DIR = Path("/kaggle/working/passing_models")
+
+# ---- arms -----------------------------------------------------------
+#
+# The first real run produced 0/25 with ZERO load errors and zero replay
+# failures: the model never emitted a `class WorldModel` at all, and all
+# 46 responses arrived as reasoning tokens with `content` never used. The
+# 4096-token budget was spent thinking and the answer was never reached.
+# That measured the budget, not the model.
+#
+# So this run varies exactly that, and nothing else:
+#   think-16k  -- reasoning allowed, 4x the budget
+#   nothink-8k -- reasoning disabled via chat_template_kwargs
+#
+# Both see identical segments and an identical prompt. If both still
+# produce no code, the budget explanation is dead and the result starts to
+# be about the model. `finish_reason` is recorded either way, so
+# truncation is measured rather than inferred.
+ARMS = [
+    ("think-16k", dict(max_tokens=16384, enable_thinking=None)),
+    ("nothink-8k", dict(max_tokens=8192, enable_thinking=False)),
+]
+
+config = BacktestConfig(max_attempts=MAX_ATTEMPTS)
+arm_reports = {}
+results = []
+client = None
+started = time.time()
 
 # Kaggle kills a GPU kernel at its wall-clock cap. Writing results only at
 # the end would mean a timeout yields NOTHING -- hours of GPU for no
 # number. So the file is rewritten after every segment, and the run stops
 # itself cleanly with time to spare rather than being killed mid-write.
-SOFT_DEADLINE_S = float(os.environ.get("CWM_SOFT_DEADLINE_S", str(2.5 * 3600)))
+SOFT_DEADLINE_S = float(os.environ.get("CWM_SOFT_DEADLINE_S", str(3.5 * 3600)))
 
 
 def _persist(partial):
-    payload = build_report(results).as_dict()
-    payload["determinism"] = det.as_dict()
-    payload["oracle_passing_segments"] = oracle_ok
-    payload["response_field_counts"] = client.field_counts
-    payload["model_id"] = MODEL_ID
-    payload["partial"] = partial
-    payload["segments_attempted"] = len(results)
-    payload["segments_total"] = len(segments)
+    payload = {
+        "model_id": MODEL_ID,
+        "partial": partial,
+        "determinism": det.as_dict(),
+        "oracle_passing_segments": oracle_ok,
+        "segments_total": len(segments),
+        "arms": arm_reports,
+    }
     RESULTS_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
-for index, segment in enumerate(segments, start=1):
-    elapsed = time.time() - started
-    if elapsed > SOFT_DEADLINE_S:
-        print(f"soft deadline reached after {elapsed/3600:.2f}h -- stopping with "
-              f"{len(results)}/{len(segments)} segments measured", flush=True)
-        break
+for arm_name, arm_kwargs in ARMS:
+    client = VLLMClient(label=arm_name, **arm_kwargs)
+    results = []
+    print(f"\n{'=' * 62}\nARM {arm_name}  {arm_kwargs}\n{'=' * 62}", flush=True)
 
-    result = run_segment(client, segment, config)
-    results.append(result)
-    print(f"[{index}/{len(segments)}] {segment.key:24s} n={len(segment):3d} "
-          f"{result.outcome:16s} prefix={result.best_prefix:3d}/{len(segment):<3d} "
-          f"attempts={result.attempts} {result.elapsed_s:7.1f}s", flush=True)
+    for index, segment in enumerate(segments, start=1):
+        elapsed = time.time() - started
+        if elapsed > SOFT_DEADLINE_S:
+            print(f"soft deadline after {elapsed/3600:.2f}h -- stopping arm "
+                  f"{arm_name} with {len(results)}/{len(segments)}", flush=True)
+            break
 
-    # Persist after every segment, and save any passing source immediately.
-    _persist(partial=True)
-    if result.source:
-        SOURCES_DIR.mkdir(exist_ok=True)
-        (SOURCES_DIR / f"{result.segment_key.replace('/', '_')}.py").write_text(
-            result.source, encoding="utf-8"
-        )
+        result = run_segment(client, segment, config)
+        results.append(result)
+        print(f"[{arm_name} {index}/{len(segments)}] {segment.key:22s} "
+              f"n={len(segment):3d} {result.outcome:14s} "
+              f"prefix={result.best_prefix:3d}/{len(segment):<3d} "
+              f"att={result.attempts} {result.elapsed_s:6.1f}s", flush=True)
 
-report = build_report(results)
-print()
-print(report.summary(), flush=True)
-print()
-print(per_game_table(results), flush=True)
-print()
-print(f"response field counts: {client.field_counts}", flush=True)
+        report = build_report(results)
+        arm_reports[arm_name] = {
+            **report.as_dict(),
+            "response_field_counts": dict(client.field_counts),
+            "finish_reasons": dict(client.finish_reasons),
+            "config": {k: str(v) for k, v in arm_kwargs.items()},
+            "segments_attempted": len(results),
+        }
+        _persist(partial=True)
+
+        if result.source:
+            SOURCES_DIR.mkdir(exist_ok=True)
+            (SOURCES_DIR / f"{arm_name}_{result.segment_key.replace('/', '_')}.py"
+             ).write_text(result.source, encoding="utf-8")
+
+    report = build_report(results)
+    print()
+    print(report.summary(), flush=True)
+    print(f"\nfields : {client.field_counts}", flush=True)
+    print(f"finish : {client.finish_reasons}", flush=True)
+
+print(f"\n{'=' * 62}\nARM COMPARISON\n{'=' * 62}", flush=True)
+for name, rep in arm_reports.items():
+    print(f"{name:12s} passed {rep['n_passed']}/{rep['segments_attempted']:<3d} "
+          f"median_prefix {rep['median_prefix_fraction']:.1%}  "
+          f"outcomes {rep['outcome_counts']}  finish {rep['finish_reasons']}",
+          flush=True)
+
+_persist(partial=False)
+print(f"\nwrote {RESULTS_PATH}", flush=True)
 print(f"total wall clock: {time.time() - started:.1f}s", flush=True)
-
-_persist(partial=len(results) < len(segments))
-print(f"wrote {RESULTS_PATH} "
-      f"({len(results)}/{len(segments)} segments measured)", flush=True)
 '''
 
 
