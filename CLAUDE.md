@@ -351,10 +351,56 @@ effect shrank when n grew; assume it will happen again.
 | config | n | scores | mean | sd |
 |---|---:|---|---:|---:|
 | NVFP4 baseline | 4 | 2.84, 2.95, 2.42, 3.11 | 2.830 | 0.295 |
-| **+ anim graft** | **4** | 3.43, 3.79, **3.37, 3.02** | **3.402** | **0.315** |
+| **+ anim graft** | **5** | 3.43, 3.79, 3.37, 3.02, **2.66** | **3.254** | **0.430** |
 | + wipe guard | 1 | 2.53 | — | — |
 
-anim is the incumbent and the thing to beat: **mean 3.402, sd 0.315, n=4.**
+#### CORRECTION (2026-09-22): the anim graft is NOT established, and the
+#### comparison behind it is confounded
+
+The 5th anim draw came in at **2.66** -- the lowest of the arm, and below
+the baseline mean. Three things follow, and none of them are comfortable.
+
+**1. The effect lost significance when n grew.** Exact permutation test
+(all 126 splits, one-sided): **p = 0.071**, versus the p = 0.038 recorded
+here at n=4. Welch t fell 2.652 -> 1.750. **This is the fourth time in
+this project that an effect shrank when n grew**, and this file predicted
+it in writing after the third. Treat every remaining n<=5 claim here as
+likely overstated.
+
+**2. Almost all of the apparent advantage lives in the first three
+draws.** Sensitivity, each against the same baseline:
+
+| anim subset | mean | diff | perm p |
+|---|---:|---:|---:|
+| all 5 | 3.254 | +0.424 | 0.071 |
+| drop the best (3.79) | 3.120 | +0.290 | 0.129 |
+| last 3 only | 3.017 | +0.187 | 0.257 |
+| **last 2 only** | **2.840** | **+0.010** | **0.533** |
+
+anim's two most recent draws average **2.840** against baseline's
+**2.830**. On recent evidence alone the graft is worth **nothing**.
+
+**3. The two arms never overlap in time, so the comparison is
+confounded.** Baseline was drawn 09-11..09-15 (all four); anim 09-16..09-22
+(all five). Zero overlap. "anim vs baseline" is therefore identical to
+"later vs earlier", and no statistic computed on this data can separate
+them. There is also a real downward drift *within* anim (OLS slope
+**-0.231/draw**, permutation p = 0.042 -- but found post-hoc, by looking
+at the sequence, so that p is optimistic), against **+0.028/draw** within
+baseline.
+
+**The decisive experiment is to re-run the NVFP4 baseline NOW**, in the
+same period anim is being drawn in. If baseline now scores ~2.4, the
+graft survives. If it scores ~3.0, the graft was a temporal artifact and
+three submissions were spent on it. Nothing else in the current data can
+settle this, and every further anim draw compounds the confound rather
+than resolving it.
+
+**Standing lesson, now with four instances:** an arm adopted *because* its
+first draws were high carries a winner's curse. Early draws are not a
+random sample of that arm's distribution -- they are the reason the arm
+was selected. Interleave arms in time from now on; never run one arm to
+exhaustion and then the next.
 
 #### THE MEASUREMENT RULE THAT MATTERS MOST
 
