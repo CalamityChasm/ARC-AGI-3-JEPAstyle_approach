@@ -53,6 +53,65 @@ KERNEL_SLUG = "arc3-cwm-backtest"
 PROMPT_CHAR_BUDGET = 60_000
 
 
+VALIDATION_CELL = r'''
+# ============================================================
+# Input validation -- deliberately FIRST, before the wheel install,
+# the bundle setup and the ~10-minute vLLM boot.
+#
+# The previous run spent a 7.5h queue wait plus 14 minutes of GPU only to
+# die on a missing filename: Kaggle silently DECOMPRESSES an uploaded
+# .gz, so `cwm_segments.json.gz` arrives as `cwm_segments.json`. Nothing
+# about that needs a GPU to detect. Everything checkable without the
+# model is checked here, so a data problem costs seconds.
+# ============================================================
+import os, sys
+from pathlib import Path
+
+def _find_input_dir(name):
+    base = Path("/kaggle/input")
+    if base.is_dir():
+        for path in base.rglob("*"):
+            if path.is_dir() and path.name == name:
+                return path
+    raise RuntimeError(f"dataset {name!r} not found under /kaggle/input")
+
+DATA_DIR = _find_input_dir("__DATASET_SLUG__")
+sys.path.insert(0, str(DATA_DIR))
+os.environ["ARC3_CWM_ENGINE_DIR"] = str(DATA_DIR)
+print("backtest data:", DATA_DIR, flush=True)
+
+# Accept either name; Kaggle's own archive handling decides which we get.
+_candidates = ["cwm_segments.json", "cwm_segments.json.gz"]
+SEGMENTS_PATH = next((DATA_DIR / c for c in _candidates if (DATA_DIR / c).is_file()), None)
+if SEGMENTS_PATH is None:
+    raise FileNotFoundError(
+        f"no segments file in {DATA_DIR}. Tried {_candidates}. "
+        f"Directory holds: {sorted(p.name for p in DATA_DIR.iterdir())}"
+    )
+print("segments file:", SEGMENTS_PATH.name, flush=True)
+
+from arc3_cwm.determinism import census
+from arc3_cwm.oracle import verify_oracle
+from arc3_cwm.serialize import load_segments
+
+_segs = load_segments(SEGMENTS_PATH)
+print(f"loaded {len(_segs)} segments from {len({s.game_id for s in _segs})} games",
+      flush=True)
+assert _segs, "segments file loaded but is empty"
+
+_det = census(_segs)
+print(_det.summary(), flush=True)
+
+_oracle_ok = sum(1 for s in _segs if verify_oracle(s)[0])
+print(f"positive control: oracle replays {_oracle_ok}/{len(_segs)} segments", flush=True)
+assert _oracle_ok > 0, (
+    "the oracle cannot pass a single segment -- the harness could not report a "
+    "pass even if the model produced one, so any result would be meaningless"
+)
+print("INPUT VALIDATION PASSED -- proceeding to the expensive setup", flush=True)
+'''
+
+
 BACKTEST_CELL = r'''
 # ============================================================
 # CodeWorldModel backtest -- replaces the game-playing benchmark.
@@ -156,15 +215,11 @@ assert _probe.strip(), (
 client.field_counts.clear()
 
 # ---- the measurement ----
-segments = load_segments(DATA_DIR / "cwm_segments.json.gz")
+segments = load_segments(SEGMENTS_PATH)
 print(f"loaded {len(segments)} segments from "
       f"{len({s.game_id for s in segments})} games", flush=True)
 
-det = census(segments)
-print(det.summary(), flush=True)
-
-oracle_ok = sum(1 for s in segments if verify_oracle(s)[0])
-print(f"positive control: oracle replays {oracle_ok}/{len(segments)} segments", flush=True)
+det, oracle_ok = _det, _oracle_ok  # already computed in the validation cell
 
 if MAX_SEGMENTS:
     # Round-robin across games rather than taking the file order, which is
@@ -285,7 +340,19 @@ def build_notebook(dataset_slug: str) -> dict:
         "source": BACKTEST_CELL.replace("__DATASET_SLUG__", dataset_slug).splitlines(True),
     }
 
-    source["cells"] = [header] + cells[1:] + [backtest]
+    validation = {
+        "cell_type": "code",
+        "execution_count": None,
+        "metadata": {},
+        "outputs": [],
+        "source": VALIDATION_CELL.replace(
+            "__DATASET_SLUG__", dataset_slug
+        ).splitlines(True),
+    }
+
+    # Validation goes before every expensive cell, straight after the GPU
+    # identity check.
+    source["cells"] = [header, cells[1], validation] + cells[2:] + [backtest]
     return source
 
 
