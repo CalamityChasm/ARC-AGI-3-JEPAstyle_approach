@@ -483,11 +483,24 @@ removed, so a wrong heuristic costs nothing and the model can override it.
   the working Stage 0 harness. Merge to master once Stage 1 clears its
   milestone (see Status below) or is deliberately parked as a documented
   limitation.
-- Remote: `https://github.com/CalamityChasm/ARC-AGI-3-JEPAstyle_approach`
-  (private). Git identity for commits in this repo: `CalamityChasm
+- Remote: `https://github.com/calcrockett/ARC-AGI-3-JEPAstyle_approach`
+  (private). **The GitHub account was renamed `CalamityChasm` ->
+  `calcrockett` on 2026-09-22**; the remote URL was updated to match.
+  GitHub redirects the old path, so a stale clone keeps working and will
+  give no warning that it is relying on a redirect -- which stops working
+  if anyone claims the old name. If a clone still points at
+  `CalamityChasm`, run
+  `git remote set-url origin https://github.com/calcrockett/ARC-AGI-3-JEPAstyle_approach.git`.
+  Git identity for commits in this repo: `CalamityChasm
   <calcrockett@gmail.com>` (repo-local config, not global -- check `git
   config user.name`/`user.email` if cloning fresh on a new machine, you'll
-  need to set these locally again).
+  need to set these locally again). The commit *author name* is
+  deliberately left as `CalamityChasm` so history stays consistent; GitHub
+  links commits by the email, which did not change.
+- **The Kaggle account is a different account and was NOT renamed.** Every
+  dataset/kernel slug stays `calamitychasm/...` (e.g.
+  `calamitychasm/arc3-duck-nvfp4-anim`). Do not "fix" these to match the
+  GitHub rename -- it would break every submission and dataset mount.
 
 ## Environment setup (new machine)
 
