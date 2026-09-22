@@ -144,3 +144,35 @@ def measure_sizes(segment: LevelSegment) -> SizeComparison:
         compact_chars=len(render_segment(segment)),
         engine_chars=len(_render_transcript(transcript)),
     )
+
+
+def fit_to_budget(
+    segment: LevelSegment, max_prompt_chars: int, min_steps: int = 4
+) -> LevelSegment:
+    """Shrink the step window until the rendered prompt fits the budget.
+
+    The served model has `max_model_len: 32768`, shared between prompt and
+    response. A segment whose prompt overflows that does not produce a bad
+    result -- it produces a request error or a silent truncation, which
+    would be scored as a model failure. Dropping steps until it fits keeps
+    the measurement honest, and the number of steps actually used is
+    recorded per segment so a short window is visible in the output rather
+    than hidden.
+
+    Returns a segment of at least `min_steps` even if that still overflows;
+    the caller decides whether to skip it, because silently returning
+    something unusable is worse than an explicit oversize segment.
+    """
+    if max_prompt_chars <= 0:
+        return segment
+
+    current = segment
+    while len(current) > min_steps and len(build_user_prompt(current)) > max_prompt_chars:
+        # Halve the overshoot rather than stepping down one at a time:
+        # rendering is the expensive part and segments run to 209 steps.
+        overshoot = len(build_user_prompt(current)) / max_prompt_chars
+        target = max(min_steps, int(len(current) / max(overshoot, 1.05)))
+        if target >= len(current):
+            target = len(current) - 1
+        current = segment.window(target)
+    return current

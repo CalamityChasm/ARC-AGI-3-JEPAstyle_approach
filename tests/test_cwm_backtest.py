@@ -609,3 +609,146 @@ def test_report_separates_informative_segments_from_free_passes():
 def test_report_is_json_serialisable():
     report = build_report([run_segment(ScriptedClient([PERFECT_MODEL]), incrementing_segment())])
     json.dumps(report.as_dict())
+
+
+# --------------------------------------------------------------------
+# serialisation: the segments have to travel to Kaggle intact
+# --------------------------------------------------------------------
+
+
+def test_segment_round_trip_is_exact(tmp_path):
+    """Cell-for-cell equality, not 'looks about right'.
+
+    A lossy round-trip would shift the boards the model is asked about
+    while changing nothing visible in the output -- the same silent
+    corruption shape as this project's `action_input` bug.
+    """
+    from arc3_cwm.serialize import dump_segments, load_segments
+
+    segments = [
+        make_segment(
+            [(grid("012", "345", "678"), "ACTION1", grid("112", "345", "678")),
+             (grid("112", "345", "678"), "ACTION6", grid("112", "3f5", "678")),
+             (grid("112", "3f5", "678"), "ACTION7", grid("112", "3f5", "678"))],
+            game_id="aa11",
+        ),
+        make_segment(
+            [(grid("00", "00"), "ACTION2", grid("0f", "00"))], game_id="bb22", level=3
+        ),
+    ]
+    segments[0].cleared_level = True
+    segments[0].boundary_cells_changed = 777
+
+    path = dump_segments(segments, tmp_path / "segs.json.gz", source="unit-test")
+    restored = load_segments(path)
+
+    assert len(restored) == len(segments)
+    for original, copy in zip(segments, restored):
+        assert copy.game_id == original.game_id
+        assert copy.level == original.level
+        assert copy.cleared_level == original.cleared_level
+        assert copy.boundary_cells_changed == original.boundary_cells_changed
+        assert len(copy) == len(original)
+        for a, b in zip(original.transitions, copy.transitions):
+            assert b.frame_before == a.frame_before
+            assert b.frame_after == a.frame_after
+            assert (b.action.name, b.action.x, b.action.y) == (a.action.name, a.action.x, a.action.y)
+            assert b.levels_completed_before == a.levels_completed_before
+            assert b.levels_completed_after == a.levels_completed_after
+            assert b.state_after == a.state_after
+
+
+def test_round_trip_preserves_an_unchanged_step():
+    """A step that changes nothing has an empty diff; it must survive as a
+    real step rather than vanishing."""
+    from arc3_cwm.serialize import segment_from_dict, segment_to_dict
+
+    still = grid("12", "34")
+    segment = make_segment([(still, "ACTION1", still)])
+    restored = segment_from_dict(segment_to_dict(segment))
+    assert len(restored) == 1
+    assert restored.transitions[0].frame_before == restored.transitions[0].frame_after
+
+
+def test_loader_refuses_an_unknown_format_version(tmp_path):
+    import gzip, json as _json
+    path = tmp_path / "bad.json.gz"
+    with gzip.open(path, "wt", encoding="utf-8") as fh:
+        _json.dump({"format_version": 99, "segments": []}, fh)
+    from arc3_cwm.serialize import load_segments
+    with pytest.raises(ValueError, match="format_version"):
+        load_segments(path)
+
+
+def test_dump_refuses_an_empty_segment(tmp_path):
+    from arc3_cwm.serialize import dump_segments
+    from arc3_cwm.extract import LevelSegment
+    with pytest.raises(ValueError, match="empty segment"):
+        dump_segments([LevelSegment(game_id="x", level=1)], tmp_path / "e.json.gz")
+
+
+# --------------------------------------------------------------------
+# prompt budget
+# --------------------------------------------------------------------
+
+
+def test_fit_to_budget_shrinks_until_the_prompt_fits():
+    from arc3_cwm.render import build_user_prompt, fit_to_budget
+
+    segment = incrementing_segment(steps=60)
+    budget = len(build_user_prompt(segment.window(10)))
+    fitted = fit_to_budget(segment, budget, min_steps=2)
+
+    assert len(fitted) < len(segment)
+    assert len(build_user_prompt(fitted)) <= budget
+
+
+def test_fit_to_budget_never_goes_below_min_steps():
+    from arc3_cwm.render import fit_to_budget
+
+    segment = incrementing_segment(steps=40)
+    fitted = fit_to_budget(segment, max_prompt_chars=1, min_steps=5)
+    assert len(fitted) == 5
+
+
+def test_fit_to_budget_is_a_noop_when_it_already_fits():
+    from arc3_cwm.render import fit_to_budget
+
+    segment = incrementing_segment(steps=5)
+    assert len(fit_to_budget(segment, 10_000_000)) == 5
+
+
+def test_round_trip_survives_a_discontinuity_from_a_dropped_reset():
+    """The extractor drops RESET steps, so `frame_before` is not always the
+    previous `frame_after`. Chaining diffs across that gap silently
+    reconstructs the wrong board -- caught here on real-shaped input."""
+    from arc3_cwm.serialize import segment_from_dict, segment_to_dict
+
+    stats = ExtractionStats()
+    events = [
+        event(type_="initial", board=grid("00", "00")),
+        event(board=grid("10", "00")),
+        event(board=grid("ff", "ff"), action_name="RESET"),   # dropped
+        event(board=grid("f0", "ff")),
+    ]
+    (segment,) = segments_from_events("g", events, stats)
+    assert stats.transitions_dropped_reset == 1
+    # The chain really is broken: step 1 starts from the post-reset board.
+    assert segment.transitions[1].frame_before != segment.transitions[0].frame_after
+
+    payload = segment_to_dict(segment)
+    assert "g" in payload["steps"][1], "a discontinuity must carry a resync grid"
+
+    restored = segment_from_dict(payload)
+    for a, b in zip(segment.transitions, restored.transitions):
+        assert b.frame_before == a.frame_before
+        assert b.frame_after == a.frame_after
+
+
+def test_continuous_segments_do_not_pay_for_resync_grids():
+    """The resync escape hatch must not fire on ordinary play, or the
+    export loses its whole size advantage."""
+    from arc3_cwm.serialize import segment_to_dict
+
+    payload = segment_to_dict(incrementing_segment(steps=6))
+    assert not any("g" in step for step in payload["steps"])

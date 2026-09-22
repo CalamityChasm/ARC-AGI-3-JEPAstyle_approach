@@ -14,14 +14,42 @@ at the engine, not a fork of it.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
-_STAGE_DIR = (
-    Path(__file__).resolve().parent.parent
-    / "kaggle_submission_llm_world_engine"
-    / "dataset_stage"
-)
+#: Override for environments that do not have this repo's layout -- notably
+#: a Kaggle dataset mount, where `llm_engine` sits beside `arc3_cwm` rather
+#: than under `kaggle_submission_llm_world_engine/dataset_stage/`.
+_ENV_OVERRIDE = "ARC3_CWM_ENGINE_DIR"
+
+
+def _resolve_stage_dir() -> Path:
+    override = os.environ.get(_ENV_OVERRIDE, "").strip()
+    if override:
+        candidate = Path(override)
+        if not (candidate / "llm_engine").is_dir():
+            raise RuntimeError(
+                f"{_ENV_OVERRIDE}={override!r} but no llm_engine/ directory is there"
+            )
+        return candidate
+
+    here = Path(__file__).resolve().parent
+    candidates = [
+        here.parent / "kaggle_submission_llm_world_engine" / "dataset_stage",
+        here.parent,  # llm_engine/ sitting beside arc3_cwm/ (dataset mount)
+    ]
+    for candidate in candidates:
+        if (candidate / "llm_engine").is_dir():
+            return candidate
+    raise RuntimeError(
+        "cannot locate llm_engine/; looked in "
+        + repr([str(c) for c in candidates])
+        + f" -- set {_ENV_OVERRIDE} to its parent directory"
+    )
+
+
+_STAGE_DIR = _resolve_stage_dir()
 
 if str(_STAGE_DIR) not in sys.path:
     sys.path.insert(0, str(_STAGE_DIR))
