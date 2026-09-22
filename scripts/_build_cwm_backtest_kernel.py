@@ -86,7 +86,11 @@ from arc3_cwm.serialize import load_segments
 BASE_URL = "http://127.0.0.1:1234/v1"
 MODEL_ID = "Qwen/Qwen3.8-Flash-Next-NVFP4"
 MAX_ATTEMPTS = int(os.environ.get("CWM_MAX_ATTEMPTS", "3"))
-MAX_SEGMENTS = int(os.environ.get("CWM_MAX_SEGMENTS", "0")) or None
+# Bounded pilot. A kernel that is still RUNNING cannot have its output
+# pulled, so an unbounded run that overruns a deadline yields NOTHING
+# however carefully it persists. 25 segments is ample to separate the
+# pre-registered <10% / 10-40% / >40% bands.
+MAX_SEGMENTS = int(os.environ.get("CWM_MAX_SEGMENTS", "25")) or None
 
 
 class VLLMClient:
@@ -163,8 +167,32 @@ oracle_ok = sum(1 for s in segments if verify_oracle(s)[0])
 print(f"positive control: oracle replays {oracle_ok}/{len(segments)} segments", flush=True)
 
 if MAX_SEGMENTS:
-    segments = segments[:MAX_SEGMENTS]
-    print(f"pilot: capped to {len(segments)} segments", flush=True)
+    # Round-robin across games rather than taking the file order, which is
+    # alphabetical and would measure the first few games only. One segment
+    # per game comes first, so a 25-cap covers all 25 games.
+    #
+    # This selects mostly LEVEL 1 segments, which are the easiest. That is
+    # a deliberate upper bound: if the model cannot model level 1, it
+    # certainly cannot model level 4, so a failure here is decisive while a
+    # pass is optimistic. Stated in the write-up, not buried.
+    by_game = {}
+    for seg in segments:
+        by_game.setdefault(seg.game_id, []).append(seg)
+    for group in by_game.values():
+        group.sort(key=lambda s: s.level)
+    ordered, depth = [], 0
+    while len(ordered) < len(segments):
+        added = False
+        for game in sorted(by_game):
+            if depth < len(by_game[game]):
+                ordered.append(by_game[game][depth]); added = True
+        if not added:
+            break
+        depth += 1
+    segments = ordered[:MAX_SEGMENTS]
+    print(f"pilot: {len(segments)} segments across "
+          f"{len({s.game_id for s in segments})} games "
+          f"(levels {sorted({s.level for s in segments})})", flush=True)
 
 config = BacktestConfig(max_attempts=MAX_ATTEMPTS)
 results = []
@@ -177,7 +205,7 @@ SOURCES_DIR = Path("/kaggle/working/passing_models")
 # the end would mean a timeout yields NOTHING -- hours of GPU for no
 # number. So the file is rewritten after every segment, and the run stops
 # itself cleanly with time to spare rather than being killed mid-write.
-SOFT_DEADLINE_S = float(os.environ.get("CWM_SOFT_DEADLINE_S", str(7.0 * 3600)))
+SOFT_DEADLINE_S = float(os.environ.get("CWM_SOFT_DEADLINE_S", str(2.5 * 3600)))
 
 
 def _persist(partial):
