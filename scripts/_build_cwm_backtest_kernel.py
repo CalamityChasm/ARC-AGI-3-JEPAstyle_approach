@@ -25,7 +25,10 @@ import shutil
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+SCRIPTS_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPTS_DIR.parent
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
@@ -153,6 +156,12 @@ MAX_ATTEMPTS = int(os.environ.get("CWM_MAX_ATTEMPTS", "3"))
 # however carefully it persists. 25 segments is ample to separate the
 # pre-registered <10% / 10-40% / >40% bands.
 MAX_SEGMENTS = int(os.environ.get("CWM_MAX_SEGMENTS", "12")) or None
+
+ARMS = [
+    ("think-16k", dict(max_tokens=16384, enable_thinking=None)),
+    ("nothink-8k", dict(max_tokens=8192, enable_thinking=False)),
+]
+
 
 
 class VLLMClient:
@@ -287,11 +296,6 @@ SOURCES_DIR = Path("/kaggle/working/passing_models")
 # produce no code, the budget explanation is dead and the result starts to
 # be about the model. `finish_reason` is recorded either way, so
 # truncation is measured rather than inferred.
-ARMS = [
-    ("think-16k", dict(max_tokens=16384, enable_thinking=None)),
-    ("nothink-8k", dict(max_tokens=8192, enable_thinking=False)),
-]
-
 config = BacktestConfig(max_attempts=MAX_ATTEMPTS)
 arm_reports = {}
 results = []
@@ -487,6 +491,19 @@ def main(argv=None) -> int:
     notebook_path = out_dir / f"{KERNEL_SLUG}.ipynb"
     notebook_path.write_text(json.dumps(notebook, indent=1), encoding="utf-8")
     print(f"wrote {notebook_path} ({len(notebook['cells'])} cells)")
+
+    # Refuse to ship a notebook with a use-before-definition error. v5 died
+    # on `NameError: name 'ARMS' is not defined` -- valid syntax, so the
+    # `ast.parse` check passed it straight through to a GPU session.
+    from _check_notebook_cell import check_notebook
+
+    problems = check_notebook(notebook_path)
+    if problems:
+        print(f"\nREFUSING TO SHIP -- {len(problems)} use-before-definition problem(s):")
+        for problem in problems:
+            print("  " + problem)
+        raise SystemExit(1)
+    print("use-before-definition check PASSED")
 
     source_meta = json.loads(
         (SOURCE_NOTEBOOK.parent / "kernel-metadata.json").read_text(encoding="utf-8")
