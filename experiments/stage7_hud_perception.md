@@ -508,6 +508,99 @@ What they pin:
 
 ---
 
-## 9. Result
+## 9. Result -- the falsifier FAILED and the arm is a clean negative
 
-*(to be filled in from the free run)*
+Free run `calamitychasm/arc3-duck-nvfp4-hud`, `COMPLETE`, pulled 2026-09-22.
+
+### C3 first: no model confound
+
+The AVO arm nearly produced a false result because `effective_flags.json`
+suggested a different model. Checked the authoritative
+`vllm-server-identity.json` for both runs before reading anything else:
+
+| | anim | hud |
+|---|---|---|
+| served model | Qwen/Qwen3.8-Flash-Next-NVFP4 | Qwen/Qwen3.8-Flash-Next-NVFP4 |
+| max-num-seqs | 8 | 8 |
+| kv-cache-memory-bytes | 5368709120 | 5368709120 |
+| max-model-len | 32768 | 32768 |
+| max-num-batched-tokens | 8192 | 8192 |
+| quantization | modelopt_fp4 | modelopt_fp4 |
+
+Identical on every field. The comparison is clean.
+
+### The mechanism fired
+
+**87 references to the new `hud` field, against 0 in the baseline.** The
+annotation reached the model, the prompt described it, and the model engaged
+with it. This is not a silent no-op -- the failure mode the sandbox-allowlist
+gotcha was added to guard against did not occur.
+
+### The pre-registered falsifier failed
+
+Registered on 718 model-generated HUD mentions / 286 deriving geometry. The
+prediction was that handing the model a HUD flag would **reduce** how much it
+re-derives HUD geometry.
+
+| | anim | hud | |
+|---|---:|---:|---|
+| model-generated HUD mentions | 718 | **880** | **+23%** |
+| of which derive geometry | 286 | **313** | **+9%** |
+| per model block | 0.209 | **0.254** | **+22%** |
+| games mentioning HUD | 24/25 | 25/25 | |
+
+Every one moved the **wrong way**. The model talks about the HUD more when told
+where it is, not less.
+
+The caveat registered in advance applies and is why the falsifier was set on
+model-generated text rather than the raw 4,608: this arm puts the word "hud"
+into the prompt, so some rise is mechanical echo. But the geometry-deriving
+subset was chosen precisely to be robust to that, and it rose too.
+
+### The outcome measure: identical count, worse depth
+
+| | anim | hud |
+|---|---:|---:|
+| levels cleared | **42/183** | **42/183** |
+| index-weighted depth (`w_l = l`) | **83** | **71** |
+| games scoring >= 1 | 20/25 | 24/25 |
+| dead-turn rate | 37.7% | 39.2% |
+| actions | 2,615 | 2,419 |
+
+Levels cleared is **exactly identical**. What changed is their distribution:
+
+| level index | anim cleared | hud cleared |
+|---|---:|---:|
+| 1 | 20 | 24 |
+| 2 | 10 | 11 |
+| 3 | 6 | **4** |
+| 4 | 5 | **2** |
+| 5 | 1 | 1 |
+
+The arm **traded depth for breadth**: four more games get on the board, but
+level-3-and-deeper clears fall from 12 to 7. Under RHAE's `w_l = l`, depth beats
+breadth 3.8x, so index-weighted depth drops **83 -> 71 (-14.5%)** on an identical
+raw count.
+
+The public-25 means (9.97 vs 9.54) are recorded for completeness and **cannot
+rank anything** (SE +/-2.46). They are not the basis of this verdict; the counted
+telemetry above is.
+
+### Verdict: do not submit; do not iterate on this arm
+
+This is the **same shape as the AVO failure**, and the second time in two arms:
+the mechanism demonstrably ran, its falsifier was pre-registered and measured,
+and the intervention still moved the outcome the wrong way -- here by shifting
+effort from deep levels to shallow ones.
+
+It also sharpens the standing lesson one notch further. AVO taught that passing a
+mechanism falsifier does not mean the mechanism helps. This arm adds: **a
+mechanism can fire exactly as designed, be measured honestly, and still make the
+thing worse.** Firing is not evidence of benefit in either direction.
+
+The perception hypothesis itself is **not** refuted -- 313 geometry derivations
+is still a real tax, and Tufa still name perception as their weak area. What is
+refuted is *this* way of paying it down: telling the model where the HUD is does
+not stop it reasoning about the HUD. If perception is retried, the next arm
+should change what the model *sees* rather than what it is *told*, and should
+register an index-weighted-depth outcome up front, not only a mention count.
