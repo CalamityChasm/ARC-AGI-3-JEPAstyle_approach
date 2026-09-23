@@ -103,6 +103,9 @@ class CodeWorldAgent(Agent):
         self._pending_levels_before: int = 0
         self._last_draft_attempt_len = -1
         self._consecutive_repair_failures = 0
+        #: Level boundaries crossed. Counted so a run can report whether
+        #: the per-level reset ever fired, rather than assuming it did.
+        self.levels_seen = 0
 
         self.coder_budget = LLMBudget(max_calls_per_game=self.CODER_LLM_CALL_BUDGET)
         self.action_budget = LLMBudget(max_calls_per_game=self.ACTION_LLM_CALL_BUDGET)
@@ -327,7 +330,47 @@ class CodeWorldAgent(Agent):
             self.game_id, outcome.attempts,
         )
 
+    def _start_new_level(self) -> None:
+        """Reset the transcript and model at a level boundary.
+
+        `WorldModel` is documented as "a Python simulator for ONE level",
+        but the transcript was never segmented: every transition was
+        appended for the whole game, and `draft_world_model` requires a
+        candidate to reproduce all of it.
+
+        A level-clearing transition's `frame_after` is the NEXT level's
+        opening layout -- measured on a real run, 693-1054 of 4096 cells
+        rewritten, against a median of 109 for an ordinary move. No
+        inferred rule produces a fresh layout, and the drafting prompt
+        forbids hardcoding grids. The only candidate that could satisfy
+        it would emit that grid as a literal, which does not fit: one
+        64x64 board is ~4,240-6,360 tokens against a 4,096-token reply
+        budget.
+
+        So before this fix, clearing a single level made the replay gate
+        **permanently unsatisfiable for the rest of that game** -- drafting
+        could never succeed again, on exactly the games that were going
+        well. The old model is dropped too, since a model fitted to the
+        previous level is wrong for a fresh layout.
+
+        See experiments/stage7_codeworld_backtest.md section 3.1.
+        """
+        self.transcript = GameTranscript(game_id=self.game_id)
+        self.model = None
+        self.model_source = None
+        self._last_draft_attempt_len = -1
+        self._consecutive_repair_failures = 0
+        self.levels_seen = getattr(self, "levels_seen", 0) + 1
+        logger.info(
+            "%s: level boundary -- transcript and model reset (level %d)",
+            self.game_id, self.levels_seen + 1,
+        )
+
     def _handle_new_transition(self, t: Transition) -> None:
+        if t.levels_delta > 0:
+            self._start_new_level()
+            return
+
         self.transcript.append(t)
         if self.model is None or self.model_source is None:
             return
