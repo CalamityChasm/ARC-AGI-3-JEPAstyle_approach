@@ -66,22 +66,85 @@ class WorldModel:
 """
 
 
-def _render_transcript(transcript: GameTranscript, max_transitions: int = 40) -> str:
-    lines = []
-    shown = transcript.transitions[-max_transitions:]
-    if len(transcript.transitions) > max_transitions:
-        lines.append(f"[... {len(transcript.transitions) - max_transitions} earlier transitions omitted ...]")
-    for i, t in enumerate(shown):
-        idx = len(transcript.transitions) - len(shown) + i
-        lines.append(
-            f"--- transition #{idx} ---\n"
-            f"action: {t.action}\n"
-            f"before (layer 0):\n{format_grid(t.frame_before)}\n"
-            f"diff after action: {format_diff(t.frame_before, t.frame_after)}\n"
-            f"levels_completed: {t.levels_completed_before} -> {t.levels_completed_after}\n"
-            f"state_after: {t.state_after}"
-        )
-    return "\n\n".join(lines)
+#: Hard ceiling on the rendered transcript, in characters. The served
+#: model has a 32,768-token context shared with its reply; at ~3 chars per
+#: token for digit-heavy text, 36k chars (~12k tokens) leaves ample room
+#: for a 16k-token answer. Enforced, not hoped for.
+MAX_TRANSCRIPT_CHARS = 36_000
+
+
+def _render_transcript(
+    transcript: GameTranscript,
+    max_transitions: int = 40,
+    max_chars: int = MAX_TRANSCRIPT_CHARS,
+) -> str:
+    """Render the transcript as one opening grid plus per-step diffs.
+
+    Rewritten 2026-09-22. The original emitted `format_grid(t.frame_before)`
+    for EVERY transition shown, up to 40 of them. A 64x64 grid is 64 lines
+    of 64 characters, so real prompts reached **281,603 characters (~94k
+    tokens) against a 32,768-token context**, and the server rejected them
+    outright in ~0.1s. Measured on a real 12-game run: **93 of 109 LLM
+    calls failed that way** -- 85% of the coder budget never reached the
+    model at all. The resulting "0 replay passes" looked exactly like a
+    capability ceiling and was nothing of the kind.
+
+    It was also pure redundancy: consecutive `frame_before` grids differ
+    only by the previous step's diff, which is already printed beside them.
+    One opening grid plus the diffs is **lossless** -- every intermediate
+    grid can be reconstructed by applying them in order -- at roughly a
+    fifth of the size.
+
+    `max_chars` is then a hard backstop: a long enough game would overflow
+    any per-step encoding, so the oldest steps are dropped until it fits
+    and the omission is stated in the text.
+    """
+    transitions = transcript.transitions
+    if not transitions:
+        return "(no transitions observed yet)"
+
+    def render(window: list) -> str:
+        omitted = len(transitions) - len(window)
+        head = []
+        if omitted > 0:
+            head.append(
+                f"[... {omitted} earlier step(s) omitted; the grid below is the "
+                f"state at step {omitted}, not the start of the level ...]"
+            )
+        head += [
+            f"{len(window)} observed step(s).",
+            "",
+            "Grid at the first step shown (layer 0), one row per line, "
+            "one hex digit per cell:",
+            format_grid(window[0].frame_before),
+            "",
+            "Then each step gives the action and the cells it changed, as "
+            "(layer,x,y): old->new. Apply them in order to follow the board.",
+            "",
+        ]
+        for i, t in enumerate(window):
+            parts = [f"step {omitted + i}: {t.action} -> {format_diff(t.frame_before, t.frame_after)}"]
+            if t.levels_completed_after != t.levels_completed_before:
+                parts.append(
+                    f"levels_completed {t.levels_completed_before}->{t.levels_completed_after}"
+                )
+            if t.state_after != "NOT_FINISHED":
+                parts.append(f"state={t.state_after}")
+            head.append("  ".join(parts))
+        return "\n".join(head)
+
+    window = transitions[-max_transitions:]
+    text = render(window)
+    # Drop the oldest shown steps until the budget is met. Halving the
+    # overshoot rather than stepping one at a time keeps this cheap on the
+    # long transcripts that motivated the cap.
+    while len(text) > max_chars and len(window) > 1:
+        keep = max(1, int(len(window) / max(len(text) / max_chars, 1.1)))
+        if keep >= len(window):
+            keep = len(window) - 1
+        window = window[-keep:]
+        text = render(window)
+    return text
 
 
 # A complete WorldModel for a 64x64 game is not a short function. The
