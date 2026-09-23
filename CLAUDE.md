@@ -317,6 +317,49 @@ solvability**. **Stop spending slots on this lineage.** The remaining directions
 are perception (their stated gap, where our measured 9-155 s analyzer timeouts
 also live) and model capability -- not more serving tuning.
 
+### 8b. CORRECTION (2026-09-23): the CodeWorldAgent verdict is overturned
+
+Commit `0603d60` merged a verdict to `master` reading **"the coder model
+cannot write a replay-passing world model"** (0 of 25, best 2/9). **Do not
+cite it.** It was confounded three ways, and the third is decisive: that
+run recorded *"prompts growing to 142 KB"* as a throughput note, but at
+~47k tokens against a 32,768 context those prompts were being **rejected,
+not answered**.
+
+`llm_engine.drafting._render_transcript` emitted a full 64x64 grid for
+**every** transition shown. Measured on a real 12-game run: prompts to
+**281,603 chars (~94k tokens)**, and **93 of 109 LLM calls failed in ~0.1s**
+-- an instant HTTP rejection. 85% of the coder budget never reached the
+model, and the resulting "0 replay passes" was indistinguishable from a
+capability ceiling.
+
+Rendering one opening grid plus per-step diffs (lossless; hard 36k-char
+cap) changes the same kernel, same games, same model:
+
+| | before | after |
+|---|---:|---:|
+| prompts over context | 76/109 | **0/308** |
+| calls returning text | 15% | **92%** |
+| **replay passes** | **0** | **16** |
+| games with a passing model | 0 | **4 of 12** |
+| longest passing replay | — | **28/28 transitions** |
+
+**The served model does write replay-passing world models for real 64x64
+games.** What is still NOT shown is conversion: **0 levels completed in 12
+games**. CodeWorldAgent remains a non-candidate for a scored submission
+(with no model installed it plays random actions, the ~0.06 floor), but
+the reason to shelve it was wrong.
+
+Full write-up: `experiments/stage7_codeworld_prototype.md`.
+
+**Standing lesson, and this is the fourth instrument failure in this arm:**
+a prompt that does not fit is not a weak result, it is *no* result -- and
+it looks exactly like a weak result. Measure prompt size against the
+served context before reading anything into a low score. The renderer
+defect had already been written down in
+`experiments/stage7_codeworld_backtest.md` as finding #4 and was simply
+not carried into the engine the live agent uses.
+
 ### 9. CURRENT STANDING — 2026-09-21 (supersedes the 2026-09-07 header above)
 
 **Best score 3.79. Rank ~204 / 3,175. Top 5.7%. The top-10% mission target is
