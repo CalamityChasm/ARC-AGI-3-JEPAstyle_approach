@@ -445,6 +445,57 @@ random sample of that arm's distribution -- they are the reason the arm
 was selected. Interleave arms in time from now on; never run one arm to
 exhaustion and then the next.
 
+#### RESOLVED (2026-09-24): the baseline re-run breaks the confound, in the
+#### graft's favour -- but the caution stands
+
+The decisive experiment recommended above was run. NVFP4 baseline, kernel v2
+byte-identical to all four prior baseline draws, submitted into the *current*
+period: **2.48**.
+
+| arm | n | scores | mean | sd |
+|---|---:|---|---:|---:|
+| NVFP4 baseline | 5 | 2.84, 2.95, 2.42, 3.11, **2.48** | **2.760** | 0.300 |
+| + anim graft | 5 | 3.43, 3.79, 3.37, 3.02, 2.66 | **3.254** | 0.430 |
+
+**The effect is significant again: exact permutation p = 0.036**, against
+0.071 when baseline had only its four early draws. Adding a *low* baseline
+draw in the current period strengthened the graft rather than sinking it.
+
+**A period effect is real, and it hits BOTH arms**, which is what the
+confound made impossible to see before:
+
+| | early | late | delta |
+|---|---:|---:|---:|
+| baseline | 2.830 (09-11..15) | **2.480** (09-24) | **-0.350** |
+| anim | 3.530 (09-16..18) | 2.840 (09-20,22) | -0.690 |
+
+So anim's decline was **not purely anim-specific** -- scores are drifting
+down for the unmodified stack too. That partially rescues the 2026-09-22
+reading, which attributed the whole drop to anim.
+
+**The first same-period comparison this project has ever had:** anim's two
+recent draws average **2.840** against baseline's **2.480** on 09-24, a gap
+of **+0.360** in the graft's favour. n=2 vs n=1, so directional only -- but
+it points the same way as the pooled test.
+
+**What has NOT changed.** The sensitivity analysis still bites:
+
+| anim subset | mean | diff | perm p |
+|---|---:|---:|---:|
+| all 5 | 3.254 | +0.494 | **0.036** |
+| drop the best (3.79) | 3.120 | +0.360 | 0.071 |
+| last 3 only | 3.017 | +0.257 | 0.161 |
+| last 2 only | 2.840 | +0.080 | 0.381 |
+
+Most of the effect still lives in the three early anim draws. The honest
+summary: **the graft is real but smaller than 3.53 suggested, and the
+current-period gap is ~+0.36, not ~+0.70.**
+
+**The winner's-curse and interleaving lessons stand unchanged** -- they are
+what made this resolvable at all. Had baseline not been re-run in the
+current period, the 09-22 data would have supported "the graft is worth
+nothing" just as readily as the truth. **Interleave arms in time.**
+
 #### THE MEASUREMENT RULE THAT MATTERS MOST
 
 **A single free public-25 run has SE +/-2.46 and CANNOT rank candidates.**
