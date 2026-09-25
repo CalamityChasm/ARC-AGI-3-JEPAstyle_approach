@@ -178,3 +178,75 @@ would apply to *both* models. Untested; recorded as a lead, not a plan.
   backtest makes only 36 calls so throughput is not a confound here.
 - `max_tokens=8192`; responses ran to 29 KB, so truncation is not the
   story this time the way it was for Flash-Next's thinking arm.
+
+---
+
+## 9. Prompt fix (2026-09-25): the contract failure is solved, and a
+## capability wall is what was underneath it
+
+Single-variable A/B. Only `SYSTEM_PROMPT` differs -- same model
+(Qwen3-Coder-30B-A3B), same 12 segments, same everything else. The old
+prompt showed an elliptical skeleton and described the return in prose;
+the new one states the contract explicitly and carries a **complete,
+runnable** worked example.
+
+### The fix worked, and by a lot
+
+| attempt-level, 36 each | old | new | delta |
+|---|---:|---:|---:|
+| `bad_shape` | 16 | **0** | **-16** |
+| `predict_raised` | 9 | **0** | **-9** |
+| `load_error` | 10 | 8 | -2 |
+| `grid_mismatch` (loaded, ran, gradeable) | 1 | **28** | **+27** |
+
+**Attempts producing a usable prediction went from 1/36 to 28/36.** The
+contract failure is not merely reduced, it is *gone*: zero malformed
+triples, zero predict-time crashes. Responses also got shorter (median
+10,601 -> 7,938 chars), consistent with less flailing.
+
+That confirms the 2026-09-25 diagnosis exactly: `bad_shape` was a
+**contract** failure, not a reasoning one, and a prompt that *shows* the
+shape rather than describing it fixes it.
+
+### And the pass rate did not move at all
+
+**Still 0/12.** Best prefix across all 12 segments:
+
+    old  [0,0,0,0,0,0,0,0,0,0,0,0]
+    new  [0,0,0,0,0,0,0,0,0,0,0,1]
+
+Eleven of twelve segments are wrong at **step 0**. The one exception
+reproduced a single step.
+
+So removing the confound did not reveal a near-miss underneath. It
+revealed a **capability wall**: the coder now reliably writes valid,
+loadable, runnable world models that are wrong about the rule
+immediately and essentially always.
+
+### Coder vs the served model, now on equal footing
+
+| | reached the sandbox | best prefix |
+|---|---:|---:|
+| Flash-Next, no thinking | 4/12 segments | **9/40** |
+| Qwen3-Coder-30B, new prompt | **9/12 segments** | 1/27 |
+
+The coder produces **more than twice as many runnable candidates** and
+gets **nowhere near as close to the rule**. Flash-Next reached 9
+consecutive correct steps once; the coder never exceeds 1. And the live
+prototype on Flash-Next produced **16 replay passes**, which neither
+coder run came close to.
+
+**The coder hypothesis is now firmly dead** -- tested twice, the second
+time with the interface confound removed, and it lost on the measure that
+matters both times.
+
+### What to keep
+
+The prompt change is a real, isolated, large improvement in code validity
+and should be kept for **both** models -- Flash-Next's own runs lost
+candidates to `load_error` too. It just is not what stands between this
+design and a working world model.
+
+`load_error` at 8/36 is the remaining validity loss and was barely touched
+by the contract block (10 -> 8), so it is a different problem (syntax /
+truncation), not the same one.
