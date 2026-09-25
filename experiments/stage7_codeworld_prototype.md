@@ -111,3 +111,70 @@ truncation, so some reply budget is still being lost.
 - Replay here is teacher-forced, as in the backtest: each step is scored
   from its own real `frame_before`, so errors cannot compound. A planner
   needs closed-loop rollout, which is strictly harder.
+
+---
+
+## 8. Coder-model arm (2026-09-25): a coder-specialist is NOT better
+
+Kernel `calamitychasm/arc3-cwm-backtest-coder`, `COMPLETE`, 70 min.
+**Qwen3-Coder-30B-A3B-Instruct** via `transformers`, on the same 12
+segments, same prompt, same calibration as the Flash-Next arms. Only the
+model differs.
+
+### Result: 0 / 12
+
+| arm | passed | reached the sandbox and ran |
+|---|---:|---:|
+| Flash-Next, thinking, 16k | 1/12 | 0 (27/27 truncated) |
+| Flash-Next, no thinking, 8k | 0/12 | **4** |
+| **Qwen3-Coder-30B** | **0/12** | **1** |
+
+Attempt-level taxonomy across all 36 attempts:
+
+| outcome | count |
+|---|---:|
+| `bad_shape` (malformed return triple) | **16** |
+| `load_error` | 10 |
+| `predict_raised` | 9 |
+| `grid_mismatch` (ran, wrong) | 1 |
+| `no_code` / `no_response` | **0 / 0** |
+
+### What this actually says
+
+**Compliance is perfect and capability is not.** The coder produced a
+`class WorldModel` on every one of 36 attempts -- zero `no_code`, zero
+`no_response`, unlike Flash-Next which frequently emitted nothing usable.
+The preflight confirmed it too (179-char reply, contained the class).
+
+But **35 of 36 candidates never produced a usable prediction**. The
+dominant failure is `bad_shape` (16): `predict()` returns something that
+is not a well-formed `(next_state, levels_delta, done)` triple -- the
+exact slip `world_model.py` documents, returning one layer instead of the
+list of layers. Nine more crashed at predict time.
+
+So on the measure that matters -- candidates that load, run, and produce a
+gradeable prediction -- the coder scores **1**, against Flash-Next's **4**.
+It writes more code and less *working* code.
+
+### Strategic consequence
+
+The appliance is sealed; we serve Flash-Next and cannot swap it. A coder
+win here would have been an awkward result -- a ceiling we could measure
+but not act on. **This removes that awkwardness: the model we are allowed
+to serve is not the bottleneck relative to a coder-specialist.**
+
+### The one concrete lead
+
+`bad_shape` at 16/36 is a **contract** failure, not a reasoning failure --
+the model understands the task and botches the return type. That is the
+kind of thing a sharper prompt (an explicit worked example of the exact
+return shape, rather than a prose description) could plausibly fix, and it
+would apply to *both* models. Untested; recorded as a lead, not a plan.
+
+### Caveats
+
+- One run, 12 segments, no repeats.
+- `transformers`, so ~95 s/attempt and a 607 s model load. Slow, but the
+  backtest makes only 36 calls so throughput is not a confound here.
+- `max_tokens=8192`; responses ran to 29 KB, so truncation is not the
+  story this time the way it was for Flash-Next's thinking arm.
