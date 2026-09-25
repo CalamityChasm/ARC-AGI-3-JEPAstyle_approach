@@ -81,10 +81,28 @@ print(subprocess.run(
 
 import torch
 print("torch", torch.__version__, "cuda", torch.cuda.is_available(), flush=True)
-if torch.cuda.is_available():
-    p = torch.cuda.get_device_properties(0)
-    print(f"gpu {p.name} sm_{p.major}{p.minor} {p.total_memory/1e9:.1f} GB "
-          f"bf16={torch.cuda.is_bf16_supported()}", flush=True)
+assert torch.cuda.is_available(), "no GPU"
+_p = torch.cuda.get_device_properties(0)
+_vram = _p.total_memory / 1e9
+print(f"gpu {_p.name} sm_{_p.major}{_p.minor} {_vram:.1f} GB "
+      f"bf16={torch.cuda.is_bf16_supported()}", flush=True)
+
+# Qwen3-Coder-30B-A3B is ~60 GB in bf16. v1 of this kernel was handed a
+# Tesla T4 (15.6 GB) despite requesting NvidiaRtxPro6000, so device_map=
+# "auto" silently offloaded to disk and died ~10 minutes later inside
+# from_pretrained with a confusing missing-offload_folder ValueError.
+#
+# The cause was almost certainly this kernel being the only one of 17 in
+# the repo WITHOUT `competition_sources` -- that attachment appears to gate
+# the competition's premium hardware pool. Re-added; this assert is the
+# backstop so a wrong card costs seconds, not a queue slot.
+MIN_VRAM_GB = float(os.environ.get("CWM_MIN_VRAM_GB", "40"))
+assert _vram >= MIN_VRAM_GB, (
+    f"got {_p.name} with {_vram:.1f} GB, need >= {MIN_VRAM_GB} GB for a 30B model. "
+    "Check that kernel-metadata.json still has competition_sources AND "
+    "machine_shape=NvidiaRtxPro6000 -- dropping the former silently downgrades "
+    "the card even when the latter is set."
+)
 
 
 def find_input_dir(name):
@@ -178,6 +196,10 @@ segments = ordered[:MAX_SEGMENTS]
 print(f"pilot: {len(segments)} segments across "
       f"{len({s.game_id for s in segments})} games "
       f"(levels {sorted({s.level for s in segments})})", flush=True)
+
+# If anything still spills, give it somewhere to go rather than raising.
+os.environ.setdefault("CWM_OFFLOAD_DIR", "/kaggle/working/offload")
+Path(os.environ["CWM_OFFLOAD_DIR"]).mkdir(parents=True, exist_ok=True)
 
 print("loading the coder model (this is the slow part)...", flush=True)
 _t = time.time()
@@ -280,6 +302,7 @@ def main() -> int:
         ("round-robin selection", "by_game"),
         ("incremental persist", "_persist(partial=True)"),
         ("real-shape preflight", "class WorldModel"),
+        ("VRAM gate", "MIN_VRAM_GB"),
     ]
     missing = [n for n, probe in required if probe not in body]
     if missing:
@@ -311,6 +334,10 @@ def main() -> int:
         "keywords": ["gpu"],
         "dataset_sources": [f"{OWNER}/{DATASET}"],
         "kernel_sources": [],
+        # KEPT even though the backtest needs no competition data: dropping
+        # it downgraded the kernel from RTX PRO 6000 to a 15.6 GB T4, which
+        # cannot hold a 30B model. See the VRAM assert above.
+        "competition_sources": ["arc-prize-2026-arc-agi-3"],
         "model_sources": [CODER_MODEL],
         "machine_shape": "NvidiaRtxPro6000",
     }, indent=2), encoding="utf-8")
