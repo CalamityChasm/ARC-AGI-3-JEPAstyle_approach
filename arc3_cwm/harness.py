@@ -68,21 +68,48 @@ Your code runs with NO imports available (no `import` statements at all -- \
 plain Python using only builtins like list/dict/range/len/enumerate/min/max/abs). \
 Do not use numpy, copy, or math.
 
-Respond with ONLY a single Python code fence containing a `WorldModel` class:
+THE RETURN CONTRACT -- get this exactly right or the answer is discarded \
+before your rule is even considered:
+
+  predict() MUST return a 3-tuple  (next_state, levels_delta, done)
+    next_state   a LIST OF LAYERS, same shape as `state`.
+                 `state` is [layer]; you must return [new_layer].
+                 Returning `new_layer` on its own is WRONG and is the
+                 single most common way these answers fail.
+    levels_delta an int, almost always 0
+    done         a bool, almost always False
+
+Work on a copy. Never mutate `state` in place.
+
+Here is a COMPLETE, VALID answer -- a model that predicts "nothing \
+changes". Copy this structure exactly and replace only the marked line \
+with your inferred rule:
 
 ```python
 class WorldModel:
     def __init__(self):
-        ...  # hidden state, e.g. self.counters = {}, if the game tracks one
+        self.counters = {}
 
     def predict(self, state, action_name, x=None, y=None):
-        # Return (next_state, levels_delta, done)
-        ...
+        layer = [row[:] for row in state[0]]      # copy, never mutate state
+
+        # ---- your inferred rule goes here, editing `layer` in place ----
+        # e.g.  if action_name == "ACTION3": layer[y][x] = 5
+
+        return [layer], 0, False                  # NOTE: [layer], not layer
 
     def goal_hint(self, state):
-        # float: higher = closer to a win condition
-        ...
+        return 0.0
 ```
+
+Before you answer, check your own code:
+  1. does `predict` return `[layer], 0, False` -- a list, an int, a bool?
+  2. is every index inside 0..63, guarded so no IndexError is possible?
+  3. does it run without `import`?
+  4. is the class complete, with both `predict` and `goal_hint`?
+
+Respond with ONLY a single Python code fence containing the `WorldModel` \
+class. No prose before or after it.
 """
 
 #: Response budget per attempt. `llm_engine.drafting` settled on 4096

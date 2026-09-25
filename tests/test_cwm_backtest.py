@@ -752,3 +752,66 @@ def test_continuous_segments_do_not_pay_for_resync_grids():
 
     payload = segment_to_dict(incrementing_segment(steps=6))
     assert not any("g" in step for step in payload["steps"])
+
+
+# --------------------------------------------------------------------
+# the system prompt's return contract
+# --------------------------------------------------------------------
+
+
+def test_system_prompt_states_the_return_contract_explicitly():
+    """Measured 2026-09-25 on Qwen3-Coder-30B: `bad_shape` was 16 of 36
+    attempts -- predict() returning something that is not a well-formed
+    (next_state, levels_delta, done) triple, overwhelmingly by returning
+    the bare layer instead of [layer]. That is a CONTRACT failure, not a
+    reasoning one, so the contract has to be unmissable in the prompt."""
+    from arc3_cwm.harness import SYSTEM_PROMPT
+
+    for probe in [
+        "3-tuple",
+        "[new_layer]",
+        "Returning `new_layer` on its own is WRONG",
+        "levels_delta",
+        "an int",
+        "a bool",
+        "Never mutate",
+    ]:
+        assert probe in SYSTEM_PROMPT, f"prompt lost its contract statement: {probe!r}"
+
+
+def test_system_prompt_carries_a_complete_runnable_example():
+    """The old prompt showed an elliptical skeleton (`...` bodies). A model
+    cannot copy a shape it was never shown, so the example must be real
+    code that would actually load."""
+    from arc3_cwm._engine import load_world_model
+    from arc3_cwm.harness import SYSTEM_PROMPT
+
+    start = SYSTEM_PROMPT.index("```python")
+    end = SYSTEM_PROMPT.index("```", start + 9)
+    example = SYSTEM_PROMPT[start + len("```python"):end]
+
+    assert "..." not in example, "the worked example must not be elliptical"
+    load = load_world_model(example)
+    assert load.ok, f"the prompt's own example does not load: {load.error}"
+
+    # And it must actually honour the contract it is teaching.
+    out = load.world_model.predict([[[0, 1], [2, 3]]], "ACTION1")
+    assert isinstance(out, tuple) and len(out) == 3
+    next_state, delta, done = out
+    assert next_state == [[[0, 1], [2, 3]]], "example must return [layer], unchanged"
+    assert isinstance(delta, int) and not isinstance(delta, bool)
+    assert isinstance(done, bool)
+
+
+def test_prompt_example_does_not_alias_the_input_state():
+    """`Never mutate state` is only credible if the example demonstrates it."""
+    from arc3_cwm._engine import load_world_model
+    from arc3_cwm.harness import SYSTEM_PROMPT
+
+    start = SYSTEM_PROMPT.index("```python")
+    end = SYSTEM_PROMPT.index("```", start + 9)
+    load = load_world_model(SYSTEM_PROMPT[start + len("```python"):end])
+    original = [[[7, 7], [7, 7]]]
+    returned, _, _ = load.world_model.predict(original, "ACTION1")
+    returned[0][0][0] = 99
+    assert original[0][0][0] == 7, "example returned an alias of the caller's state"
