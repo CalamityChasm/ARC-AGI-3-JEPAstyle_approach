@@ -1,0 +1,25 @@
+{
+  "id": "calamitychasm/arc3-cwm-backtest-coder",
+  "title": "arc3-cwm-backtest-coder",
+  "code_file": "arc3-cwm-backtest-coder.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "keywords": [
+    "gpu"
+  ],
+  "dataset_sources": [
+    "calamitychasm/cwm-backtest"
+  ],
+  "kernel_sources": [],
+  "competition_sources": [
+    "arc-prize-2026-arc-agi-3"
+  ],
+  "model_sources": [
+    "qwen-lm/qwen3-coder/Transformers/30b-a3b-instruct/1"
+  ],
+  "machine_shape": "NvidiaRtxPro6000"
+}

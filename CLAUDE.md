@@ -317,6 +317,49 @@ solvability**. **Stop spending slots on this lineage.** The remaining directions
 are perception (their stated gap, where our measured 9-155 s analyzer timeouts
 also live) and model capability -- not more serving tuning.
 
+### 8b. CORRECTION (2026-09-23): the CodeWorldAgent verdict is overturned
+
+Commit `0603d60` merged a verdict to `master` reading **"the coder model
+cannot write a replay-passing world model"** (0 of 25, best 2/9). **Do not
+cite it.** It was confounded three ways, and the third is decisive: that
+run recorded *"prompts growing to 142 KB"* as a throughput note, but at
+~47k tokens against a 32,768 context those prompts were being **rejected,
+not answered**.
+
+`llm_engine.drafting._render_transcript` emitted a full 64x64 grid for
+**every** transition shown. Measured on a real 12-game run: prompts to
+**281,603 chars (~94k tokens)**, and **93 of 109 LLM calls failed in ~0.1s**
+-- an instant HTTP rejection. 85% of the coder budget never reached the
+model, and the resulting "0 replay passes" was indistinguishable from a
+capability ceiling.
+
+Rendering one opening grid plus per-step diffs (lossless; hard 36k-char
+cap) changes the same kernel, same games, same model:
+
+| | before | after |
+|---|---:|---:|
+| prompts over context | 76/109 | **0/308** |
+| calls returning text | 15% | **92%** |
+| **replay passes** | **0** | **16** |
+| games with a passing model | 0 | **4 of 12** |
+| longest passing replay | — | **28/28 transitions** |
+
+**The served model does write replay-passing world models for real 64x64
+games.** What is still NOT shown is conversion: **0 levels completed in 12
+games**. CodeWorldAgent remains a non-candidate for a scored submission
+(with no model installed it plays random actions, the ~0.06 floor), but
+the reason to shelve it was wrong.
+
+Full write-up: `experiments/stage7_codeworld_prototype.md`.
+
+**Standing lesson, and this is the fourth instrument failure in this arm:**
+a prompt that does not fit is not a weak result, it is *no* result -- and
+it looks exactly like a weak result. Measure prompt size against the
+served context before reading anything into a low score. The renderer
+defect had already been written down in
+`experiments/stage7_codeworld_backtest.md` as finding #4 and was simply
+not carried into the engine the live agent uses.
+
 ### 9. CURRENT STANDING — 2026-09-21 (supersedes the 2026-09-07 header above)
 
 **Best score 3.79. Rank ~204 / 3,175. Top 5.7%. The top-10% mission target is
@@ -351,10 +394,107 @@ effect shrank when n grew; assume it will happen again.
 | config | n | scores | mean | sd |
 |---|---:|---|---:|---:|
 | NVFP4 baseline | 4 | 2.84, 2.95, 2.42, 3.11 | 2.830 | 0.295 |
-| **+ anim graft** | **4** | 3.43, 3.79, **3.37, 3.02** | **3.402** | **0.315** |
+| **+ anim graft** | **5** | 3.43, 3.79, 3.37, 3.02, **2.66** | **3.254** | **0.430** |
 | + wipe guard | 1 | 2.53 | — | — |
 
-anim is the incumbent and the thing to beat: **mean 3.402, sd 0.315, n=4.**
+#### CORRECTION (2026-09-22): the anim graft is NOT established, and the
+#### comparison behind it is confounded
+
+The 5th anim draw came in at **2.66** -- the lowest of the arm, and below
+the baseline mean. Three things follow, and none of them are comfortable.
+
+**1. The effect lost significance when n grew.** Exact permutation test
+(all 126 splits, one-sided): **p = 0.071**, versus the p = 0.038 recorded
+here at n=4. Welch t fell 2.652 -> 1.750. **This is the fourth time in
+this project that an effect shrank when n grew**, and this file predicted
+it in writing after the third. Treat every remaining n<=5 claim here as
+likely overstated.
+
+**2. Almost all of the apparent advantage lives in the first three
+draws.** Sensitivity, each against the same baseline:
+
+| anim subset | mean | diff | perm p |
+|---|---:|---:|---:|
+| all 5 | 3.254 | +0.424 | 0.071 |
+| drop the best (3.79) | 3.120 | +0.290 | 0.129 |
+| last 3 only | 3.017 | +0.187 | 0.257 |
+| **last 2 only** | **2.840** | **+0.010** | **0.533** |
+
+anim's two most recent draws average **2.840** against baseline's
+**2.830**. On recent evidence alone the graft is worth **nothing**.
+
+**3. The two arms never overlap in time, so the comparison is
+confounded.** Baseline was drawn 09-11..09-15 (all four); anim 09-16..09-22
+(all five). Zero overlap. "anim vs baseline" is therefore identical to
+"later vs earlier", and no statistic computed on this data can separate
+them. There is also a real downward drift *within* anim (OLS slope
+**-0.231/draw**, permutation p = 0.042 -- but found post-hoc, by looking
+at the sequence, so that p is optimistic), against **+0.028/draw** within
+baseline.
+
+**The decisive experiment is to re-run the NVFP4 baseline NOW**, in the
+same period anim is being drawn in. If baseline now scores ~2.4, the
+graft survives. If it scores ~3.0, the graft was a temporal artifact and
+three submissions were spent on it. Nothing else in the current data can
+settle this, and every further anim draw compounds the confound rather
+than resolving it.
+
+**Standing lesson, now with four instances:** an arm adopted *because* its
+first draws were high carries a winner's curse. Early draws are not a
+random sample of that arm's distribution -- they are the reason the arm
+was selected. Interleave arms in time from now on; never run one arm to
+exhaustion and then the next.
+
+#### RESOLVED (2026-09-24): the baseline re-run breaks the confound, in the
+#### graft's favour -- but the caution stands
+
+The decisive experiment recommended above was run. NVFP4 baseline, kernel v2
+byte-identical to all four prior baseline draws, submitted into the *current*
+period: **2.48**.
+
+| arm | n | scores | mean | sd |
+|---|---:|---|---:|---:|
+| NVFP4 baseline | 5 | 2.84, 2.95, 2.42, 3.11, **2.48** | **2.760** | 0.300 |
+| + anim graft | 5 | 3.43, 3.79, 3.37, 3.02, 2.66 | **3.254** | 0.430 |
+
+**The effect is significant again: exact permutation p = 0.036**, against
+0.071 when baseline had only its four early draws. Adding a *low* baseline
+draw in the current period strengthened the graft rather than sinking it.
+
+**A period effect is real, and it hits BOTH arms**, which is what the
+confound made impossible to see before:
+
+| | early | late | delta |
+|---|---:|---:|---:|
+| baseline | 2.830 (09-11..15) | **2.480** (09-24) | **-0.350** |
+| anim | 3.530 (09-16..18) | 2.840 (09-20,22) | -0.690 |
+
+So anim's decline was **not purely anim-specific** -- scores are drifting
+down for the unmodified stack too. That partially rescues the 2026-09-22
+reading, which attributed the whole drop to anim.
+
+**The first same-period comparison this project has ever had:** anim's two
+recent draws average **2.840** against baseline's **2.480** on 09-24, a gap
+of **+0.360** in the graft's favour. n=2 vs n=1, so directional only -- but
+it points the same way as the pooled test.
+
+**What has NOT changed.** The sensitivity analysis still bites:
+
+| anim subset | mean | diff | perm p |
+|---|---:|---:|---:|
+| all 5 | 3.254 | +0.494 | **0.036** |
+| drop the best (3.79) | 3.120 | +0.360 | 0.071 |
+| last 3 only | 3.017 | +0.257 | 0.161 |
+| last 2 only | 2.840 | +0.080 | 0.381 |
+
+Most of the effect still lives in the three early anim draws. The honest
+summary: **the graft is real but smaller than 3.53 suggested, and the
+current-period gap is ~+0.36, not ~+0.70.**
+
+**The winner's-curse and interleaving lessons stand unchanged** -- they are
+what made this resolvable at all. Had baseline not been re-run in the
+current period, the 09-22 data would have supported "the graft is worth
+nothing" just as readily as the truth. **Interleave arms in time.**
 
 #### THE MEASUREMENT RULE THAT MATTERS MOST
 
@@ -447,11 +587,21 @@ helps.** Register an outcome measure too, not just a mechanism measure.
 The next lever must target **whether a level is solvable at all**, not how many
 actions are spent on it. Tufa's own stated weak areas are "context management
 and perception", and there is direct evidence of a perception tax in our own
-run: HUD/status-bar reasoning appears in **all 25 of 25 games** (4,608 mentions
-in the anim run). The model re-derives HUD geometry from scratch, misattributes
-HUD pixels to game objects ("my white-object tracker accidentally matched the
-growing row-0 HUD bar ... that reading was HUD noise"), and spends turns
-establishing "did only the HUD change?".
+run. The model re-derives HUD geometry from scratch, misattributes HUD pixels
+to game objects ("my white-object tracker accidentally matched the growing
+row-0 HUD bar ... that reading was HUD noise"), and spends turns establishing
+"did only the HUD change?".
+
+**Correction, made before the arm ran:** this lead was first recorded here as
+"**all 25 of 25 games**, 4,608 mentions". That raw count is **~85% harness
+boilerplate** -- the base `VISUAL_GAME_ADDENDUM` already carries a HUD warning
+and is quoted back in all 940 prompts (SYSTEM 2,820 + USER 1,051). The honest
+figure is **718 model-generated mentions across 24 of 25 games, of which 286
+derive geometry** (a row/col index or range on the same line). The finding
+survives -- 286 real geometry derivations is a genuine tax -- but it is ~6x
+smaller than first stated. **Registering the falsifier on 4,608 would have made
+it unfalsifiable, since this arm adds HUD words to the prompt itself.** It is
+registered on 718 / 286.
 
 A rule-based status-bar detector already exists in this repo
 (`graph_explorer_agent.py: identify_status_bars_with_rule`, ported from
@@ -473,11 +623,24 @@ removed, so a wrong heuristic costs nothing and the model can override it.
   the working Stage 0 harness. Merge to master once Stage 1 clears its
   milestone (see Status below) or is deliberately parked as a documented
   limitation.
-- Remote: `https://github.com/CalamityChasm/ARC-AGI-3-JEPAstyle_approach`
-  (private). Git identity for commits in this repo: `CalamityChasm
+- Remote: `https://github.com/calcrockett/ARC-AGI-3-JEPAstyle_approach`
+  (private). **The GitHub account was renamed `CalamityChasm` ->
+  `calcrockett` on 2026-09-22**; the remote URL was updated to match.
+  GitHub redirects the old path, so a stale clone keeps working and will
+  give no warning that it is relying on a redirect -- which stops working
+  if anyone claims the old name. If a clone still points at
+  `CalamityChasm`, run
+  `git remote set-url origin https://github.com/calcrockett/ARC-AGI-3-JEPAstyle_approach.git`.
+  Git identity for commits in this repo: `CalamityChasm
   <calcrockett@gmail.com>` (repo-local config, not global -- check `git
   config user.name`/`user.email` if cloning fresh on a new machine, you'll
-  need to set these locally again).
+  need to set these locally again). The commit *author name* is
+  deliberately left as `CalamityChasm` so history stays consistent; GitHub
+  links commits by the email, which did not change.
+- **The Kaggle account is a different account and was NOT renamed.** Every
+  dataset/kernel slug stays `calamitychasm/...` (e.g.
+  `calamitychasm/arc3-duck-nvfp4-anim`). Do not "fix" these to match the
+  GitHub rename -- it would break every submission and dataset mount.
 
 ## Environment setup (new machine)
 
@@ -4005,6 +4168,26 @@ specifically -- use the free unconditional-diagnostic-cell trick described
 above to narrow it down without spending more of the daily quota.
 
 ## Gotchas learned the hard way (don't re-discover these)
+
+- **(2026-09-21) `kaggle kernels push` needs `PYTHONUTF8=1` on this box.** Kaggle
+  CLI 2.2.3 reads the notebook with the system ANSI codepage (cp1252), and every
+  notebook in the Duck/anim lineage carries non-ASCII characters (32 bytes in
+  `arc3-duck-nvfp4-hud.ipynb`), so the push dies with
+  `'charmap' codec can't decode byte 0x9d`. Verified directly: the file genuinely
+  fails a cp1252 decode. Set `PYTHONUTF8=1` for any kernel push in this lineage.
+- **(2026-09-21) An env var does NOT reach `segment_layer` just because you set
+  it.** `segment_layer` runs in the Python-tool **sandbox subprocess**, which
+  `inference/agent/python_tool_sandbox.py` launches with an explicit *allowlist*
+  env, not the parent's. A new flag must be added to that allowlist or the
+  feature is a **silent no-op with the entire prompt change still in place** --
+  every prompt describing a field that never exists, and all notebook asserts
+  green. That is the hardest failure shape to detect after the fact; it is the
+  same class as this file's `action_input` bug.
+- **(2026-09-21) Check a new branch's merge base before merging it.** The HUD arm
+  was branched off `f1dba78` while three PRs landed on `master` the same day; its
+  diff vs `master` showed **3,964 deletions**, and merging it as-is would have
+  silently removed the entire AVO result from `master`. `git merge-base
+  --is-ancestor origin/master HEAD` takes a second and catches it.
 
 - **(2026-09-05) All three real submission notebooks had silently shrunk the
   gateway-readiness wait from the official reference's proven 600s down to

@@ -35,7 +35,7 @@ import os
 import re
 import threading
 from dataclasses import dataclass, field
-from typing import Literal, Protocol
+from typing import Any, Literal, Optional, Protocol
 
 logger = logging.getLogger(__name__)
 
@@ -72,26 +72,71 @@ class OpenAICompatibleClient:
     model: str
     api_key: str = field(default_factory=lambda: os.getenv("LLM_API_KEY", "unused"))
     temperature: float = 0.2
+    #: None leaves the server's default alone; False sends
+    #: chat_template_kwargs={"enable_thinking": False}. Measured 2026-09-22
+    #: on Qwen3.8-Flash-Next-NVFP4: with thinking ON, 27 of 27 replies hit
+    #: the token cap and NOT ONE contained a `class WorldModel` -- the
+    #: whole budget went to reasoning. With it OFF, replies arrived in
+    #: `content`, 12 of 28 finished cleanly, and candidates actually
+    #: loaded and ran. See experiments/stage7_codeworld_backtest.md.
+    enable_thinking: Optional[bool] = None
 
     def __post_init__(self) -> None:
-        # Imported lazily so the rest of this project doesn't hard-depend
-        # on the `openai` package if someone only wants MockLLMClient.
-        from openai import OpenAI
-
-        self._client = OpenAI(base_url=self.base_url, api_key=self.api_key)
+        # Transport is stdlib urllib rather than the `openai` package:
+        # this runs in an offline Kaggle kernel where that dependency is
+        # not guaranteed, and the request is one plain POST.
+        self._endpoint = self.base_url.rstrip("/") + "/chat/completions"
+        #: Counted so a caller can tell "the model said nothing" apart
+        #: from "we read the wrong field" -- see the fallback below.
+        self.field_counts: dict[str, int] = {}
+        self.finish_reasons: dict[str, int] = {}
 
     def complete(self, system: str, user: str, max_tokens: int = 2048) -> str:
-        response = self._client.chat.completions.create(
-            model=self.model,
-            messages=[
+        import json as _json
+        import urllib.request
+
+        body: dict[str, Any] = {
+            "model": self.model,
+            "messages": [
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            max_tokens=max_tokens,
-            temperature=self.temperature,
+            "max_tokens": max_tokens,
+            "temperature": self.temperature,
+        }
+        if self.enable_thinking is not None:
+            body["chat_template_kwargs"] = {"enable_thinking": self.enable_thinking}
+
+        request = urllib.request.Request(
+            self._endpoint,
+            data=_json.dumps(body).encode("utf-8"),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.api_key}",
+            },
         )
-        content = response.choices[0].message.content
-        return content or ""
+        with urllib.request.urlopen(request, timeout=900) as response:
+            payload = _json.loads(response.read().decode("utf-8"))
+
+        choice = payload["choices"][0]
+        reason = choice.get("finish_reason") or "unknown"
+        self.finish_reasons[reason] = self.finish_reasons.get(reason, 0) + 1
+
+        # This build's Qwen3 reasoning parser puts generated tokens in
+        # `reasoning`, NOT `content`. Reading only `content` reports a
+        # healthy server as silent: it produced a complete, plausible,
+        # entirely empty results table once already, and burned three free
+        # GPU runs before anyone dumped the raw stream and read the field
+        # name. Try every field the parser might use, and count which one
+        # actually carried the answer.
+        message = choice.get("message") or {}
+        for field_name in ("content", "reasoning", "reasoning_content"):
+            text = message.get(field_name) or ""
+            if text.strip():
+                self.field_counts[field_name] = self.field_counts.get(field_name, 0) + 1
+                return text
+        self.field_counts["empty"] = self.field_counts.get("empty", 0) + 1
+        return ""
 
 
 @dataclass
@@ -357,7 +402,16 @@ def make_client(role: Role) -> LLMClient:
         return get_shared_transformers_client(model_dir)
 
     defaults = _ROLE_DEFAULTS[role]
+    # LLM_ENABLE_THINKING: unset leaves the server default; "0"/"false"
+    # disables reasoning. Measured on this stack, leaving it on meant the
+    # whole reply budget went to reasoning and no candidate was ever
+    # emitted -- see OpenAICompatibleClient.enable_thinking.
+    raw = os.getenv("LLM_ENABLE_THINKING")
+    enable_thinking = None
+    if raw is not None and raw.strip() != "":
+        enable_thinking = raw.strip().lower() in ("1", "true", "yes", "on")
     return OpenAICompatibleClient(
         base_url=os.getenv(f"{env_prefix}_LLM_BASE_URL", defaults["base_url"]),
         model=os.getenv(f"{env_prefix}_LLM_MODEL", defaults["model"]),
+        enable_thinking=enable_thinking,
     )

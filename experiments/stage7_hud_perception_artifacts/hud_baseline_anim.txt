@@ -1,0 +1,52 @@
+
+                                                  anim
+--------------------------------------------------------
+HUD mentions, MODEL-GENERATED only                 718
+  of which derive geometry                         286
+  per model block                                0.209
+references to the new hud field                      0
+games mentioning HUD (model)                  24 of 25
+
+raw matches, ALL sections (noisy)                 4689
+  games, any section                          25 of 25
+
+-- raw matches by transcript section (the reason the raw total is not the signal) --
+section                                   anim
+ANALYZER STATUS                 0 in   940 blk
+ASSISTANT                      92 in   737 blk
+MODEL RESPONSE META            62 in  1358 blk
+SYSTEM PROMPT                2820 in   940 blk
+THINKING                      563 in  1358 blk
+TOOL CALL                      63 in  1342 blk
+TOOL RESULT                    38 in  1342 blk
+USER PROMPT                  1051 in   943 blk
+
+-- per game, model-generated mentions --
+game                              anim
+ar25-0c556536           24 (  15 geom)
+bp35-0a0ad940            6 (   5 geom)
+cd82-fb555c5d           33 (   9 geom)
+cn04-2fe56bfb            4 (   4 geom)
+dc22-fdcac232          107 (  24 geom)
+ft09-0d8bbf25          109 (  27 geom)
+g50t-5849a774           69 (  40 geom)
+ka59-38d34dbb            9 (   4 geom)
+lf52-271a04aa            7 (   3 geom)
+lp85-305b61c3           22 (   8 geom)
+ls20-9607627b           29 (  20 geom)
+m0r0-492f87ba           16 (   6 geom)
+r11l-495a7899            3 (   3 geom)
+re86-8af5384d           10 (   5 geom)
+s5i5-18d95033           47 (  19 geom)
+sb26-7fbdac44            7 (   4 geom)
+sc25-635fd71a           20 (   9 geom)
+sk48-d8078629           14 (   9 geom)
+sp80-589a99af           19 (   8 geom)
+su15-1944f8ab           67 (  25 geom)
+tn36-ef4dde99           20 (  10 geom)
+tr87-cd924810            0 (   0 geom)
+tu93-0768757b           11 (   3 geom)
+vc33-5430563c           61 (  24 geom)
+wa30-ee6fef47            4 (   2 geom)
+
+wrote experiments\stage7_hud_perception_data.json
