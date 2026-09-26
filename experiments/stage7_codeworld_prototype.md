@@ -250,3 +250,71 @@ design and a working world model.
 `load_error` at 8/36 is the remaining validity loss and was barely touched
 by the contract block (10 -> 8), so it is a different problem (syntax /
 truncation), not the same one.
+
+---
+
+## 10. The prompt fix on the served model (2026-09-25): replicated on code
+## validity, null on rule inference
+
+Same single-variable A/B, now on **Qwen3.8-Flash-Next-NVFP4**. Kernel
+byte-identical to the previous run; only the prompt inside the dataset
+changed.
+
+| | think-16k | | nothink-8k | |
+|---|---:|---:|---:|---:|
+| | old | new | old | new |
+| **passed** | 1 | 0 | 0 | **1** |
+| `bad_shape` (attempts) | 0 | 0 | **5** | **0** |
+| `grid_mismatch` (attempts) | 0 | 0 | 7 | 4 |
+| `load_error` (attempts) | 1 | 3 | 8 | 10 |
+| `no_response` (segments) | 3 | 4 | 4 | 7 |
+| best prefix | 6 | 0 | 9 | 6 |
+| finish reasons | 27 `length` | 26 `length` | 16L/12S | 13L/7S |
+
+### What replicates
+
+**`bad_shape` 5 -> 0 on nothink**, exactly as it went 16 -> 0 on the coder.
+Two different models, same direction, effect size large in both. The
+contract block does what it was designed to do, and it is the one finding
+here strong enough to keep.
+
+### What does not move
+
+**Passes are a wash: think 1 -> 0, nothink 0 -> 1.** At n=12 with about
+one pass either way, that is noise and should not be read as either an
+improvement or a regression. Best prefixes stay in the same 0-9 band they
+were in before.
+
+**think-16k is still entirely truncation-bound**: 26 of 26 replies hit
+`length`, unchanged from 27 of 27. The new prompt was never going to fix
+that -- it is a budget problem, and this arm still has not produced a
+measurement of anything else.
+
+### A hypothesis of mine that was wrong, tested rather than assumed
+
+`no_response` rose 4 -> 7 on nothink and total replies fell 28 -> 20. My
+first explanation was that the longer system prompt (1,357 -> 2,524 chars)
+had pushed requests over the context window. **Measured: it had not.**
+Across all 61 segments the largest total prompt is 38,508 chars (~12,836
+tokens) against 16,384+ tokens of headroom in both arms -- **0 of 61**
+exceed it in either. The response-rate difference is unexplained and, at
+these counts, most likely variance. Recorded as unexplained rather than
+given a mechanism it does not have.
+
+### Where this leaves the design
+
+Across two models and four arms the picture is now consistent:
+
+* **Interface compliance is solved.** The contract block eliminates
+  malformed returns on both models.
+* **Rule inference is the wall.** Valid, loadable, runnable world models
+  that are wrong -- usually at step 0 -- are now the dominant outcome.
+* The best prefix anyone has reached on these segments is **9 of 40**, by
+  Flash-Next, under the old prompt.
+
+The remaining honest caveat is that the *live prototype* on Flash-Next
+produced **16 replay passes** against the backtest arms' 0-1. The likely
+difference is transcript length: the prototype drafts early, against 9-28
+step transcripts, while these segments run to 40. That suggests **shorter
+transcripts are the lever**, not a better prompt and not a better model --
+untested, and the next thing worth testing.
